@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>মান্দা রক্ত দান কর্মসূচি</title>
-        <script src="https://cdn.tailwindcss.com"></script>
+        @vite('resources/css/app.css')
         <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
         <style>
@@ -57,7 +57,7 @@
             }
         </style>
     </head>
-    <body>
+    <body data-donation-page="home">
         <div class="bg-[#9f1930] text-white text-center text-sm py-2">
             ♥ রক্ত দিন, জীবন বাঁচান — মানবতার পাশে থাকুন
         </div>
@@ -109,11 +109,11 @@
         <section class="max-w-7xl mx-auto px-5 -mt-7 relative">
             <div class="card grid grid-cols-2 md:grid-cols-4 text-center gap-5">
                 <div>
-                    <b class="text-3xl red">৮</b>
-                    <p class="text-gray-500">নমুনা রক্তদাতা</p>
+                    <b id="donorTotal" class="text-3xl red">—</b>
+                    <p class="text-gray-500">উপলব্ধ রক্তদাতা</p>
                 </div>
                 <div>
-                    <b class="text-3xl red">৮</b>
+                    <b id="groupTotal" class="text-3xl red">—</b>
                     <p class="text-gray-500">রক্তের গ্রুপ</p>
                 </div>
                 <div>
@@ -146,13 +146,8 @@
                 </select>
                 <select id="area" class="field">
                     <option value="">সব এলাকা</option>
-                    <option>মান্দা সদর</option>
-                    <option>প্রসাদপুর</option>
-                    <option>কুসুম্বা</option>
-                    <option>ভারশোঁ</option>
-                    <option>কালিকাপুর</option>
                 </select>
-                <input id="query" class="field" placeholder="নাম বা ঠিকানা লিখুন">
+                <input id="query" class="field" placeholder="রক্তদাতার নাম লিখুন">
                 <button class="btn" id="searchBtn">
                     অনুসন্ধান করুন
                 </button>
@@ -245,9 +240,9 @@
                 <h2 id="modalTitle" class="text-2xl font-bold mb-3">রক্তদাতা নিবন্ধন</h2>
                 <p id="modalDesc" class="text-gray-500 text-sm mb-5">নিচের তথ্য পূরণ করুন</p>
                 <form id="form" class="space-y-3">
-                    <input required class="field" placeholder="পূর্ণ নাম">
-                    <input required class="field" placeholder="মোবাইল নম্বর" inputmode="tel">
-                    <select required class="field">
+                    <input name="name" required class="field" placeholder="পূর্ণ নাম">
+                    <input name="phone" required class="field" placeholder="মোবাইল নম্বর" inputmode="tel">
+                    <select name="blood_group_id" required class="field">
                         <option value="">রক্তের গ্রুপ</option>
                         <option>A+</option>
                         <option>A-</option>
@@ -258,9 +253,10 @@
                         <option>O+</option>
                         <option>O-</option>
                     </select>
-                    <input required class="field" placeholder="ঠিকানা / এলাকা">
+                    <input name="area" required class="field" placeholder="ঠিকানা / এলাকা">
+<textarea name="message" class="field" placeholder="যোগাযোগের কারণ" hidden></textarea>
                     <label class="text-sm flex gap-2">
-                        <input required type="checkbox">
+                        <input name="consent_to_contact" value="1" required type="checkbox">
                         তথ্য সংগ্রহ ও যোগাযোগের অনুরোধের জন্য সম্মতি দিচ্ছি।
                     </label>
                     <button class="btn w-full" type="submit">
@@ -271,103 +267,18 @@
                 </p>
             </div>
         </div>
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-        <script>
-            const donors = [
-                ['রহিম উদ্দিন', 'A+', 'মান্দা সদর'],
-                ['সাদিয়া আক্তার', 'B+', 'প্রসাদপুর'],
-                ['মাহমুদ হাসান', 'O+', 'কুসুম্বা'],
-                ['নুসরাত জাহান', 'AB+', 'ভারশোঁ'],
-                ['জুবায়ের আহমেদ', 'O-', 'কালিকাপুর'],
-                ['ফারহানা ইয়াসমিন', 'A-', 'মান্দা সদর'],
-                ['তানভীর হোসেন', 'B-', 'প্রসাদপুর'],
-                ['মেহজাবিন ইসলাম', 'AB-', 'কুসুম্বা'],
-            ];
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<script>window.donationRoutes = {{ Illuminate\Support\Js::from([
+'groups' => route('api.v1.blood-groups.index'), 'locations' => route('api.v1.locations.index'),
+'donors' => route('api.v1.donors.index'), 'register' => route('api.v1.donors.store'), 'contact' => route('api.v1.contact-requests.store'),
+'admin' => route('api.v1.admin.dashboard'), 'adminDonors' => route('api.v1.admin.blood-donors.index'),
+'requests' => route('api.v1.admin.blood-requests.index'), 'donations' => route('api.v1.admin.donations.index'),
+'contacts' => route('api.v1.admin.contact-requests.index'), 'settings' => route('api.v1.admin.settings.index'),
+'reports' => route('api.v1.admin.reports.index'), 'activity' => route('api.v1.admin.activity-logs.index'),
+'locationStore' => route('api.v1.admin.locations.store', ['type' => 'districts']), 'login' => route('login'),
+]) }};</script>
+@vite('resources/js/app.js')
 
-            function render() {
-                const bloodGroup = $('#blood').val();
-                const area = $('#area').val();
-                const query = $('#query').val().toLowerCase();
-                const matches = donors
-                    .map((donor, index) => ({ donor, index }))
-                    .filter(({ donor }) => (
-                        (!bloodGroup || donor[1] === bloodGroup)
-                        && (!area || donor[2] === area)
-                        && (!query || donor[0].includes(query) || donor[2].includes(query))
-                    ));
-
-                $('#result').text(matches.length + ' জন পাওয়া গেছে');
-                $('#grid').html(matches.length
-                    ? matches.map(({ donor, index }) => `
-                        <article class="card">
-                            <div class="flex justify-between items-start">
-                                <div class="bg-red-50 red w-14 h-14 rounded-xl grid place-items-center font-bold text-2xl">${donor[1]}</div>
-                                <span class="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">নমুনা তথ্য</span>
-                            </div>
-                            <h3 class="font-bold text-xl mt-5">${donor[0]}</h3>
-                            <p class="text-gray-500 mt-2">ঠিকানা: ${donor[2]}, নওগাঁ</p>
-                            <p class="text-gray-500 mt-1">মোবাইল: সম্মতি সাপেক্ষে</p>
-                            <button onclick="showModal('contact', ${index})" class="w-full border border-red-200 red font-bold rounded-xl py-3 mt-5 hover:bg-red-50">যোগাযোগের অনুরোধ →</button>
-                        </article>
-                    `).join('')
-                    : '<p class="col-span-full text-center text-gray-500 py-12">কোনো রক্তদাতা পাওয়া যায়নি।</p>'
-                );
-            }
-
-            function showModal(type, donorIndex = -1) {
-                const isRegistration = type === 'register';
-
-                $('#modalTitle').text(isRegistration ? 'রক্তদাতা নিবন্ধন' : 'যোগাযোগের অনুরোধ');
-                $('#modalDesc').text(isRegistration
-                    ? 'নমুনা ফর্ম — তথ্য সার্ভারে সংরক্ষিত হবে না'
-                    : 'নমুনা রক্তদাতা: ' + donors[donorIndex][0] + ' — কোনো অনুরোধ বাস্তবে পাঠানো হবে না'
-                );
-                $('#message').addClass('hidden');
-                $('#form')[0].reset();
-                $('#modal').removeClass('hidden').addClass('flex');
-            }
-
-            function hideModal() {
-                $('#modal').addClass('hidden').removeClass('flex');
-            }
-
-            $('#searchBtn').on('click', render);
-            $('#blood, #area').on('change', render);
-            $('#query').on('input', render);
-
-            $('#form').on('submit', function (event) {
-                event.preventDefault();
-                $('#message')
-                    .removeClass('hidden')
-                    .text('এটি শুধু ডিজাইন ডেমো। তথ্য সংরক্ষণ বা অনুরোধ পাঠানো হয়নি।');
-                this.reset();
-            });
-
-            $('#modal').on('click', function (event) {
-                if (event.target === this) {
-                    hideModal();
-                }
-            });
-
-            render();
-
-            if (window.gsap) {
-                gsap.registerPlugin(ScrollTrigger);
-                gsap.utils.toArray('.reveal').forEach((element) => {
-                    gsap.from(element, {
-                        opacity: 0,
-                        y: 35,
-                        duration: 0.9,
-                        scrollTrigger: {
-                            trigger: element,
-                            start: 'top 90%',
-                        },
-                    });
-                });
-            }
-        </script>
     </body>
 </html>
 

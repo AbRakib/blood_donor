@@ -36,6 +36,7 @@ class BloodDonorFactory extends Factory
             'address' => fake()->address(),
             'last_donation_date' => null,
             'is_available' => true,
+            'consent_to_contact' => true,
         ];
     }
 }
