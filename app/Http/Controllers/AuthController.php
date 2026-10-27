@@ -19,7 +19,7 @@ class AuthController extends Controller
     {
         $credentials = $request->validate(['email' => ['required', 'email'], 'password' => ['required', 'string']]);
         if (! Auth::attempt(array_merge($credentials, ['is_admin' => true]))) {
-            throw ValidationException::withMessages(['email' => 'Invalid admin credentials.']);
+            throw ValidationException::withMessages(['email' => 'ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।']);
         }
         $request->session()->regenerate();
 
@@ -32,6 +32,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home');
+        return redirect()->route('login')->with('status', 'আপনি সফলভাবে লগআউট করেছেন।');
     }
 }

@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\BloodDonor;
+use App\Models\BloodGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\DB;
 
 /**
  * @extends Factory<BloodDonor>
@@ -23,13 +23,7 @@ class BloodDonorFactory extends Factory
             'blood_group_id' => function (): int {
                 $name = fake()->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
 
-                DB::table('blood_groups')->insertOrIgnore([
-                    'name' => $name,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-
-                return (int) DB::table('blood_groups')->where('name', $name)->value('id');
+                return BloodGroup::withoutGlobalScopes()->firstOrCreate(['name' => $name])->id;
             },
             'phone' => fake()->numerify('017########'),
             'area' => fake()->city(),

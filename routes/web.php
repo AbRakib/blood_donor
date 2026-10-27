@@ -10,9 +10,9 @@ use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/login', [AuthController::class, 'create'])->name('login');
-Route::post('/login', [AuthController::class, 'store'])->middleware('throttle:5,1')->name('login.store');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'can:admin'])->name('dashboard');
+Route::get('/login', [AuthController::class, 'create'])->middleware('guest')->name('login');
+Route::post('/login', [AuthController::class, 'store'])->middleware(['guest', 'throttle:5,1'])->name('login.store');
 Route::post('/logout', [AuthController::class, 'destroy'])->middleware('auth')->name('logout');
 
 Route::prefix('api/v1')->name('api.v1.')->group(function (): void {

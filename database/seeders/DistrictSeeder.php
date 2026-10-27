@@ -9,6 +9,6 @@ class DistrictSeeder extends Seeder
 {
     public function run(): void
     {
-        District::withoutGlobalScopes()->firstOrCreate(['code' => '64'], ['name' => 'Naogaon', 'name_bn' => 'নওগাঁ']);
+        District::withoutGlobalScopes()->updateOrCreate(['code' => '64'], ['name' => 'Naogaon', 'name_bn' => 'নওগাঁ']);
     }
 }

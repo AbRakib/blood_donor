@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+
 test('the application returns a successful response', function () {
     $response = $this->get('/');
 
@@ -7,5 +9,6 @@ test('the application returns a successful response', function () {
 });
 
 test('the dashboard renders its blade view', function () {
-    $this->get('/dashboard')->assertStatus(200)->assertViewIs('dashboard');
+    $this->actingAs(User::factory()->make(['is_admin' => true]))
+        ->get('/dashboard')->assertStatus(200)->assertViewIs('dashboard');
 });

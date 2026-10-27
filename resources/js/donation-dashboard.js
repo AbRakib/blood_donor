@@ -103,6 +103,14 @@ async function loadLocations() {
     extra.innerHTML = '<h2>জেলা → উপজেলা → ইউনিয়ন</h2><button class="btn" data-action="new-location" data-id="districts">জেলা যোগ করুন</button><button class="btn" data-action="new-location" data-id="upazilas">উপজেলা যোগ করুন</button><button class="btn" data-action="new-location" data-id="unions">ইউনিয়ন যোগ করুন</button><div id="locationTree"></div>';
     $('locationTree').innerHTML = result.data.map(location => `<p><button class="btn" data-action="expand-district" data-id="${location.id}">${esc(location.name_bn || location.name)} (#${location.id})</button><span id="district-${location.id}"></span></p>`).join('');
 }
+async function loadGroups() {
+    groups = (await request(routes.groups)).data;
+    await refreshSummary();
+    extra.innerHTML = '<h2>ব্লাড গ্রুপ</h2><p>ব্লাড গ্রুপ ও নিবন্ধিত রক্তদাতার তালিকা</p><div class="tablewrap"><table><thead><tr><th>ব্লাড গ্রুপ</th><th>রক্তদাতার সংখ্যা</th></tr></thead><tbody>' + groups.map(group => {
+        const donorCount = summary.blood_groups.find(record => record.id === group.id)?.donors_count ?? 0;
+        return `<tr><td><span class="bloodpill">${esc(group.name)}</span></td><td>${donorCount} জন</td></tr>`;
+    }).join('') + (groups.length ? '' : '<tr><td colspan="2">কোনো ব্লাড গ্রুপ নেই।</td></tr>') + '</tbody></table></div>';
+}
 async function newLocation(type) {
     let parent = '';
     if (type === 'upazilas') {const result = await request(routes.locations); parent = `<div class="field"><label>জেলা</label><select name="district_id">${result.data.map(row => `<option value="${row.id}">${esc(row.name)}</option>`).join('')}</select></div>`;}
@@ -114,10 +122,10 @@ async function newLocation(type) {
 async function selectPage(page) {
     $('pageTitle').textContent = sections[page]; $('crumb').textContent = sections[page];
     document.querySelectorAll('.nav button').forEach(button => button.classList.toggle('active',button.dataset.page === page));
-    $('dashboardExtra').classList.toggle('active',['dashboard','groups','reports'].includes(page));
+    $('dashboardExtra').classList.toggle('active',['dashboard','reports'].includes(page));
     $('directory').style.display = ['dashboard','donors'].includes(page) ? 'block' : 'none';
     $('requestsView').classList.toggle('active',page === 'requests'); $('settingsView').classList.toggle('active',page === 'settings');
-    extra.hidden = !['contacts','donations','activity','areas'].includes(page);
+    extra.hidden = !['contacts','donations','activity','areas','groups'].includes(page);
     $('sidebar').classList.remove('open');
     try {
         if (page === 'requests') await loadRequests();
@@ -126,6 +134,7 @@ async function selectPage(page) {
         if (page === 'donations') await loadDonations();
         if (page === 'activity') await loadActivity();
         if (page === 'areas') await loadLocations();
+        if (page === 'groups') await loadGroups();
         if (page === 'reports') {await refreshSummary(); $('pageSubtitle').textContent = `${summary.donations} রক্তদান · ${summary.bags_donated} ব্যাগ রক্ত`;}
     } catch (error) {showToast(error.message);}
 }

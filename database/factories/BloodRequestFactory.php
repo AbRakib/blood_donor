@@ -11,7 +11,7 @@ class BloodRequestFactory extends Factory
 {
     public function definition(): array
     {
-        return ['blood_group_id' => BloodGroup::factory(), 'patient_name' => fake()->name(), 'contact_name' => fake()->name(), 'contact_phone' => fake()->numerify('017########'), 'hospital_name' => fake()->company(), 'bags_needed' => 1, 'needed_at' => now()->addDay(), 'urgency' => 'normal', 'request_status' => 'pending'];
+        return ['blood_group_id' => fn (): int => BloodGroup::withoutGlobalScopes()->firstOrCreate(['name' => fake()->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])])->id, 'patient_name' => fake()->name(), 'contact_name' => fake()->name(), 'contact_phone' => fake()->numerify('017########'), 'hospital_name' => fake()->company(), 'bags_needed' => 1, 'needed_at' => now()->addDay(), 'urgency' => 'normal', 'request_status' => 'pending'];
     }
 
     public function verified(): static
