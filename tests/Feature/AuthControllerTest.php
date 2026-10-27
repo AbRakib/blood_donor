@@ -5,6 +5,10 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 uses(LazilyRefreshDatabase::class);
 
+beforeEach(function () {
+    $this->withSession(['locale' => 'bn']);
+});
+
 it('renders the admin login form for guests', function () {
     $this->get(route('login'))->assertOk()->assertViewIs('login')->assertSee('লগইন করুন');
 });

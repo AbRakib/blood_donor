@@ -36,16 +36,7 @@ abstract class DomainModel extends Model
             $model->deleted = 0;
             $model->deleted_by = null;
         });
-        foreach (['created', 'updated', 'deleted'] as $event) {
-            static::registerModelEvent($event, function (DomainModel $model) use ($event): void {
-                if (! $model instanceof ActivityLog && auth()->user()?->is_admin) {
-                    ActivityLog::create([
-                        'user_id' => auth()->id(), 'action' => $event,
-                        'subject_type' => $model->getTable(), 'subject_id' => $model->getKey(),
-                    ]);
-                }
-            });
-        }
+
     }
 
     protected function runSoftDelete(): void

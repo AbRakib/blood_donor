@@ -19,7 +19,7 @@ class AuthController extends Controller
     {
         $credentials = $request->validate(['email' => ['required', 'email'], 'password' => ['required', 'string']]);
         if (! Auth::attempt(array_merge($credentials, ['is_admin' => true]))) {
-            throw ValidationException::withMessages(['email' => 'ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।']);
+            throw ValidationException::withMessages(['email' => __('The email or password is incorrect.')]);
         }
         $request->session()->regenerate();
 
@@ -28,10 +28,12 @@ class AuthController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
+        $locale = app()->getLocale();
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        $request->session()->put('locale', $locale);
 
-        return redirect()->route('login')->with('status', 'আপনি সফলভাবে লগআউট করেছেন।');
+        return redirect()->route('login')->with('status', __('You have successfully logged out.'));
     }
 }

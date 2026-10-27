@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@flaticon/flaticon-uicons/css/regular/rounded.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -7,3 +8,7 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+.fi{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;vertical-align:middle;font-style:normal;line-height:1}
+
+.icon-credit{display:inline-block;font-size:10px;color:inherit;opacity:.65;text-decoration:none}.icon-credit:hover{opacity:1;text-decoration:underline}

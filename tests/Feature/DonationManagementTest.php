@@ -35,7 +35,7 @@ it('exposes only consenting active donors and keeps their contact details privat
     BloodDonor::factory()->create(['blood_group_id' => $group->id, 'is_available' => false]);
     BloodDonor::factory()->create(['blood_group_id' => $group->id, 'deleted' => 1]);
 
-    $this->getJson(route('api.v1.donors.index'))->assertOk()->assertJsonCount(1, 'data')
+    $this->getJson(route('donors.index'))->assertOk()->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.id', $donor->id)->assertJsonMissingPath('data.0.phone')
         ->assertJsonMissingPath('data.0.address')->assertJsonMissingPath('data.0.date_of_birth');
 });
@@ -43,7 +43,7 @@ it('exposes only consenting active donors and keeps their contact details privat
 it('stores public registrations for admin review and ignores injected administrative fields', function () {
     $group = BloodGroup::factory()->create();
 
-    $this->postJson(route('api.v1.donors.store'), [
+    $this->postJson(route('donors.store'), [
         'name' => 'New donor', 'phone' => '01712345678', 'blood_group_id' => $group->id,
         'consent_to_contact' => true, 'status' => 1, 'created_by' => 99, 'deleted' => 1,
     ])->assertCreated();
@@ -54,7 +54,7 @@ it('stores public registrations for admin review and ignores injected administra
 it('rejects registration without consent or a valid Bangladesh phone', function () {
     $group = BloodGroup::factory()->create();
 
-    $this->postJson(route('api.v1.donors.store'), ['name' => 'Donor', 'phone' => '123', 'blood_group_id' => $group->id, 'consent_to_contact' => false])
+    $this->postJson(route('donors.store'), ['name' => 'Donor', 'phone' => '123', 'blood_group_id' => $group->id, 'consent_to_contact' => false])
         ->assertUnprocessable()->assertJsonValidationErrors(['phone', 'consent_to_contact']);
 
     $this->assertDatabaseCount('blood_donors', 0);
@@ -65,7 +65,7 @@ it('rejects inconsistent location hierarchies', function () {
     $district = District::factory()->create();
     $upazila = Upazila::factory()->create();
 
-    $this->postJson(route('api.v1.donors.store'), ['name' => 'Donor', 'phone' => '01712345678', 'blood_group_id' => $group->id,
+    $this->postJson(route('donors.store'), ['name' => 'Donor', 'phone' => '01712345678', 'blood_group_id' => $group->id,
         'district_id' => $district->id, 'upazila_id' => $upazila->id, 'consent_to_contact' => true])
         ->assertUnprocessable()->assertJsonValidationErrors('upazila_id');
 
@@ -73,13 +73,13 @@ it('rejects inconsistent location hierarchies', function () {
 });
 
 it('returns 401 for unauthenticated admin requests', function () {
-    $this->getJson(route('api.v1.admin.dashboard'))->assertUnauthorized();
+    $this->getJson(route('admin.dashboard'))->assertUnauthorized();
 });
 
 it('returns 403 for authenticated users without admin privileges', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user)->getJson(route('api.v1.admin.dashboard'))->assertForbidden();
+    $this->actingAs($user)->getJson(route('admin.dashboard'))->assertForbidden();
 });
 
 it('enforces the donor and request policy permissions', function (bool $isAdmin) {
@@ -101,16 +101,17 @@ it('logs availability changes and soft deletion with the acting administrator', 
     $admin = User::factory()->create(['is_admin' => true]);
     $donor = BloodDonor::factory()->create();
 
-    $this->actingAs($admin)->patchJson(route('api.v1.admin.blood-donors.update', $donor), ['is_available' => false])->assertOk();
+    $this->actingAs($admin)->patchJson(route('admin.blood-donors.update', $donor), ['is_available' => false])->assertOk();
 
     $this->assertDatabaseHas('donor_availability_logs', ['blood_donor_id' => $donor->id, 'was_available' => 1, 'is_available' => 0, 'created_by' => $admin->id]);
-    $this->assertDatabaseHas('activity_logs', ['action' => 'updated', 'subject_type' => 'blood_donors', 'subject_id' => $donor->id, 'user_id' => $admin->id]);
+    $this->assertDatabaseCount('activity_logs', 0);
 
-    $this->deleteJson(route('api.v1.admin.blood-donors.destroy', $donor))->assertNoContent();
+    $this->deleteJson(route('admin.blood-donors.destroy', $donor))->assertNoContent();
 
+    $this->assertDatabaseCount('activity_logs', 0);
     $this->assertSoftDeleted($donor);
     $this->assertDatabaseHas('blood_donors', ['id' => $donor->id, 'deleted' => 1, 'deleted_by' => $admin->id]);
-    $this->getJson(route('api.v1.admin.blood-donors.show', $donor))->assertNotFound();
+    $this->getJson(route('admin.blood-donors.show', $donor))->assertNotFound();
 });
 
 it('matches available consenting donors by blood group and location without duplicates', function () {
@@ -122,8 +123,8 @@ it('matches available consenting donors by blood group and location without dupl
     BloodDonor::factory()->create(['blood_group_id' => $group->id, 'district_id' => $district->id, 'is_available' => false]);
     BloodDonor::factory()->create(['blood_group_id' => $group->id]);
 
-    $this->actingAs($admin)->postJson(route('api.v1.admin.blood-requests.matches', $request))->assertOk()->assertJsonCount(1, 'data');
-    $this->postJson(route('api.v1.admin.blood-requests.matches', $request))->assertOk()->assertJsonCount(1, 'data');
+    $this->actingAs($admin)->postJson(route('admin.blood-requests.matches', $request))->assertOk()->assertJsonCount(1, 'data');
+    $this->postJson(route('admin.blood-requests.matches', $request))->assertOk()->assertJsonCount(1, 'data');
 
     $this->assertDatabaseHas('request_donors', ['blood_request_id' => $request->id, 'blood_donor_id' => $donor->id]);
     $this->assertDatabaseCount('request_donors', 1);
@@ -137,9 +138,9 @@ it('records a donation atomically and fulfills the request with history', functi
     $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id]);
     $request = BloodRequest::factory()->verified()->create(['blood_group_id' => $group->id]);
 
-    $response = $this->actingAs($admin)->postJson(route('api.v1.admin.donations.store'), ['blood_donor_id' => $donor->id,
+    $response = $this->actingAs($admin)->postJson(route('admin.donations.store'), ['blood_donor_id' => $donor->id,
         'blood_request_id' => $request->id, 'donated_at' => '2026-10-27', 'bags' => 1])->assertCreated();
-    $this->postJson(route('api.v1.admin.donations.verify', $response->json('data.id')))->assertOk();
+    $this->postJson(route('admin.donations.verify', $response->json('data.id')))->assertOk();
 
     $this->assertDatabaseHas('blood_donations', ['blood_donor_id' => $donor->id, 'blood_request_id' => $request->id, 'bags' => 1]);
     expect($donor->fresh())->is_available->toBeFalse()->last_donation_date->toDateString()->toBe('2026-10-27');
@@ -156,7 +157,7 @@ it('rejects donations for incompatible blood groups without changing history', f
     $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id]);
     $request = BloodRequest::factory()->verified()->create(['blood_group_id' => $other->id]);
 
-    $this->actingAs($admin)->postJson(route('api.v1.admin.donations.store'), ['blood_donor_id' => $donor->id,
+    $this->actingAs($admin)->postJson(route('admin.donations.store'), ['blood_donor_id' => $donor->id,
         'blood_request_id' => $request->id, 'donated_at' => today()->toDateString(), 'bags' => 1])
         ->assertUnprocessable()->assertJsonValidationErrors('blood_request_id');
 
@@ -168,7 +169,7 @@ it('rejects donations for incompatible blood groups without changing history', f
 it('stores contact requests without disclosing the donor phone', function () {
     $donor = BloodDonor::factory()->create();
 
-    $this->postJson(route('api.v1.contact-requests.store'), ['blood_donor_id' => $donor->id,
+    $this->postJson(route('contact-requests.store'), ['blood_donor_id' => $donor->id,
         'requester_name' => 'Requester', 'requester_phone' => '01812345678', 'message' => 'Please help.'])
         ->assertCreated()->assertJsonMissingPath('data')->assertDontSee($donor->phone);
 
@@ -178,7 +179,7 @@ it('stores contact requests without disclosing the donor phone', function () {
 it('rejects contact requests for nonconsenting donors', function () {
     $donor = BloodDonor::factory()->create(['consent_to_contact' => false]);
 
-    $this->postJson(route('api.v1.contact-requests.store'), ['blood_donor_id' => $donor->id,
+    $this->postJson(route('contact-requests.store'), ['blood_donor_id' => $donor->id,
         'requester_name' => 'Requester', 'requester_phone' => '01812345678', 'message' => 'Please help.'])
         ->assertUnprocessable()->assertJsonValidationErrors('blood_donor_id');
 
@@ -189,9 +190,9 @@ it('allows admins to approve contact requests and prevents reopening completed r
     $admin = User::factory()->create(['is_admin' => true]);
     $contact = DonorContactRequest::factory()->create();
 
-    $this->actingAs($admin)->patchJson(route('api.v1.admin.contact-requests.update', $contact), ['contact_status' => 'approved'])->assertOk();
-    $this->patchJson(route('api.v1.admin.contact-requests.update', $contact), ['contact_status' => 'completed'])->assertOk();
-    $this->patchJson(route('api.v1.admin.contact-requests.update', $contact), ['contact_status' => 'approved'])->assertUnprocessable();
+    $this->actingAs($admin)->patchJson(route('admin.contact-requests.update', $contact), ['contact_status' => 'approved'])->assertOk();
+    $this->patchJson(route('admin.contact-requests.update', $contact), ['contact_status' => 'completed'])->assertOk();
+    $this->patchJson(route('admin.contact-requests.update', $contact), ['contact_status' => 'approved'])->assertUnprocessable();
 
     $this->assertDatabaseHas('donor_contact_requests', ['id' => $contact->id, 'contact_status' => 'completed']);
 });
@@ -200,14 +201,14 @@ it('creates requests with an initial status log and refuses direct fulfillment',
     $admin = User::factory()->create(['is_admin' => true]);
     $group = BloodGroup::factory()->create();
 
-    $response = $this->actingAs($admin)->postJson(route('api.v1.admin.blood-requests.store'), [
+    $response = $this->actingAs($admin)->postJson(route('admin.blood-requests.store'), [
         'blood_group_id' => $group->id, 'patient_name' => 'Patient', 'contact_name' => 'Contact',
         'contact_phone' => '01712345678', 'hospital_name' => 'Hospital', 'bags_needed' => 2, 'needed_at' => now()->addDay()->toDateTimeString(),
     ])->assertCreated();
 
     $id = $response->json('data.id');
     $this->assertDatabaseHas('blood_request_status_logs', ['blood_request_id' => $id, 'to_status' => 'pending']);
-    $this->patchJson(route('api.v1.admin.blood-requests.update', $id), ['request_status' => 'fulfilled'])->assertUnprocessable();
+    $this->patchJson(route('admin.blood-requests.update', $id), ['request_status' => 'fulfilled'])->assertUnprocessable();
     $this->assertDatabaseHas('blood_requests', ['id' => $id, 'request_status' => 'pending']);
 });
 
@@ -219,7 +220,7 @@ it('scopes matching responses to their blood request', function () {
     $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id]);
     $match = RequestDonor::factory()->create(['blood_request_id' => $other->id, 'blood_donor_id' => $donor->id]);
 
-    $this->actingAs($admin)->patchJson(route('api.v1.admin.blood-requests.respond', [$request, $match->id]), ['response_status' => 'accepted'])->assertNotFound();
+    $this->actingAs($admin)->patchJson(route('admin.blood-requests.respond', [$request, $match->id]), ['response_status' => 'accepted'])->assertNotFound();
 
     $this->assertDatabaseHas('request_donors', ['id' => $match->id, 'response_status' => 'pending']);
 });
@@ -229,8 +230,8 @@ it('returns real dashboard totals and updates settings', function () {
     BloodDonor::factory()->create();
     $setting = SystemSetting::factory()->create();
 
-    $this->actingAs($admin)->getJson(route('api.v1.admin.dashboard'))->assertOk()->assertJsonPath('data.donors', 1)->assertJsonCount(6, 'data.monthly_donations');
-    $this->patchJson(route('api.v1.admin.settings.update', $setting), ['value' => 'Updated site'])->assertOk();
+    $this->actingAs($admin)->getJson(route('admin.dashboard'))->assertOk()->assertJsonPath('data.donors', 1)->assertJsonCount(6, 'data.monthly_donations');
+    $this->patchJson(route('admin.settings.update', $setting), ['value' => 'Updated site'])->assertOk();
 
     $this->assertDatabaseHas('system_settings', ['id' => $setting->id, 'value' => 'Updated site']);
 });
@@ -255,9 +256,9 @@ it('keeps a request open after a partial donation', function () {
     $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id]);
     $request = BloodRequest::factory()->verified()->create(['blood_group_id' => $group->id, 'bags_needed' => 2]);
 
-    $response = $this->actingAs($admin)->postJson(route('api.v1.admin.donations.store'), ['blood_donor_id' => $donor->id,
+    $response = $this->actingAs($admin)->postJson(route('admin.donations.store'), ['blood_donor_id' => $donor->id,
         'blood_request_id' => $request->id, 'donated_at' => today()->toDateString(), 'bags' => 1])->assertCreated();
-    $this->postJson(route('api.v1.admin.donations.verify', $response->json('data.id')))->assertOk();
+    $this->postJson(route('admin.donations.verify', $response->json('data.id')))->assertOk();
 
     $this->assertDatabaseHas('blood_requests', ['id' => $request->id, 'request_status' => 'in_progress']);
     $this->assertDatabaseHas('blood_request_status_logs', ['blood_request_id' => $request->id, 'to_status' => 'in_progress']);
@@ -269,7 +270,7 @@ it('rejects donations against unverified or closed requests', function (string $
     $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id, 'is_available' => $condition !== 'unavailable']);
     $request = BloodRequest::factory()->create(['blood_group_id' => $group->id, 'request_status' => $condition === 'closed' ? 'cancelled' : 'pending']);
 
-    $this->actingAs($admin)->postJson(route('api.v1.admin.donations.store'), ['blood_donor_id' => $donor->id,
+    $this->actingAs($admin)->postJson(route('admin.donations.store'), ['blood_donor_id' => $donor->id,
         'blood_request_id' => $request->id, 'donated_at' => today()->toDateString(), 'bags' => 1])->assertUnprocessable();
 
     $this->assertDatabaseCount('blood_donations', 0);
@@ -282,7 +283,7 @@ it('rejects invalid donation dates and bag counts', function (array $invalid, st
     $admin = User::factory()->create(['is_admin' => true]);
     $donor = BloodDonor::factory()->create();
 
-    $this->actingAs($admin)->postJson(route('api.v1.admin.donations.store'), array_merge([
+    $this->actingAs($admin)->postJson(route('admin.donations.store'), array_merge([
         'blood_donor_id' => $donor->id, 'donated_at' => '2026-10-27', 'bags' => 1,
     ], $invalid))->assertUnprocessable()->assertJsonValidationErrors($field);
 
@@ -300,10 +301,10 @@ it('rejects duplicate donations without inserting another history record', funct
     $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id]);
     $request = BloodRequest::factory()->verified()->create(['blood_group_id' => $group->id, 'bags_needed' => 2]);
     $data = ['blood_donor_id' => $donor->id, 'blood_request_id' => $request->id, 'donated_at' => today()->toDateString(), 'bags' => 1];
-    $response = $this->actingAs($admin)->postJson(route('api.v1.admin.donations.store'), $data)->assertCreated();
-    $this->postJson(route('api.v1.admin.donations.verify', $response->json('data.id')))->assertOk();
+    $response = $this->actingAs($admin)->postJson(route('admin.donations.store'), $data)->assertCreated();
+    $this->postJson(route('admin.donations.verify', $response->json('data.id')))->assertOk();
 
-    $this->postJson(route('api.v1.admin.donations.store'), $data)->assertUnprocessable();
+    $this->postJson(route('admin.donations.store'), $data)->assertUnprocessable();
 
     $this->assertDatabaseCount('blood_donations', 1);
     $this->assertDatabaseCount('donor_availability_logs', 1);
@@ -315,7 +316,7 @@ it('preserves location hierarchy validation on partial donor updates', function 
     $other = District::factory()->create();
     $donor = BloodDonor::factory()->create(['district_id' => $upazila->district_id, 'upazila_id' => $upazila->id]);
 
-    $this->actingAs($admin)->patchJson(route('api.v1.admin.blood-donors.update', $donor), ['district_id' => $other->id])
+    $this->actingAs($admin)->patchJson(route('admin.blood-donors.update', $donor), ['district_id' => $other->id])
         ->assertUnprocessable()->assertJsonValidationErrors('upazila_id');
 
     $this->assertDatabaseHas('blood_donors', ['id' => $donor->id, 'district_id' => $upazila->district_id]);
@@ -326,9 +327,9 @@ it('creates locations and returns only the requested children', function () {
     $district = District::factory()->create();
     $other = Upazila::factory()->create();
 
-    $response = $this->actingAs($admin)->postJson(route('api.v1.admin.locations.store', 'upazilas'), ['district_id' => $district->id, 'name' => 'Manda', 'name_bn' => 'মান্দা'])->assertCreated();
+    $response = $this->actingAs($admin)->postJson(route('admin.locations.store', 'upazilas'), ['district_id' => $district->id, 'name' => 'Manda', 'name_bn' => 'মান্দা'])->assertCreated();
 
-    $this->getJson(route('api.v1.locations.index', ['district_id' => $district->id]))->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $response->json('data.id'));
+    $this->getJson(route('locations.index', ['district_id' => $district->id]))->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $response->json('data.id'));
     $this->assertDatabaseHas('upazilas', ['name' => 'Manda', 'district_id' => $district->id]);
 });
 
@@ -338,7 +339,7 @@ it('filters admin donors without hiding registrations pending approval', functio
     $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id, 'name' => 'Review Donor', 'status' => 0]);
     BloodDonor::factory()->create(['blood_group_id' => $group->id, 'name' => 'Other Donor']);
 
-    $this->actingAs($admin)->getJson(route('api.v1.admin.blood-donors.index', ['q' => 'Review']))->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $donor->id);
+    $this->actingAs($admin)->getJson(route('admin.blood-donors.index', ['q' => 'Review']))->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $donor->id);
 });
 
 it('grants admin access to an existing user through the explicit command', function () {
@@ -364,4 +365,10 @@ it('restores both deletion markers without making the record inaccessible', func
 
     $this->assertDatabaseHas('blood_donors', ['id' => $donor->id, 'deleted' => 0, 'deleted_at' => null, 'deleted_by' => null]);
     expect(BloodDonor::find($donor->id))->not->toBeNull();
+});
+
+it('returns not found for the removed admin activity endpoint', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+
+    $this->actingAs($admin)->getJson('/admin/activity-logs')->assertNotFound();
 });

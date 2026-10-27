@@ -16,7 +16,6 @@ class DatabaseSeeder extends Seeder
                 BloodRequestStatusLogSeeder::class,
                 DonorAvailabilityLogSeeder::class,
                 DonorContactRequestSeeder::class,
-                ActivityLogSeeder::class,
             ]);
         }
     }

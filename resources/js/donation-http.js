@@ -1,3 +1,4 @@
+export const t = key => window.donationTranslations?.[key] ?? key;
 export const routes = window.donationRoutes;
 export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 export async function request(url, options = {}) {
@@ -8,8 +9,8 @@ export async function request(url, options = {}) {
     if (response.status === 204) return null;
     const data = await response.json();
     if (!response.ok) {
-        if (response.status === 401) throw new Error('অ্যাডমিন লগইন করুন।');
-        throw new Error(data.errors ? Object.values(data.errors).flat().join('\n') : data.message || 'অনুরোধ ব্যর্থ হয়েছে।');
+        if (response.status === 401) throw new Error(t("Please log in as administrator."));
+        throw new Error(data.errors ? Object.values(data.errors).flat().join('\n') : data.message || t("The request failed."));
     }
     return data;
 }

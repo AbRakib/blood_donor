@@ -15,15 +15,16 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 uses(LazilyRefreshDatabase::class);
 
-it('seeds every domain model without duplicating records on subsequent runs', function () {
+it('seeds active domain models without duplicating records on subsequent runs', function () {
     $this->freezeTime();
     $this->seed(DatabaseSeeder::class);
     $this->seed(DatabaseSeeder::class);
 
-    foreach ([BloodGroup::class, BloodDonor::class, BloodRequest::class, RequestDonor::class, BloodDonation::class, BloodRequestStatusLog::class, DonorAvailabilityLog::class, DonorContactRequest::class, ActivityLog::class] as $model) {
+    foreach ([BloodGroup::class, BloodDonor::class, BloodRequest::class, RequestDonor::class, BloodDonation::class, BloodRequestStatusLog::class, DonorAvailabilityLog::class, DonorContactRequest::class] as $model) {
         $this->assertDatabaseCount((new $model)->getTable(), 8);
     }
 
+    $this->assertDatabaseCount('activity_logs', 0);
     $this->assertDatabaseCount('users', 1);
     $this->assertDatabaseCount('districts', 1);
     $this->assertDatabaseCount('upazilas', 1);

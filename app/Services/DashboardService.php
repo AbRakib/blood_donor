@@ -14,9 +14,20 @@ class DashboardService
     public function overview(): array
     {
         $months = [];
+
         for ($offset = 5; $offset >= 0; $offset--) {
             $start = now()->startOfMonth()->subMonths($offset);
-            $months[] = ['month' => $start->format('Y-m'), 'donations' => BloodDonation::query()->active()->where('donation_status', 'verified')->whereBetween('donated_at', [$start->toDateString(), $start->copy()->endOfMonth()->toDateString()])->count()];
+            $months[] = [
+                'month' => $start->format('Y-m'),
+                'donations' => BloodDonation::query()
+                    ->active()
+                    ->where('donation_status', 'verified')
+                    ->whereBetween('donated_at', [
+                        $start->toDateString(),
+                        $start->copy()->endOfMonth()->toDateString(),
+                    ])
+                    ->count(),
+            ];
         }
 
         return array_merge($this->reports->summary(), ['monthly_donations' => $months]);
@@ -31,6 +42,11 @@ class DashboardService
     /** @return Collection<int, BloodRequest> */
     public function recentRequests(): Collection
     {
-        return BloodRequest::query()->active()->with('bloodGroup')->orderByDesc('id')->limit(10)->get();
+        return BloodRequest::query()
+            ->active()
+            ->with('bloodGroup')
+            ->orderByDesc('id')
+            ->limit(10)
+            ->get();
     }
 }
