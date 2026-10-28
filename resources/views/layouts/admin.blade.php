@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>@yield('title') | {{ __('Manda Blood Donation Program') }}</title>
-@vite('resources/css/app.css')
+<link rel="stylesheet" href="{{ asset('build/assets/app-CBsRxY3c.css') }}">
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-@vite('resources/css/dashboard.css')
+<link rel="stylesheet" href="{{ asset('build/assets/dashboard-bGyTxLt8.css') }}">
 @include('partials.translations')
 </head>
 <body data-donation-page="dashboard" data-admin-page="@yield('page', 'dashboard')">
@@ -58,6 +58,6 @@
     'contacts' => route('admin.contact-requests.index'), 'donations' => route('admin.donations.index'),
     'reports' => route('admin.reports.index'), 'settings' => route('admin.settings.index'),
 ]) }};</script>
-@vite('resources/js/app.js')
+<script type="module" src="{{ asset('build/assets/app-B_yrBtlR.js') }}"></script>
 
 </body></html>
