@@ -7,6 +7,47 @@ let groups = [], donors = [], mode = 'register', donorId = null, currentPage = 1
 const statisticsCard = document.getElementById('donorTotal').closest('.card');
 const statisticCounters = new Map();
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+document.querySelectorAll('[data-donor-heading]').forEach(donorHeading => {
+    if (prefersReducedMotion.matches || !('IntersectionObserver' in window)) {
+        return;
+    }
+    const headingObserver = new IntersectionObserver(entries => {
+        if (!entries.some(entry => entry.isIntersecting)) {
+            return;
+        }
+        headingObserver.disconnect();
+        const parts = [...donorHeading.querySelectorAll('[data-typing-part]')].map(element => ({
+            element,
+            characters: [...new Intl.Segmenter(document.documentElement.lang, {granularity: 'grapheme'}).segment(element.textContent)].map(segment => segment.segment),
+        }));
+        donorHeading.style.minHeight = `${donorHeading.offsetHeight}px`;
+        parts.forEach(part => { part.element.textContent = ''; });
+        donorHeading.classList.add('is-typing');
+        let partIndex = 0, characterIndex = 0;
+        function typeHeading() {
+            if (prefersReducedMotion.matches) {
+                parts.forEach(part => { part.element.textContent = part.characters.join(''); });
+                donorHeading.classList.remove('is-typing');
+                donorHeading.style.minHeight = '';
+                return;
+            }
+            const part = parts[partIndex];
+            part.element.textContent += part.characters[characterIndex++];
+            if (characterIndex === part.characters.length) {
+                partIndex++;
+                characterIndex = 0;
+            }
+            if (partIndex < parts.length) {
+                window.setTimeout(typeHeading, 85);
+            } else {
+                donorHeading.classList.remove('is-typing');
+                donorHeading.style.minHeight = '';
+            }
+        }
+        typeHeading();
+    }, {threshold: 0.5});
+    headingObserver.observe(donorHeading);
+});
 const counterFormatter = new Intl.NumberFormat(document.documentElement.lang, {useGrouping: false});
 function animateStatistic(element) {
     const counter = statisticCounters.get(element);
@@ -51,7 +92,8 @@ prepareStatistic(staticStatistics[0], 24, `/${counterFormatter.format(7)}`, stat
 prepareStatistic(staticStatistics[1], 100, '%', staticStatistics[1].textContent);
 for (const id of ['blood', 'area']) enhanceSearchSelect(document.getElementById(id));
 const form = document.getElementById('form');
-const locationContainer = document.createElement('div'); locationContainer.innerHTML = locationFields(); form.elements.area.after(locationContainer);
+const locationContainer = document.createElement('div'); locationContainer.innerHTML = locationFields(); form.elements.area.closest('label').after(locationContainer);
+locationContainer.className = 'modal-locations';
 const message = document.getElementById('message');
 const grid = document.getElementById('grid');
 const pager = document.createElement('div'); pager.className = 'donor-pagination'; grid.after(pager);
@@ -59,17 +101,22 @@ function showMessage(text) {message.textContent = text; message.classList.remove
 function showModal(type, index = -1) {
     mode = type; donorId = donors[index]?.id; form.reset(); message.classList.add('hidden');
     locationContainer.hidden = type !== 'register';
+    form.querySelectorAll('[data-registration-field]').forEach(field => {field.hidden = type !== 'register';});
+    form.querySelector('[data-contact-field]').hidden = type === 'register';
     locationContainer.querySelectorAll('select').forEach(field => {field.disabled = type !== 'register';});
     if (type === 'register') bindLocations(form).catch(error => showMessage(error.message));
     document.getElementById('modalTitle').textContent = type === 'register' ? t("Donor registration") : t("Contact requests");
-    document.getElementById('modalDesc').textContent = type === 'register' ? t("Registration will be published after administrator verification.") : `${donors[index]?.name || ''} — ${t("An administrator will review your request.")}`;
+    document.getElementById('modalDesc').textContent = type === 'register' ? '' : `${donors[index]?.name || ''} — ${t("An administrator will review your request.")}`;
+    document.getElementById('modalDesc').hidden = type === 'register';
     for (const field of ['blood_group_id', 'area']) {
         form.elements[field].hidden = type !== 'register'; form.elements[field].disabled = type !== 'register';
     }
     form.elements.message.hidden = type === 'register'; form.elements.message.disabled = type === 'register'; form.elements.message.required = type !== 'register';
     document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    form.elements.name.focus();
 }
-function hideModal() {document.getElementById('modal').classList.add('hidden'); document.getElementById('modal').classList.remove('flex');}
+function hideModal() {document.body.style.overflow = ''; document.getElementById('modal').classList.add('hidden'); document.getElementById('modal').classList.remove('flex');}
 async function render(page = 1) {
     currentPage = page; const sequence = ++searchSequence;
     const params = new URLSearchParams({page, q: document.getElementById('query').value, district_id: document.getElementById('area').value});

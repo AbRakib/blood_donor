@@ -12,10 +12,10 @@ class BloodDonationSeeder extends Seeder
     {
         $this->call(RequestDonorSeeder::class);
 
-        foreach (RequestDonor::whereHas('bloodRequest', fn ($query) => $query->where('patient_name', 'like', 'Demo Patient %'))->get() as $match) {
+        foreach (RequestDonor::with('bloodRequest')->whereHas('bloodRequest', fn ($query) => $query->where('contact_phone', 'like', '017000000%'))->get() as $match) {
             BloodDonation::withoutGlobalScopes()->updateOrCreate(
                 ['blood_request_id' => $match->blood_request_id, 'blood_donor_id' => $match->blood_donor_id],
-                ['donated_at' => today(), 'bags' => 1, 'hospital_name' => 'Manda Health Complex'],
+                ['donated_at' => today(), 'bags' => 1, 'hospital_name' => $match->bloodRequest->hospital_name],
             );
         }
     }

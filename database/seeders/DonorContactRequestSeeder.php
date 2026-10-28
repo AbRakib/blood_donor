@@ -12,7 +12,7 @@ class DonorContactRequestSeeder extends Seeder
     {
         $this->call(RequestDonorSeeder::class);
 
-        foreach (RequestDonor::whereHas('bloodRequest', fn ($query) => $query->where('patient_name', 'like', 'Demo Patient %'))->get() as $match) {
+        foreach (RequestDonor::whereHas('bloodRequest', fn ($query) => $query->where('contact_phone', 'like', '017000000%'))->get() as $match) {
             DonorContactRequest::withoutGlobalScopes()->updateOrCreate(
                 ['blood_donor_id' => $match->blood_donor_id, 'blood_request_id' => $match->blood_request_id, 'requester_phone' => '01700000100'],
                 ['requester_name' => 'Demo Requester', 'message' => 'Please contact us about this blood request.', 'contact_status' => 'pending'],

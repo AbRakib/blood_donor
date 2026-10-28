@@ -28,9 +28,10 @@
                 <div class="settings-section-body">
                     <h2>{{ __('Branding') }}</h2>
                     <p>{{ __('Upload your logo and site icon. Recommended size: PNG, JPG, WebP or GIF (Max 2 MB).') }}</p>
-                    <div class="settings-fields">
+                    <div class="settings-fields settings-branding-fields">
                         @include('partials.settings-upload', ['name' => 'logo', 'label' => 'Logo (Header)'])
                         @include('partials.settings-upload', ['name' => 'footer_logo', 'label' => 'Footer logo'])
+                        @include('partials.settings-upload', ['name' => 'meta_icon', 'label' => 'Website icon (Favicon)', 'uploadLabel' => 'Click to upload icon'])
                     </div>
                 </div>
             </section>
@@ -44,15 +45,7 @@
                         @include('partials.settings-field', ['name' => 'twitter', 'label' => 'Twitter / X', 'type' => 'url', 'icon' => 'globe', 'placeholder' => 'https://x.com/yourprofile'])
                         @include('partials.settings-field', ['name' => 'instagram', 'label' => 'Instagram', 'type' => 'url', 'icon' => 'camera', 'placeholder' => 'https://instagram.com/yourprofile'])
                         @include('partials.settings-field', ['name' => 'linkedin', 'label' => 'LinkedIn', 'type' => 'url', 'icon' => 'globe', 'placeholder' => 'https://linkedin.com/company/yourpage'])
-                        <div class="field settings-favicon">
-                            <label for="setting-meta_icon">{{ __('Website icon (Favicon)') }}</label>
-                            <div class="settings-input">
-                                <i class="fi fi-rr-picture" aria-hidden="true"></i>
-                                <img data-preview="meta_icon" alt="{{ __('Site icon') }}" @if($setting?->meta_icon_url) src="{{ $setting->meta_icon_url }}" @else hidden @endif>
-                                <input id="setting-meta_icon" name="meta_icon" type="file" accept="image/png,image/jpeg,image/webp,image/gif" aria-describedby="setting-meta_icon-help">
-                            </div>
-                            <small id="setting-meta_icon-help">{{ __('PNG, JPG, WebP or GIF. Maximum 2 MB.') }}</small>
-                        </div>
+
                     </div>
                 </div>
             </section>

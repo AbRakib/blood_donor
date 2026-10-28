@@ -11,7 +11,7 @@
     @include('partials.translations')
 </head>
     <body data-donation-page="home">
-        <div class="bg-[#9f1930] text-white text-center text-sm py-2">
+        <div class="bg-[#9f1930] text-white text-center text-sm py-1">
             <i class="fi fi-rr-heart" aria-hidden="true"></i> {{ __('Donate blood, save lives — stand with humanity') }}
         </div>
         @include('partials.preloader')
@@ -22,7 +22,7 @@
                         <i class="fi fi-rr-heart" aria-hidden="true"></i>
                     </div>
                     <div>
-                        <strong class="text-xl">{{ __('Manda Blood Donation Program') }}</strong>
+                        <strong class="text-xl">{{ $companyName }}</strong>
                         <p class="text-xs text-gray-500">{{ __('A drop of blood, a new life') }}</p>
                     </div>
                 </a>
@@ -46,7 +46,7 @@
             <div class="max-w-7xl mx-auto px-5 py-20 grid md:grid-cols-2 gap-12 items-center">
                 <div class="reveal">
                     <span class="bg-red-50 red rounded-full px-4 py-2 font-semibold text-sm"><i class="fi fi-rr-heart" aria-hidden="true"></i> {{ __('Together in service of humanity') }}</span>
-                    <h1 class="text-4xl md:text-6xl font-bold leading-tight mt-7">{{ __('Your blood') }} <span class="red">{{ __('Can save') }}</span> {{ __('A precious life') }}</h1>
+                    <h1 data-donor-heading aria-label="{{ __('Your blood') }} {{ __('Can save') }} {{ __('A precious life') }}" class="text-4xl md:text-6xl font-bold leading-tight mt-7"><span data-typing-part aria-hidden="true">{{ __('Your blood') }} </span><span data-typing-part aria-hidden="true" class="red">{{ __('Can save') }}</span><span data-typing-part aria-hidden="true"> {{ __('A precious life') }}</span></h1>
                     <p class="text-gray-600 text-lg leading-8 my-7">{{ __('Connecting blood donors in Manda and nearby areas. Find a suitable donor when you need one.') }}</p>
                     <div class="flex flex-wrap gap-3">
                         <a class="btn" href="#donors"><i class="fi fi-rr-search" aria-hidden="true"></i> {{ __('Find donors') }} <span aria-hidden="true">→</span></a>
@@ -114,7 +114,7 @@
         <section id="donors" class="max-w-7xl mx-auto px-5 py-20">
             <div class="text-center mb-9">
                 <span class="red font-bold">{{ __('Donor directory') }}</span>
-                <h2 class="text-3xl md:text-4xl font-bold mt-3">{{ __('Find the help') }} <span class="red">{{ __('Find donors') }}</span></h2>
+                <h2 data-donor-heading aria-label="{{ __('Find the help') }} {{ __('Find donors') }}" class="text-3xl md:text-4xl font-bold mt-3"><span data-typing-part aria-hidden="true">{{ __('Find the help') }} </span><span data-typing-part aria-hidden="true" class="red">{{ __('Find donors') }}</span></h2>
                 <p class="text-gray-500 mt-3">{{ __('Search easily by blood group and area') }}</p>
             </div>
             <div class="card grid md:grid-cols-4 gap-4">
@@ -149,9 +149,10 @@
             <div class="max-w-7xl mx-auto px-5 grid md:grid-cols-2 gap-10 items-center">
                 <div>
                     <span class="red font-bold">{{ __('Our mission') }}</span>
-                    <h2 class="text-4xl font-bold my-5">{{ __('So a lack of blood') }} <span class="red">{{ __('Let no life stop') }}</span></h2>
+                    <h2 data-donor-heading aria-label="{{ __('So a lack of blood') }} {{ __('Let no life stop') }}" class="text-4xl font-bold my-5"><span data-typing-part aria-hidden="true">{{ __('So a lack of blood') }} </span><span data-typing-part aria-hidden="true" class="red">{{ __('Let no life stop') }}</span></h2>
                     <p class="text-gray-600 leading-8">{{ __('Manda Blood Donation Program is a volunteer platform for donor registration, searching by blood group and area, and consent-based contact.') }}</p>
                     <button class="btn mt-6" onclick="showModal('register')">
+                        <i class="fi fi-rr-user-add" aria-hidden="true"></i>
                         {{ __('Register') }}
                     </button>
                 </div>
@@ -221,19 +222,18 @@
             <div class="border-t border-white/10 text-center text-gray-400 py-5 text-sm">
                 © {{ __('2026 Manda Blood Donation Program') }}
             </div>
-        <div class="px-5 pb-4 text-center"><a href="https://www.flaticon.com/uicons" class="icon-credit" target="_blank" rel="noopener noreferrer">UIcons by Flaticon</a></div>
         </footer>
-        <div id="modal" class="hidden fixed inset-0 z-50 bg-black/70 p-4 items-center justify-center">
-            <div role="dialog" aria-modal="true" aria-labelledby="modalTitle" class="bg-white rounded-2xl p-7 max-w-md w-full relative">
-                <button aria-label="{{ __('Close') }}" onclick="hideModal()" class="absolute right-5 top-4 text-2xl">
+        <div id="modal" class="donation-modal hidden fixed inset-0 z-50 p-4 items-center justify-center">
+            <div role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc" class="donation-modal-panel">
+                <button aria-label="{{ __('Close') }}" onclick="hideModal()" class="donation-modal-close">
                     ×
                 </button>
                 <h2 id="modalTitle" class="text-2xl font-bold mb-3">{{ __('Donor registration') }}</h2>
                 <p id="modalDesc" class="text-gray-500 text-sm mb-5">{{ __('Complete the details below') }}</p>
-                <form id="form" class="space-y-3">
-                    <input name="name" required class="field" placeholder="{{ __('Full name') }}">
-                    <input name="phone" required class="field" placeholder="{{ __('Mobile number') }}" inputmode="tel">
-                    <select name="blood_group_id" required class="field">
+                <form id="form" class="donation-modal-form">
+                    <label class="modal-field"><span>{{ __('Full name') }}</span><input name="name" required class="field" autocomplete="name" placeholder="{{ __('Full name') }}"></label>
+                    <label class="modal-field"><span>{{ __('Mobile number') }}</span><input name="phone" type="tel" required class="field" autocomplete="tel" placeholder="{{ __('Mobile number') }}" inputmode="tel"></label>
+                    <label class="modal-field" data-registration-field><span>{{ __('Blood group') }}</span><select name="blood_group_id" required class="field">
                         <option value="">{{ __('Blood group') }}</option>
                         <option>A+</option>
                         <option>A-</option>
@@ -243,10 +243,10 @@
                         <option>AB-</option>
                         <option>O+</option>
                         <option>O-</option>
-                    </select>
-                    <input name="area" required class="field" placeholder="{{ __('Address / area') }}">
-<textarea name="message" class="field" placeholder="{{ __('Reason for contact') }}" hidden></textarea>
-                    <label class="text-sm flex gap-2">
+                    </select></label>
+                    <label class="modal-field" data-registration-field><span>{{ __('Address / area') }}</span><input name="area" required class="field" autocomplete="street-address" placeholder="{{ __('Address / area') }}"></label>
+<label class="modal-field" data-contact-field hidden><span>{{ __('Reason for contact') }}</span><textarea name="message" class="field" placeholder="{{ __('Reason for contact') }}" hidden></textarea></label>
+                    <label class="modal-consent">
                         <input name="consent_to_contact" value="1" required type="checkbox">
                         {{ __('I consent to data collection and contact requests.') }}
                     </label>

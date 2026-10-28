@@ -14,8 +14,15 @@ class BloodRequestSeeder extends Seeder
 
         foreach (BloodDonor::where('phone', 'like', '017000000%')->get() as $donor) {
             BloodRequest::withoutGlobalScopes()->updateOrCreate(
-                ['contact_phone' => $donor->phone, 'patient_name' => 'Demo Patient '.$donor->id],
-                ['blood_group_id' => $donor->blood_group_id, 'contact_name' => $donor->name, 'hospital_name' => 'Manda Health Complex', 'bags_needed' => 1, 'needed_at' => now()->addDay(), 'urgency' => 'normal', 'request_status' => 'pending'],
+                ['contact_phone' => $donor->phone],
+                BloodRequest::factory()->raw([
+                    'blood_group_id' => $donor->blood_group_id,
+                    'district_id' => $donor->district_id,
+                    'upazila_id' => $donor->upazila_id,
+                    'union_id' => $donor->union_id,
+                    'contact_name' => $donor->name,
+                    'contact_phone' => $donor->phone,
+                ]),
             );
         }
     }

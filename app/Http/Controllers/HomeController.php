@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use Illuminate\Contracts\View\View;
 
 class HomeController extends Controller
@@ -13,6 +14,9 @@ class HomeController extends Controller
             'title' => __('Manda Blood Donation Program'),
         ];
 
-        return view('home')->with(compact('common_data'));
+        $companyName = trim((string) Setting::query()->orderBy('id')->value('name'));
+        $companyName = $companyName !== '' ? $companyName : 'Help Service';
+
+        return view('home')->with(compact('common_data', 'companyName'));
     }
 }

@@ -13,7 +13,7 @@
 @php($currentPage = trim($__env->yieldContent('page', 'dashboard')))
 <div class="app">
 <aside class="side" id="sidebar">
- <div class="brand"><div class="brand-logo"><i class="fi fi-rr-heart" aria-hidden="true"></i></div><div><strong>{{ $sidebarName }}</strong><small>BLOOD DONATION</small></div></div>
+ <div class="brand"><img class="sidebar-brand-image" src="{{ asset('images/manda-blood-donation-logo.png') }}" alt="Manda Blood Donation Program"></div>
  
  <nav class="nav" id="nav">
     <a href="{{ route('dashboard') }}" @class(['active' => $currentPage === 'dashboard']) @if($currentPage === 'dashboard') aria-current="page" @endif><i class="fi fi-rr-home" aria-hidden="true"></i> {{ __('Dashboard') }}</a>
@@ -29,7 +29,6 @@
     <a href="{{ route('admin.settings.index') }}" @class(['active' => $currentPage === 'settings']) @if($currentPage === 'settings') aria-current="page" @endif><i class="fi fi-rr-settings-sliders" aria-hidden="true"></i> {{ __('Settings') }}</a>
  </nav>
  <div class="sidebar-bottom"><div class="adminmini"><div class="avatar">AD</div><div><strong>{{ __('Admin panel') }}</strong><small>{{ __('Super admin') }}</small></div><i class="fi fi-rr-angle-double-small-down" aria-hidden="true" style="margin-left:auto;color:#99a3ad;width:15px"></i></div></div>
- <a href="https://www.flaticon.com/uicons" class="icon-credit" target="_blank" rel="noopener noreferrer">UIcons by Flaticon</a>
 </aside>
 <main class="main"><header class="topbar"><div style="display:flex;align-items:center;gap:14px"><button class="iconbtn mobile-menu" aria-label="{{ __('Main menu') }}" onclick="if(window.innerWidth > 950){document.body.classList.toggle('sidebar-collapsed')}else{document.getElementById('sidebar').classList.toggle('open')}" style="border:0;background:none"><i class="fi fi-rr-menu-burger" aria-hidden="true"></i></button><label class="search top-search"><i class="fi fi-rr-search" aria-hidden="true"></i><input id="globalSearch" placeholder="{{ __('Search by name, area or mobile') }}..." aria-label="{{ __('Search by name, area or mobile') }}"></label><div class="breadcrumbs" hidden>{{ __('Page /') }} <span id="crumb">@yield('title')</span></div></div><div class="top-actions">@include('partials.language-switcher')<div class="date-display"><i class="fi fi-rr-calendar" aria-hidden="true"></i><div><span id="today"></span><small id="weekday"></small></div></div><button class="iconbtn" onclick="showToast('{{ __('No new notifications') }}')"><i class="fi fi-rr-bell" aria-hidden="true"></i><span class="dot"></span></button><div class="userline"><div class="avatar">AD</div><div><b>{{ auth()->user()->name }}</b><small>{{ __('Administrator') }}</small></div></div><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="btn" aria-label="{{ __('Log out') }}"><i class="fi fi-rr-sign-out-alt" aria-hidden="true"></i> {{ __('Log out') }}</button></form></div></header>
 <div class="content">
