@@ -1,13 +1,15 @@
+import {enhanceSearchSelect} from './donation-select.js';
 import {showSuccess, showError} from './donation-alerts.js';
 import {t} from './donation-http.js';
 import {locationFields, bindLocations} from './donation-locations.js';
 import {routes, request, send, escapeHtml as esc} from './donation-http.js';
 let groups = [], donors = [], mode = 'register', donorId = null, currentPage = 1, searchSequence = 0;
+for (const id of ['blood', 'area']) enhanceSearchSelect(document.getElementById(id));
 const form = document.getElementById('form');
 const locationContainer = document.createElement('div'); locationContainer.innerHTML = locationFields(); form.elements.area.after(locationContainer);
 const message = document.getElementById('message');
 const grid = document.getElementById('grid');
-const pager = document.createElement('div'); grid.after(pager);
+const pager = document.createElement('div'); pager.className = 'donor-pagination'; grid.after(pager);
 function showMessage(text) {message.textContent = text; message.classList.remove('hidden');}
 function showModal(type, index = -1) {
     mode = type; donorId = donors[index]?.id; form.reset(); message.classList.add('hidden');
@@ -33,7 +35,10 @@ async function render(page = 1) {
         if (sequence !== searchSequence) return;
         donors = result.data;
         document.getElementById('result').textContent = `${result.meta.total} ${t("people found")}`;
-        grid.innerHTML = donors.map((donor, index) => `<article class="card"><div class="red text-2xl font-bold">${esc(donor.blood_group)}</div><h3 class="font-bold text-xl mt-5">${esc(donor.name)}</h3><p class="text-gray-500">${esc([donor.union, donor.upazila, donor.district].filter(Boolean).join(', ') || t("No location information"))}</p><button data-contact="${index}" class="btn mt-4">${t("Contact requests")}</button></article>`).join('') || t("<p>No donors found.</p>");
+        grid.innerHTML = donors.map((donor, index) => {
+            const initials = donor.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('');
+            return `<article class="card"><div class="donor-card-top"><span class="blood-badge">${esc(donor.blood_group)}</span><span class="availability ${donor.is_available ? '' : 'unavailable'}">${t(donor.is_available ? "Available" : "Unavailable")}</span></div><div class="donor-details"><span class="donor-avatar" aria-hidden="true">${esc(initials)}</span><div><h3>${esc(donor.name)}</h3><p>${esc([donor.union, donor.upazila, donor.district].filter(Boolean).join(', ') || t("No location information"))}</p></div></div><button data-contact="${index}" class="contact-button"><i class="fi fi-rr-paper-plane" aria-hidden="true"></i><span>${t("Contact requests")}</span><span aria-hidden="true">›</span></button></article>`;
+        }).join('') || t("<p>No donors found.</p>");
         pager.innerHTML = `<button class="btn" data-page="${page-1}" ${page <= 1 ? 'disabled' : ''}>${t("Previous page")}</button> ${page} / ${result.meta.last_page} <button class="btn" data-page="${page+1}" ${page >= result.meta.last_page ? 'disabled' : ''}>${t("Next page")}</button>`;
     } catch (error) {grid.textContent = error.message;}
 }
@@ -51,6 +56,7 @@ form.addEventListener('submit', async event => {
 let timer;
 for (const id of ['query', 'blood', 'area']) document.getElementById(id).addEventListener(id === 'query' ? 'input' : 'change', () => {clearTimeout(timer); timer = setTimeout(() => render(), 250);});
 document.getElementById('searchBtn').addEventListener('click', () => render());
+document.addEventListener('keydown', event => {if (event.key === 'Escape') hideModal();});
 document.getElementById('modal').addEventListener('click', event => {if (event.target.id === 'modal') hideModal();});
 Object.assign(window, {showModal, hideModal});
 try {

@@ -130,10 +130,10 @@ async function loadGroups() {
     }).join('') + (groups.length ? '' : `<tr><td colspan="5">${t("No blood groups.")}</td></tr>`) + '</tbody></table></div>';
 }
 async function selectPage(page) {
-    $('headingActions').hidden = ['dashboard','requests','groups'].includes(page);
+    $('headingActions').hidden = ['dashboard','requests','groups','donations'].includes(page);
     $('requestHeadingActions').hidden = page !== 'requests';
-    $('pageSubtitle').hidden = ['donors','requests','groups'].includes(page);
-    $('stats').style.display = ['donors','requests','groups'].includes(page) ? 'none' : '';
+    $('pageSubtitle').hidden = ['donors','requests','groups','donations'].includes(page);
+    $('stats').style.display = ['donors','requests','groups','donations'].includes(page) ? 'none' : '';
     $('exportDonors').style.display = page === 'donors' ? 'none' : '';
     $('pageTitle').textContent = sections[page]; $('crumb').textContent = sections[page];
     document.querySelectorAll('.nav button').forEach(button => button.classList.toggle('active',button.dataset.page === page));
