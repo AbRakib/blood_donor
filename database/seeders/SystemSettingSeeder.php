@@ -10,7 +10,13 @@ class SystemSettingSeeder extends Seeder
     public function run(): void
     {
         foreach (['site_name' => 'মান্দা রক্তদান', 'contact_email' => ''] as $key => $value) {
-            SystemSetting::withoutGlobalScopes()->firstOrCreate(['key' => $key], ['value' => $value]);
+            $systemSetting = SystemSetting::withoutGlobalScopes()->where('key', $key)->first();
+            if ($systemSetting === null) {
+                $systemSetting = new SystemSetting;
+                $systemSetting->key = $key;
+                $systemSetting->value = $value;
+                $systemSetting->save();
+            }
         }
     }
 }

@@ -13,10 +13,13 @@ class DonorAvailabilityLogSeeder extends Seeder
         $this->call(BloodDonorSeeder::class);
 
         foreach (BloodDonor::where('phone', 'like', '017000000%')->get() as $donor) {
-            DonorAvailabilityLog::withoutGlobalScopes()->updateOrCreate(
-                ['blood_donor_id' => $donor->id, 'reason' => 'Demo availability'],
-                ['was_available' => false, 'is_available' => $donor->is_available],
-            );
+            $donorAvailabilityLog = DonorAvailabilityLog::withoutGlobalScopes()->where('blood_donor_id', $donor->id)->where('reason', 'Demo availability')->first();
+            $donorAvailabilityLog ??= new DonorAvailabilityLog;
+            $donorAvailabilityLog->blood_donor_id = $donor->id;
+            $donorAvailabilityLog->reason = 'Demo availability';
+            $donorAvailabilityLog->was_available = false;
+            $donorAvailabilityLog->is_available = $donor->is_available;
+            $donorAvailabilityLog->save();
         }
     }
 }

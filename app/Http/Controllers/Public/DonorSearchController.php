@@ -3,28 +3,47 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\SearchDonorRequest;
-use App\Http\Requests\StoreDonorContactRequest;
-use App\Http\Resources\PublicDonorResource;
 use App\Models\BloodDonor;
 use App\Models\DonorContactRequest;
-use App\Services\DonorSearchService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class DonorSearchController extends Controller
 {
-    public function index(SearchDonorRequest $request, DonorSearchService $search): AnonymousResourceCollection
+    public function index(Request $request): JsonResponse
     {
-        return PublicDonorResource::collection($search->search($request->validated()));
+        $filters = $request->validate([
+            'blood_group_id' => ['nullable', 'integer', Rule::exists('blood_groups', 'id')->where('status', 1)->where('deleted', 0)->whereNull('deleted_at')],
+            'district_id' => ['nullable', 'required_with:upazila_id', 'integer', Rule::exists('districts', 'id')->where('status', 1)->where('deleted', 0)->whereNull('deleted_at')],
+            'upazila_id' => ['nullable', 'required_with:union_id', 'integer', Rule::exists('upazilas', 'id')->where('district_id', $request->input('district_id'))->where('status', 1)->where('deleted', 0)->whereNull('deleted_at')],
+            'union_id' => ['nullable', 'integer', Rule::exists('unions', 'id')->where('upazila_id', $request->input('upazila_id'))->where('status', 1)->where('deleted', 0)->whereNull('deleted_at')],
+            'q' => ['nullable', 'string', 'max:100'],
+            'area' => ['nullable', 'string', 'max:255'],
+            'page' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        return $this->collectionResponse($this->availableDonors($this->donorQuery($filters))->with(['bloodGroup', 'district', 'upazila', 'union'])->orderBy('id')->paginate(12), $this->formatPublicDonor(...));
     }
 
-    public function contact(StoreDonorContactRequest $request): JsonResponse
+    public function contact(Request $request): JsonResponse
     {
-        DB::transaction(function () use ($request): void {
-            $donor = BloodDonor::query()->active()->where('is_available', true)->where('consent_to_contact', true)->lockForUpdate()->findOrFail($request->integer('blood_donor_id'));
-            DonorContactRequest::create(array_merge($request->validated(), ['blood_donor_id' => $donor->id]));
+        $data = $request->validate([
+            'requester_phone' => ['required', 'string', 'regex:/^(?:\+?88)?01[3-9][0-9]{8}$/'],
+            'blood_donor_id' => ['required', 'integer', Rule::exists('blood_donors', 'id')->where('status', 1)->where('deleted', 0)->whereNull('deleted_at')->where('is_available', true)->where('consent_to_contact', true)],
+            'requester_name' => ['required', 'string', 'max:255'],
+            'message' => ['required', 'string', 'max:2000'],
+        ]);
+
+        DB::transaction(function () use ($data): void {
+            $donor = BloodDonor::query()->active()->where('is_available', true)->where('consent_to_contact', true)->lockForUpdate()->findOrFail($data['blood_donor_id']);
+            $contactRequest = new DonorContactRequest;
+            $contactRequest->blood_donor_id = $donor->id;
+            $contactRequest->requester_name = $data['requester_name'];
+            $contactRequest->requester_phone = $data['requester_phone'];
+            $contactRequest->message = $data['message'];
+            $contactRequest->save();
         });
 
         return response()->json(['message' => 'Your contact request has been submitted for admin review.'], 201);

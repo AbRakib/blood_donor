@@ -12,6 +12,11 @@ class SettingSeeder extends Seeder
      */
     public function run(): void
     {
-        Setting::query()->firstOrCreate([], ['status' => 1]);
+        $setting = Setting::query()->first();
+        if ($setting === null) {
+            $setting = new Setting;
+            $setting->status = 1;
+            $setting->save();
+        }
     }
 }

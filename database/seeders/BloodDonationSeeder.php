@@ -13,10 +13,14 @@ class BloodDonationSeeder extends Seeder
         $this->call(RequestDonorSeeder::class);
 
         foreach (RequestDonor::with('bloodRequest')->whereHas('bloodRequest', fn ($query) => $query->where('contact_phone', 'like', '017000000%'))->get() as $match) {
-            BloodDonation::withoutGlobalScopes()->updateOrCreate(
-                ['blood_request_id' => $match->blood_request_id, 'blood_donor_id' => $match->blood_donor_id],
-                ['donated_at' => today(), 'bags' => 1, 'hospital_name' => $match->bloodRequest->hospital_name],
-            );
+            $bloodDonation = BloodDonation::withoutGlobalScopes()->where('blood_request_id', $match->blood_request_id)->where('blood_donor_id', $match->blood_donor_id)->first();
+            $bloodDonation ??= new BloodDonation;
+            $bloodDonation->blood_request_id = $match->blood_request_id;
+            $bloodDonation->blood_donor_id = $match->blood_donor_id;
+            $bloodDonation->donated_at = today();
+            $bloodDonation->bags = 1;
+            $bloodDonation->hospital_name = $match->bloodRequest->hospital_name;
+            $bloodDonation->save();
         }
     }
 }

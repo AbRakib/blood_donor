@@ -35,9 +35,13 @@ class CreateAdmin extends Command
 
                 return self::FAILURE;
             }
-            $user = new User(['name' => $this->option('name') ?: 'Administrator', 'email' => $email, 'password' => $password]);
+            $user = new User;
+            $user->name = $this->option('name') ?: 'Administrator';
+            $user->email = $email;
+            $user->password = $password;
         }
-        $user->forceFill(['is_admin' => true])->save();
+        $user->is_admin = true;
+        $user->save();
         $this->info('Administrator access is ready.');
 
         return self::SUCCESS;

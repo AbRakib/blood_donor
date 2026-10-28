@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\BloodDonorResource;
 use App\Models\DonorContactRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +23,7 @@ class DonorContactRequestController extends Controller
             return view('admin.contacts')->with(compact('common_data'));
         }
 
-        return response()->json(DonorContactRequest::with('bloodDonor.bloodGroup')->orderByDesc('id')->paginate(20)->through(fn (DonorContactRequest $contact): array => array_merge($contact->toArray(), ['blood_donor' => new BloodDonorResource($contact->bloodDonor)])));
+        return response()->json(DonorContactRequest::with('bloodDonor.bloodGroup')->orderByDesc('id')->paginate(20)->through(fn (DonorContactRequest $contact): array => array_merge($contact->toArray(), ['blood_donor' => $this->formatBloodDonor($contact->bloodDonor)])));
     }
 
     public function update(Request $request, DonorContactRequest $contactRequest): JsonResponse
@@ -39,7 +38,9 @@ class DonorContactRequestController extends Controller
                 $donor = $contactRequest->bloodDonor()->active()->where('is_available', true)->where('consent_to_contact', true)->first();
                 abort_unless($donor, 422, 'The donor is no longer available for contact.');
             }
-            $contactRequest->update(array_merge($data, ['handled_at' => now()]));
+            $contactRequest->contact_status = $data['contact_status'];
+            $contactRequest->handled_at = now();
+            $contactRequest->save();
 
             return response()->json(['data' => $contactRequest]);
         });

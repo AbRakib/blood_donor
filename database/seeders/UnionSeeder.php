@@ -13,7 +13,12 @@ class UnionSeeder extends Seeder
         $this->call(UpazilaSeeder::class);
         $upazila = Upazila::where('name', 'Manda')->whereHas('district', fn ($query) => $query->where('code', '64'))->firstOrFail();
         foreach (['Prasadpur' => 'প্রসাদপুর', 'Kusumba' => 'কুসুম্বা'] as $name => $nameBn) {
-            Union::withoutGlobalScopes()->updateOrCreate(['upazila_id' => $upazila->id, 'name' => $name], ['name_bn' => $nameBn]);
+            $union = Union::withoutGlobalScopes()->where('upazila_id', $upazila->id)->where('name', $name)->first();
+            $union ??= new Union;
+            $union->upazila_id = $upazila->id;
+            $union->name = $name;
+            $union->name_bn = $nameBn;
+            $union->save();
         }
     }
 }

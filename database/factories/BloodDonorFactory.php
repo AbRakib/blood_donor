@@ -25,8 +25,14 @@ class BloodDonorFactory extends Factory
             'name' => fake('bn_BD')->name($gender),
             'blood_group_id' => function (): int {
                 $name = fake()->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
+                $bloodGroup = BloodGroup::withoutGlobalScopes()->where('name', $name)->first();
+                if ($bloodGroup === null) {
+                    $bloodGroup = new BloodGroup;
+                    $bloodGroup->name = $name;
+                    $bloodGroup->save();
+                }
 
-                return BloodGroup::withoutGlobalScopes()->firstOrCreate(['name' => $name])->id;
+                return $bloodGroup->id;
             },
             'phone' => fake()->unique()->numerify(fake()->randomElement(['013', '014', '015', '016', '017', '018', '019']).'########'),
             'area' => $area,

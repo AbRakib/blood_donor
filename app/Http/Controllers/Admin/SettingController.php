@@ -59,7 +59,20 @@ class SettingController extends Controller
             }
             $setting = DB::transaction(function () use ($data): Setting {
                 $setting = Setting::query()->orderBy('id')->lockForUpdate()->first() ?? new Setting;
-                $setting->fill($data)->save();
+                $data += $setting->only(['name', 'email', 'phone', 'address', 'logo', 'footer_logo', 'meta_icon', 'facebook', 'twitter', 'instagram', 'linkedin', 'status']);
+                $setting->name = $data['name'];
+                $setting->email = $data['email'];
+                $setting->phone = $data['phone'];
+                $setting->address = $data['address'];
+                $setting->logo = $data['logo'];
+                $setting->footer_logo = $data['footer_logo'];
+                $setting->meta_icon = $data['meta_icon'];
+                $setting->facebook = $data['facebook'];
+                $setting->twitter = $data['twitter'];
+                $setting->instagram = $data['instagram'];
+                $setting->linkedin = $data['linkedin'];
+                $setting->status = $data['status'];
+                $setting->save();
 
                 return $setting->refresh();
             });
@@ -85,7 +98,11 @@ class SettingController extends Controller
     public function update(Request $request, SystemSetting $systemSetting): JsonResponse
     {
         $data = $request->validate(['value' => ['nullable', 'string', 'max:5000']]);
-        DB::transaction(fn () => $systemSetting->update($data));
+        DB::transaction(function () use ($systemSetting, $data): void {
+            $data += $systemSetting->only(['value']);
+            $systemSetting->value = $data['value'];
+            $systemSetting->save();
+        });
 
         return response()->json(['data' => $systemSetting]);
     }

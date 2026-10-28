@@ -13,10 +13,13 @@ class ActivityLogSeeder extends Seeder
         $this->call(BloodDonorSeeder::class);
 
         foreach (BloodDonor::where('phone', 'like', '017000000%')->get() as $donor) {
-            ActivityLog::withoutGlobalScopes()->updateOrCreate(
-                ['subject_type' => $donor->getTable(), 'subject_id' => $donor->id, 'action' => 'created'],
-                ['user_id' => null],
-            );
+            $activityLog = ActivityLog::withoutGlobalScopes()->where('subject_type', $donor->getTable())->where('subject_id', $donor->id)->where('action', 'created')->first();
+            $activityLog ??= new ActivityLog;
+            $activityLog->subject_type = $donor->getTable();
+            $activityLog->subject_id = $donor->id;
+            $activityLog->action = 'created';
+            $activityLog->user_id = null;
+            $activityLog->save();
         }
     }
 }

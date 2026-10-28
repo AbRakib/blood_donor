@@ -11,6 +11,11 @@ class UpazilaSeeder extends Seeder
     public function run(): void
     {
         $this->call(DistrictSeeder::class);
-        Upazila::withoutGlobalScopes()->updateOrCreate(['district_id' => District::where('code', '64')->firstOrFail()->id, 'name' => 'Manda'], ['name_bn' => 'মান্দা']);
+        $upazila = Upazila::withoutGlobalScopes()->where('district_id', District::where('code', '64')->firstOrFail()->id)->where('name', 'Manda')->first();
+        $upazila ??= new Upazila;
+        $upazila->district_id = District::where('code', '64')->firstOrFail()->id;
+        $upazila->name = 'Manda';
+        $upazila->name_bn = 'মান্দা';
+        $upazila->save();
     }
 }

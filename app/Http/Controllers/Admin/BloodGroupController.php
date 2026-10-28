@@ -38,7 +38,12 @@ class BloodGroupController extends Controller
     public function update(Request $request, BloodGroup $bloodGroup): JsonResponse
     {
         $data = $request->validate(['status' => ['sometimes', 'integer', 'in:0,1'], 'sort_order' => ['sometimes', 'integer', 'min:0', 'max:255']]);
-        DB::transaction(fn () => $bloodGroup->update($data));
+        DB::transaction(function () use ($bloodGroup, $data): void {
+            $data += $bloodGroup->only(['status', 'sort_order']);
+            $bloodGroup->status = $data['status'];
+            $bloodGroup->sort_order = $data['sort_order'];
+            $bloodGroup->save();
+        });
 
         return response()->json(['data' => $bloodGroup]);
     }

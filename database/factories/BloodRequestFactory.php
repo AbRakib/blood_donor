@@ -19,7 +19,17 @@ class BloodRequestFactory extends Factory
         $neededAt = now()->addHours(fake()->numberBetween(2, 48));
 
         return [
-            'blood_group_id' => fn (): int => BloodGroup::withoutGlobalScopes()->firstOrCreate(['name' => fake()->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])])->id,
+            'blood_group_id' => function (): int {
+                $name = fake()->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
+                $bloodGroup = BloodGroup::withoutGlobalScopes()->where('name', $name)->first();
+                if ($bloodGroup === null) {
+                    $bloodGroup = new BloodGroup;
+                    $bloodGroup->name = $name;
+                    $bloodGroup->save();
+                }
+
+                return $bloodGroup->id;
+            },
             'patient_name' => fake('bn_BD')->name(),
             'contact_name' => fake('bn_BD')->name(),
             'contact_phone' => fake()->numerify('01'.fake()->numberBetween(3, 9).'########'),

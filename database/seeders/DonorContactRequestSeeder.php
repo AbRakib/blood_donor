@@ -13,10 +13,15 @@ class DonorContactRequestSeeder extends Seeder
         $this->call(RequestDonorSeeder::class);
 
         foreach (RequestDonor::whereHas('bloodRequest', fn ($query) => $query->where('contact_phone', 'like', '017000000%'))->get() as $match) {
-            DonorContactRequest::withoutGlobalScopes()->updateOrCreate(
-                ['blood_donor_id' => $match->blood_donor_id, 'blood_request_id' => $match->blood_request_id, 'requester_phone' => '01700000100'],
-                ['requester_name' => 'Demo Requester', 'message' => 'Please contact us about this blood request.', 'contact_status' => 'pending'],
-            );
+            $donorContactRequest = DonorContactRequest::withoutGlobalScopes()->where('blood_donor_id', $match->blood_donor_id)->where('blood_request_id', $match->blood_request_id)->where('requester_phone', '01700000100')->first();
+            $donorContactRequest ??= new DonorContactRequest;
+            $donorContactRequest->blood_donor_id = $match->blood_donor_id;
+            $donorContactRequest->blood_request_id = $match->blood_request_id;
+            $donorContactRequest->requester_phone = '01700000100';
+            $donorContactRequest->requester_name = 'Demo Requester';
+            $donorContactRequest->message = 'Please contact us about this blood request.';
+            $donorContactRequest->contact_status = 'pending';
+            $donorContactRequest->save();
         }
     }
 }

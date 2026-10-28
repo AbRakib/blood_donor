@@ -42,10 +42,11 @@ abstract class DomainModel extends Model
     protected function runSoftDelete(): void
     {
         $time = $this->freshTimestamp();
-        $this->forceFill([
-            'deleted' => 1, 'deleted_at' => $time, 'deleted_by' => auth()->id(),
-            'updated_at' => $time, 'updated_by' => auth()->id(),
-        ]);
+        $this->deleted = 1;
+        $this->deleted_at = $time;
+        $this->deleted_by = auth()->id();
+        $this->updated_at = $time;
+        $this->updated_by = auth()->id();
         $this->setKeysForSaveQuery($this->newModelQuery())->update([
             'deleted' => 1, 'deleted_at' => $this->fromDateTime($time), 'deleted_by' => $this->deleted_by,
             'updated_at' => $this->fromDateTime($time), 'updated_by' => $this->updated_by,
