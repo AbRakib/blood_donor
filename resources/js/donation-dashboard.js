@@ -9,7 +9,7 @@ const donorMarkup = $('donorForm').innerHTML;
 const currentPageName = document.body.dataset.adminPage || 'dashboard';
 function showToast(text) {return showInfo(text);}
 function closeModal() {$('modalOverlay').classList.remove('show');}
-function modal(title, markup, action) {
+function modal(title, markup, action, options = {}) {
     formSuccessMessage = ({
         [t('New donor')]: t('Donor created successfully.'),
         [t('Edit donor')]: t('Donor updated successfully.'),
@@ -18,7 +18,10 @@ function modal(title, markup, action) {
         [t('Assign donor')]: t('Donor assigned successfully.'),
         [t('Donor response')]: t('Donor response updated successfully.'),
     })[title] || t('Saved successfully.');
+    const modalElement = $('modalOverlay').querySelector('.modal');
+    modalElement.classList.toggle('request-details-modal', Boolean(options.requestDetails));
     $('modalOverlay').querySelector('h2').textContent = title;
+    $('modalOverlay').querySelector('.modal-header p').textContent = options.description || t('Add details with consent. History updates from verified donations.');
     $('donorForm').innerHTML = markup + t("<p id=\"formError\" role=\"alert\" style=\"color:#c92d3b;white-space:pre-line\"></p><div class=\"modal-actions\"><button type=\"button\" class=\"btn\" onclick=\"closeModal()\">Cancel</button><button type=\"submit\" class=\"btn primary\">Save</button></div>");
     formAction = action; $('modalOverlay').classList.add('show');
 }
@@ -88,6 +91,21 @@ const pageButtons = (meta, action) => `<button data-action="${action}" data-id="
 async function requestDetails(id) {
     const record = (await request(`${routes.requests}/${id}`)).data;
     const open = ['verified','in_progress'].includes(record.request_status);
+    const formatDate = value => value ? new Intl.DateTimeFormat(document.documentElement.lang === 'bn' ? 'bn-BD' : 'en-GB', {timeZone: 'Asia/Dhaka', day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit'}).format(new Date(value)) : t('No information');
+    const statusLabel = status => esc(String(status || t('New')).replaceAll('_', ' '));
+    const initials = record.patient_name.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0]).join('').toLocaleUpperCase();
+    const matchedDonors = record.request_donors.length ? record.request_donors.map(match => {
+        const donor = match.blood_donor || {};
+        const donorInitials = (donor.name || '?').trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0]).join('').toLocaleUpperCase();
+        const actions = open && match.response_status !== 'donated' ? `<div class="request-donor-actions"><button type="button" class="btn" data-action="respond" data-request="${id}" data-id="${match.id}">${t('Update response')}</button><button type="button" class="btn primary" data-action="record-donation" data-request="${id}" data-id="${match.blood_donor_id}">${t('Record donation')}</button></div>` : '';
+        return `<article class="request-donor"><span class="request-avatar" aria-hidden="true">${esc(donorInitials)}</span><div class="request-donor-info"><strong>${esc(donor.name || t('No information'))}</strong><a href="tel:${esc(donor.phone || '')}">${esc(donor.phone || t('No information'))}</a></div><span class="request-response request-response--${esc(match.response_status || 'pending')}">${statusLabel(match.response_status || 'pending')}</span>${actions}</article>`;
+    }).join('') : `<p class="request-empty">${t('No donors have been matched yet.')}</p>`;
+    const statusHistory = record.status_logs.length ? record.status_logs.map(log => `<li><span class="request-timeline-dot" aria-hidden="true"></span><div><strong>${statusLabel(log.to_status)}</strong><p>${statusLabel(log.from_status || t('New'))} → ${statusLabel(log.to_status)}</p><time>${esc(formatDate(log.created_at))}</time></div></li>`).join('') : `<p class="request-empty">${t('No status updates yet.')}</p>`;
+    const donations = record.donations.length ? record.donations.map(donation => `<li><strong>${donation.bags} ${t('bags')}</strong><span>${esc(formatDate(donation.donated_at))}</span></li>`).join('') : `<p class="request-empty">${t('No donations recorded yet.')}</p>`;
+    const markup = `<section class="request-details" aria-label="${t('Request details')}"><div class="request-overview"><span class="request-avatar request-avatar--patient" aria-hidden="true">${esc(initials)}</span><div><p class="request-eyebrow">${t('Patient')}</p><h3>${esc(record.patient_name)}</h3><p class="request-hospital"><i class="fi fi-rr-hospital" aria-hidden="true"></i>${esc(record.hospital_name)}</p></div><div class="request-badges"><span class="status ${['verified','in_progress','completed'].includes(record.request_status) ? '' : 'busy'}">${statusLabel(record.request_status)}</span><span class="request-urgency">${statusLabel(record.urgency)}</span></div></div><dl class="request-facts"><div><dt>${t('Blood group')}</dt><dd><span class="bloodpill">${esc(record.bloodGroup?.name || t('No information'))}</span></dd></div><div><dt>${t('Bags needed')}</dt><dd>${record.bags_needed} ${t('bags')}</dd></div><div><dt>${t('Needed at')}</dt><dd>${esc(formatDate(record.needed_at))}</dd></div><div><dt>${t('Contact')}</dt><dd><strong>${esc(record.contact_name)}</strong><a href="tel:${esc(record.contact_phone)}">${esc(record.contact_phone)}</a></dd></div></dl><section class="request-section"><div class="request-section-heading"><div><h3>${t('Matched donors')}</h3><p>${record.request_donors.length} ${t('donors matched')}</p></div></div><div class="request-donors">${matchedDonors}</div></section><div class="request-history-grid"><section class="request-section"><h3>${t('Status history')}</h3><ol class="request-timeline">${statusHistory}</ol></section><section class="request-section"><h3>${t('Donation history')}</h3><ul class="request-donations">${donations}</ul></section></div></section>`;
+    modal(t('Request details'), markup, async () => {}, {requestDetails: true, description: t('Review request information, matched donors, and progress at a glance.')});
+    $('donorForm').querySelector('[type=submit]').hidden = true;
+    return;
     modal(t("Request details"), `<p>${esc(record.patient_name)} · ${esc(record.hospital_name)} · ${record.bags_needed} ${t("bags ·")} ${esc(record.request_status)} · ${esc(record.urgency)}</p><h3>${t("Matched donors")}</h3>` + record.request_donors.map(match => `<p>${esc(match.blood_donor?.name)} · ${esc(match.blood_donor?.phone)} · ${esc(match.response_status)} ${open && match.response_status !== 'donated' ? `<button type="button" class="btn" data-action="respond" data-request="${id}" data-id="${match.id}">${t("Response")}</button><button type="button" class="btn" data-action="record-donation" data-request="${id}" data-id="${match.blood_donor_id}">${t("Record donation")}</button>` : ''}</p>`).join('') + t("<h3>Status history</h3>") + record.status_logs.map(log => `<p>${esc(log.from_status || t("New"))} → ${esc(log.to_status)} · ${esc(log.created_at)}</p>`).join('') + t("<h3>Donation history</h3>") + record.donations.map(donation => `<p>#${donation.blood_donor_id} · ${esc(donation.donated_at?.slice(0,10))} · ${donation.bags} ${t("bags")}</p>`).join(''), async () => {});
     $('donorForm').querySelector('[type=submit]').hidden = true;
 }
@@ -105,8 +123,18 @@ async function loadContacts(page = 1) {
         return `<tr><td>${result.from + index}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${esc(initials)}</span><strong>${esc(requesterName)}</strong></div></td><td><a class="phone-link" href="tel:${esc(contact.requester_phone || '')}">${esc(contact.requester_phone || t("No information"))}</a></td><td>${esc(contact.blood_donor?.name || t("No information"))}<small>${esc(contact.blood_donor?.phone || '')}</small></td><td>${esc(contact.message || t("No information"))}</td><td><span class="status ${['approved','completed'].includes(contact.contact_status) ? '' : 'busy'}">${esc(t(({pending:'Pending',approved:'Approved',rejected:'Rejected',completed:'Completed'})[contact.contact_status] || contact.contact_status))}</span></td><td class="donor-actions">${actions ? `<details class="row-menu"><summary aria-label="${t("Actions")}"><i class="fi fi-rr-angle-small-down menu-chevron" aria-hidden="true"></i></summary><div>${actions}</div></details>` : '—'}</td></tr>`;
     }).join('');
     $('contactsRows').innerHTML = rows || `<tr><td colspan="7" class="empty">${t("No information")}</td></tr>`;
-    $('contactsTableCount').textContent = `${result.from || 0}–${result.to || 0} / ${result.total}`;
-    $('contactsPagination').innerHTML = pageButtons(result, 'contacts-page');
+    $('contactsTableCount').textContent = `${result.meta.from || 0}–${result.meta.to || 0} / ${result.meta.total}`;
+    $('contactsPagination').innerHTML = pageButtons(result.meta, 'contacts-page');
+    result.data.forEach((contact, index) => {
+        const cell = $('contactsRows').rows[index]?.lastElementChild;
+        if (!cell) return;
+        const preview = document.createElement('button');
+        preview.className = 'row-btn';
+        preview.dataset.action = 'contact-preview';
+        preview.dataset.id = contact.id;
+        preview.textContent = t('Preview');
+        cell.querySelector('.row-menu > div')?.prepend(preview) ?? cell.prepend(preview);
+    });
 }
 async function loadDonations(page = 1) {
     if (!$('donationsRows')) return;
@@ -120,6 +148,16 @@ async function loadDonations(page = 1) {
     $('donationsRows').innerHTML = rows || `<tr><td colspan="7" class="empty">${t("No information")}</td></tr>`;
     $('donationsTableCount').textContent = `${result.meta.from || 0}–${result.meta.to || 0} / ${result.meta.total}`;
     $('donationsPagination').innerHTML = pageButtons(result.meta, 'donations-page');
+    result.data.forEach((donation, index) => {
+        const cell = $('donationsRows').rows[index]?.lastElementChild;
+        if (!cell) return;
+        const preview = document.createElement('button');
+        preview.className = 'row-btn';
+        preview.dataset.action = 'donation-preview';
+        preview.dataset.id = donation.id;
+        preview.textContent = t('Preview');
+        cell.prepend(preview);
+    });
 }
 async function loadGroups() {
     $('groupsRows').innerHTML = groups.map((group, index) => {
@@ -207,8 +245,9 @@ document.addEventListener('click',async event => {
             await send(`${routes.adminDonors}/${id}${action === 'toggle-donor' ? '/availability' : ''}`,action === 'toggle-donor' ? {is_available:!donor.is_available} : {status:donor.status ? 0 : 1},'PATCH'); showSuccess(t(action === 'toggle-donor' ? 'Availability updated successfully.' : donor.status ? 'Donor marked inactive successfully.' : 'Donor approved successfully.')); await loadDonors(currentPage); await refreshSummary();
         }
         if (action === 'delete-donor' && await confirmAction(t("Delete this donor?"))) {await request(`${routes.adminDonors}/${id}`,{method:'DELETE'}); showSuccess(t('Donor deleted successfully.')); await loadDonors(); await refreshSummary();}
-        if (action === 'verify-request') {await send(`${routes.requests}/${id}/verify`,{}); showSuccess(t('Blood request verified successfully.')); await loadRequests(); await refreshSummary();}
+        if (action === 'verify-request') {await send(`${routes.requests}/${id}/verify`,{}); showSuccess(t('Blood request verified successfully.')); await loadRequests(); await refreshSummary(); await requestDetails(id);}
         if (action === 'verify-donation') {await send(`${routes.donations}/${id}/verify`,{}); showSuccess(t('Donation verified successfully.')); await loadDonations(); await loadDonors(); await loadRequests(); await refreshSummary();}
+        if (action === 'donation-preview') {const donation = (await request(`${routes.donations}/${id}`)).data; modal(t("Donation details"), `<p>${esc(donation.bloodDonor?.name)} · ${esc(donation.donated_at?.slice(0,10))} · ${esc(donation.hospital_name || t("No information"))} · ${donation.bags} ${t("bags")}</p><p>${esc(donation.notes || t("No notes."))}</p>`, async () => {}); $('donorForm').querySelector('[type=submit]').hidden = true;}
         if (action === 'assign-donor') {modal(t("Assign donor"),field(t("Donor ID"),'blood_donor_id','number'),async values => {await send(`${routes.requests}/${id}/assign-donor`,values); await loadRequests(); await refreshSummary();});}
         if (action === 'match') {await send(`${routes.requests}/${id}/matches`,{}); showSuccess(t('Donor matching completed successfully.')); await refreshSummary(); await loadRequests(); await requestDetails(id);}
         if (action === 'request-details') await requestDetails(id);
@@ -219,6 +258,7 @@ document.addEventListener('click',async event => {
             const requestId = button.dataset.request;
             modal(t("Donor response"),t("<div class=\"field\"><select name=\"response_status\"><option value=\"contacted\">Contacted</option><option value=\"accepted\">Accepted</option><option value=\"declined\">Declined</option></select></div>")+field(t("Notes"),'notes','text','',false),async values => {await send(`${routes.requests}/${requestId}/matches/${id}`,values,'PATCH');});
         }
+        if (action === 'contact-preview') {const contact = (await request(`${routes.contacts}/${id}`)).data; modal(t("Contact request details"), `<p>${esc(contact.requester_name)} · ${esc(contact.requester_phone)}</p><p>${esc(contact.blood_donor?.name || t("No information"))} · ${esc(contact.contact_status)}</p><p>${esc(contact.message || t("No information"))}</p>`, async () => {}); $('donorForm').querySelector('[type=submit]').hidden = true;}
         if (action.startsWith('contact-')) {await send(`${routes.contacts}/${id}`,{contact_status:action.slice(8)},'PATCH'); showSuccess(t('Contact request status updated successfully.')); await loadContacts();}
         if (action === 'requests-page') await loadRequests(Number(id));
         if (action === 'contacts-page') await loadContacts(Number(id));

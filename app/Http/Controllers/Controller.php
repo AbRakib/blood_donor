@@ -7,6 +7,7 @@ use App\Models\BloodDonor;
 use App\Models\BloodGroup;
 use App\Models\BloodRequest;
 use App\Models\BloodRequestStatusLog;
+use App\Models\DonorContactRequest;
 use App\Models\RequestDonor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -150,6 +151,31 @@ abstract class Controller
 
         if ($donation->relationLoaded('bloodDonor')) {
             $data['bloodDonor'] = $this->formatBloodDonor($donation->bloodDonor);
+        }
+
+        return $data;
+    }
+
+    /** @return array<string, mixed> */
+    protected function formatDonorContactRequest(?DonorContactRequest $contactRequest): array
+    {
+        if ($contactRequest === null) {
+            return [];
+        }
+
+        $data = [
+            'id' => $contactRequest->id,
+            'blood_donor_id' => $contactRequest->blood_donor_id,
+            'blood_request_id' => $contactRequest->blood_request_id,
+            'requester_name' => $contactRequest->requester_name,
+            'requester_phone' => $contactRequest->requester_phone,
+            'message' => $contactRequest->message,
+            'contact_status' => $contactRequest->contact_status,
+            'handled_at' => $contactRequest->handled_at,
+        ];
+
+        if ($contactRequest->relationLoaded('bloodDonor')) {
+            $data['blood_donor'] = $this->formatBloodDonor($contactRequest->bloodDonor);
         }
 
         return $data;

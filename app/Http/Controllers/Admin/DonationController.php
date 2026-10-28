@@ -53,6 +53,11 @@ class DonationController extends Controller
         return $this->modelResponse($this->recordDonation($data)->load('bloodDonor'), $this->formatDonation(...));
     }
 
+    public function show(BloodDonation $donation): JsonResponse
+    {
+        return $this->modelResponse($donation->load('bloodDonor.bloodGroup'), $this->formatDonation(...));
+    }
+
     public function verify(BloodDonation $donation): JsonResponse
     {
         return $this->modelResponse($this->verifyDonation($donation)->load('bloodDonor.bloodGroup'), $this->formatDonation(...));

@@ -31,8 +31,13 @@
 }
 
 @keyframes donation-alert-backdrop {
-    from { background: transparent; }
-    to { background: rgb(24 35 49 / 28%); }
+    from {
+        background: transparent;
+    }
+
+    to {
+        background: rgb(24 35 49 / 28%);
+    }
 }
 
 @keyframes donation-alert-leave {
@@ -48,11 +53,17 @@
 }
 
 @keyframes donation-alert-backdrop-leave {
-    from { background: rgb(24 35 49 / 28%); }
-    to { background: transparent; }
+    from {
+        background: rgb(24 35 49 / 28%);
+    }
+
+    to {
+        background: transparent;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .donation-alert-enter,
     .donation-alert-leave,
     .donation-alert-backdrop-enter,

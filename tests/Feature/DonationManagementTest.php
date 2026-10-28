@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\BloodDonation;
 use App\Models\BloodDonor;
 use App\Models\BloodGroup;
 use App\Models\BloodRequest;
@@ -195,6 +196,19 @@ it('allows admins to approve contact requests and prevents reopening completed r
     $this->patchJson(route('admin.contact-requests.update', $contact), ['contact_status' => 'approved'])->assertUnprocessable();
 
     $this->assertDatabaseHas('donor_contact_requests', ['id' => $contact->id, 'contact_status' => 'completed']);
+});
+
+it('returns individual donations and contact requests for AJAX previews', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $donation = BloodDonation::factory()->create();
+    $contact = DonorContactRequest::factory()->create();
+
+    $this->actingAs($admin)->getJson(route('admin.donations.show', $donation))
+        ->assertOk()->assertJsonPath('data.id', $donation->id)
+        ->assertJsonPath('data.bloodDonor.id', $donation->blood_donor_id);
+    $this->getJson(route('admin.contact-requests.show', $contact))
+        ->assertOk()->assertJsonPath('data.id', $contact->id)
+        ->assertJsonPath('data.blood_donor.id', $contact->blood_donor_id);
 });
 
 it('creates requests with an initial status log and refuses direct fulfillment', function () {

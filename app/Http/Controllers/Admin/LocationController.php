@@ -49,7 +49,7 @@ class LocationController extends Controller
     public function store(Request $request, string $type): JsonResponse
     {
         $modelClass = match ($type) {
-            'districts' => District::class, 'upazilas' => Upazila::class, 'unions' => Union::class, default => abort(404)
+            'districts' => District::class, 'upazilas' => Upazila::class, 'unions' => Union::class,     default => abort(404)
         };
         $rules = ['name' => ['required', 'string', 'max:255'], 'name_bn' => ['nullable', 'string', 'max:255']];
         if ($type === 'districts') {

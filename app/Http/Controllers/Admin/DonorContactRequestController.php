@@ -23,7 +23,12 @@ class DonorContactRequestController extends Controller
             return view('admin.contacts')->with(compact('common_data'));
         }
 
-        return response()->json(DonorContactRequest::with('bloodDonor.bloodGroup')->orderByDesc('id')->paginate(20)->through(fn (DonorContactRequest $contact): array => array_merge($contact->toArray(), ['blood_donor' => $this->formatBloodDonor($contact->bloodDonor)])));
+        return $this->collectionResponse(DonorContactRequest::with('bloodDonor.bloodGroup')->orderByDesc('id')->paginate(20), $this->formatDonorContactRequest(...));
+    }
+
+    public function show(DonorContactRequest $contactRequest): JsonResponse
+    {
+        return $this->modelResponse($contactRequest->load('bloodDonor.bloodGroup'), $this->formatDonorContactRequest(...));
     }
 
     public function update(Request $request, DonorContactRequest $contactRequest): JsonResponse
