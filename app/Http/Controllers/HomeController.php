@@ -8,6 +8,11 @@ class HomeController extends Controller
 {
     public function index(): View
     {
-        return view('home');
+        $common_data = (object) [
+            'page_title' => __('Manda Blood Donation Program'),
+            'title' => __('Manda Blood Donation Program'),
+        ];
+
+        return view('home')->with(compact('common_data'));
     }
 }

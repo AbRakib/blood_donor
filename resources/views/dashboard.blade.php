@@ -1,52 +1,10 @@
-<!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ __('Dashboard') }} | {{ __('Manda Blood Donation Program') }}</title>
-@vite('resources/css/app.css')
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-@vite('resources/css/dashboard.css')
-@include('partials.translations')
-</head>
-<body data-donation-page="dashboard">
-<div class="app">
-<aside class="side" id="sidebar">
- <div class="brand"><div class="brand-logo"><i class="fi fi-rr-heart" aria-hidden="true"></i></div><div><strong>{{ __('Blood Donation') }}</strong><small>BLOOD DONATION</small></div></div>
- 
- <nav class="nav" id="nav">
-  <button class="active" data-page="dashboard"><i class="fi fi-rr-home" aria-hidden="true"></i> {{ __('Dashboard') }}</button>
-  <button data-page="donors"><i class="fi fi-rr-users" aria-hidden="true"></i> {{ __('Donor list') }}</button>
-  <button data-page="requests"><i class="fi fi-rr-clipboard-list" aria-hidden="true"></i> {{ __('Blood requests') }} <span class="count" id="openRequestCount">{{ __('0') }}</span></button>
-  <button data-page="groups"><i class="fi fi-rr-blood" aria-hidden="true"></i> {{ __('Blood group') }}</button>
- </nav>
- <div class="section-label" style="margin-top:26px">{{ __('Management') }}</div>
- <nav class="nav"><button data-page="reports"><i class="fi fi-rr-chart-histogram" aria-hidden="true"></i> {{ __('Reports and statistics') }}</button><button data-page="settings"><i class="fi fi-rr-settings-sliders" aria-hidden="true"></i> {{ __('Settings') }}</button></nav>
- <div class="sidebar-bottom"><div class="adminmini"><div class="avatar">AD</div><div><strong>{{ __('Admin panel') }}</strong><small>{{ __('Super admin') }}</small></div><i class="fi fi-rr-angle-double-small-down" aria-hidden="true" style="margin-left:auto;color:#99a3ad;width:15px"></i></div></div>
- <a href="https://www.flaticon.com/uicons" class="icon-credit" target="_blank" rel="noopener noreferrer">UIcons by Flaticon</a>
-</aside>
-<main class="main"><header class="topbar"><div style="display:flex;align-items:center;gap:14px"><button class="iconbtn mobile-menu" aria-label="{{ __('Main menu') }}" onclick="if(window.innerWidth > 950){document.body.classList.toggle('sidebar-collapsed')}else{document.getElementById('sidebar').classList.toggle('open')}" style="border:0;background:none"><i class="fi fi-rr-menu-burger" aria-hidden="true"></i></button><label class="search top-search"><i class="fi fi-rr-search" aria-hidden="true"></i><input id="globalSearch" placeholder="{{ __('Search by name, area or mobile') }}..." aria-label="{{ __('Search by name, area or mobile') }}"></label><div class="breadcrumbs" hidden>{{ __('Page /') }} <span id="crumb">{{ __('Dashboard') }}</span></div></div><div class="top-actions">@include('partials.language-switcher')<div class="date-display"><i class="fi fi-rr-calendar" aria-hidden="true"></i><div><span id="today"></span><small id="weekday"></small></div></div><button class="iconbtn" onclick="showToast('{{ __('No new notifications') }}')"><i class="fi fi-rr-bell" aria-hidden="true"></i><span class="dot"></span></button><div class="userline"><div class="avatar">AD</div><div><b>{{ auth()->user()->name }}</b><small>{{ __('Administrator') }}</small></div></div><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="btn" aria-label="{{ __('Log out') }}"><i class="fi fi-rr-sign-out-alt" aria-hidden="true"></i> {{ __('Log out') }}</button></form></div></header>
-<div class="content">
- <div class="heading"><div><h1 id="pageTitle">{{ __('Dashboard') }}</h1><p id="pageSubtitle">{{ __('View all activities of Manda Blood Donation Program at a glance') }}</p></div><div class="heading-actions" id="headingActions" hidden><button class="btn" id="exportDonors" onclick="exportCSV()"><i class="fi fi-rr-download" aria-hidden="true"></i> {{ __('Export') }}</button><button class="btn primary" onclick="openModal()"><i class="fi fi-rr-plus" aria-hidden="true"></i> {{ __('New donor') }}</button></div><div class="heading-actions" id="requestHeadingActions" hidden><button class="btn primary" onclick="openRequestForm()"><i class="fi fi-rr-plus" aria-hidden="true"></i> {{ __('Add request') }}</button></div></div>
- <section class="cards" id="stats"></section>
- <div id="dashboardExtra" class="navview active"><section class="split"><div class="panel panel-pad"><div class="panelhead"><div><h2>{{ __('Donation activity') }}</h2><p>{{ __('Blood donation statistics over recent months') }}</p></div><select class="smallselect" id="chartPeriod" onchange="drawChart()"><option value="6">{{ __('Last 6 months') }}</option><option value="3">{{ __('Last 3 months') }}</option></select></div><div class="chart-area" id="chart"></div><div class="chart-legend"><span><i class="legenddot"></i> {{ __('Completed donations') }}</span><span>{{ __('Monthly statistics') }}</span></div></div><div class="panel panel-pad"><div class="panelhead"><div><h2>{{ __('Donors by blood group') }}</h2><p>{{ __('Registered donors by blood group') }}</p></div><i class="fi fi-rr-menu-dots-vertical" aria-hidden="true" style="color:#9ca5af"></i></div><div class="bloodlist" id="bloodBars"></div></div></section></div>
- <section class="panel directory" id="directory"><div class="dirheader"><div><h2>{{ __('Donor list') }}</h2></div></div><div class="dirtools"><label class="search"><i class="fi fi-rr-search" aria-hidden="true"></i><input id="search" placeholder="{{ __('Search by name, area or mobile') }}..." oninput="renderTable()"></label><select class="filter" id="groupFilter" onchange="renderTable()"><option value="">{{ __('All blood groups') }}</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select><select class="filter" id="areaFilter" onchange="renderTable()"><option value="">{{ __('All areas') }}</option></select><select class="filter" id="statusFilter" onchange="renderTable()"><option value="">{{ __('All statuses') }}</option><option value="available">{{ __('Available') }}</option><option value="busy">{{ __('Unavailable') }}</option></select></div><div class="tablewrap"><table><thead><tr><th scope="col">{{ __('Sl No.') }}</th><th>{{ __('Donor name') }}</th><th>{{ __('Blood group') }}</th><th>{{ __('Address / area') }}</th><th>{{ __('Last donation') }}</th><th>{{ __('Status') }}</th><th>{{ __('Contact') }}</th><th>{{ __('Actions') }}</th></tr></thead><tbody id="donorRows"></tbody></table></div><div class="tablefooter"><span id="tableCount"></span><div class="pagination" id="pagination"></div></div></section>
- <section class="navview" id="requestsView"><div class="panel directory"><div class="dirheader"><div><h2>{{ __('Blood requests') }}</h2><p>{{ __('Manage blood requests, matching and donations') }}</p></div></div><div class="tablewrap"><table><thead><tr><th scope="col">{{ __('Sl No.') }}</th><th scope="col">{{ __('Patient name') }}</th><th scope="col">{{ __('Blood group') }}</th><th scope="col">{{ __('Hospital') }}</th><th scope="col">{{ __('Number of bags') }}</th><th scope="col">{{ __('Status') }}</th><th scope="col">{{ __('Urgency') }}</th><th scope="col">{{ __('Contact') }}</th><th scope="col">{{ __('Actions') }}</th></tr></thead><tbody id="requestList"></tbody></table></div><div class="tablefooter"><span id="requestTableCount"></span><div class="pagination" id="requestPagination"></div></div></div></section>
- <section class="navview" id="settingsView"><div class="panel panel-pad"><h2>{{ __('System settings') }}</h2><div id="settingsList"></div></div></section>
- </div></main></div>
-<div class="overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-header"><div><h2>{{ __('Add a new donor') }}</h2><p style="margin:3px 0;color:#98a3ac">{{ __('Add details with consent. History updates from verified donations.') }}</p></div><button class="close" onclick="closeModal()">×</button></div><form id="donorForm"><div class="formgrid"><div class="field"><label>{{ __('Full name') }} *</label><input name="name" required placeholder="{{ __('Donor name') }}"></div><div class="field"><label>{{ __('Blood group') }} *</label><select name="group" required><option value="">{{ __('Select') }}</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div><div class="field"><label>{{ __('Mobile number') }} *</label><input name="phone" required pattern="[0-9+\- ]{10,16}" placeholder="01XXXXXXXXX"></div><div class="field"><label>{{ __('Area') }} *</label><input name="area" required placeholder="{{ __('For example: Manda Sadar') }}"></div><div class="field full"><label>{{ __('Full address') }}</label><input name="address" placeholder="{{ __('Village, union, upazila') }}"></div><div class="field"><label>{{ __('Current status') }}</label><select name="status"><option value="available">{{ __('Available') }}</option><option value="busy">{{ __('Unavailable') }}</option></select></div></div><label style="display:flex;gap:8px;align-items:flex-start;color:#6e7b86;font-size:12px;margin-top:18px"><input type="checkbox" required style="margin-top:4px"> {{ __('Consent to store donor details and receive contact requests has been obtained.') }}</label><div class="modal-actions"><button type="button" class="btn" onclick="closeModal()">{{ __('Cancel') }}</button><button type="submit" class="btn primary">{{ __('Save donor') }}</button></div></form></div></div>
-<div class="toast" id="toast"></div>
+@extends('layouts.admin')
 
+@section('page', 'dashboard')
+@section('title', __('Dashboard'))
+@section('subtitle', __('View all activities of Manda Blood Donation Program at a glance'))
 
-<meta name="csrf-token" content="{{ csrf_token() }}">
-<script>window.donationRoutes = {{ Illuminate\Support\Js::from([
-'groups' => route('blood-groups.index'), 'locations' => route('locations.index'),
-'donors' => route('donors.index'), 'register' => route('donors.store'), 'contact' => route('contact-requests.store'),
-'admin' => route('admin.dashboard'), 'adminDonors' => route('admin.blood-donors.index'),
-'requests' => route('admin.blood-requests.index'), 'donations' => route('admin.donations.index'),
-'contacts' => route('admin.contact-requests.index'), 'settings' => route('admin.settings.index'),
-'reports' => route('admin.reports.index'),
-'login' => route('login'),
-]) }};</script>
-@vite('resources/js/app.js')
-
-</body></html>
+@section('content')
+@include('partials.admin-overview')
+@include('partials.admin-donors')
+@endsection

@@ -41,10 +41,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'can:admin'])->group
     Route::patch('blood-requests/{blood_request}/matches/{requestDonor}', [Admin\BloodRequestController::class, 'respond'])->name('blood-requests.respond');
     Route::post('donations/{donation}/verify', [Admin\DonationController::class, 'verify'])->name('donations.verify');
     Route::apiResource('donations', Admin\DonationController::class)->only(['index', 'store']);
+    Route::get('blood-groups', [Admin\BloodGroupController::class, 'page'])->name('blood-groups.index');
     Route::patch('blood-groups/{blood_group}', [Admin\BloodGroupController::class, 'update'])->name('blood-groups.update');
     Route::post('locations/{type}', [Admin\LocationController::class, 'store'])->whereIn('type', ['districts', 'upazilas', 'unions'])->name('locations.store');
     Route::get('reports', [Admin\ReportController::class, 'index'])->name('reports.index');
     Route::get('settings', [Admin\SettingController::class, 'index'])->name('settings.index');
+    Route::patch('settings', [Admin\SettingController::class, 'store'])->name('settings.store');
+    Route::post('settings', [Admin\SettingController::class, 'store'])->name('settings.upload');
     Route::patch('settings/{system_setting}', [Admin\SettingController::class, 'update'])->name('settings.update');
     Route::get('contact-requests', [Admin\DonorContactRequestController::class, 'index'])->name('contact-requests.index');
     Route::patch('contact-requests/{contact_request}', [Admin\DonorContactRequestController::class, 'update'])->name('contact-requests.update');

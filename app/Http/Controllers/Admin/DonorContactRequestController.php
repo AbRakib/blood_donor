@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BloodDonorResource;
 use App\Models\DonorContactRequest;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,8 +13,17 @@ use Illuminate\Validation\Rule;
 
 class DonorContactRequestController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse|View
     {
+        if (! $request->expectsJson()) {
+            $common_data = (object) [
+                'page_title' => __('Contact requests'),
+                'title' => __('Contact requests'),
+            ];
+
+            return view('admin.contacts')->with(compact('common_data'));
+        }
+
         return response()->json(DonorContactRequest::with('bloodDonor.bloodGroup')->orderByDesc('id')->paginate(20)->through(fn (DonorContactRequest $contact): array => array_merge($contact->toArray(), ['blood_donor' => new BloodDonorResource($contact->bloodDonor)])));
     }
 

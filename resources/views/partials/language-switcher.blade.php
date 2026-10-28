@@ -1,12 +1,22 @@
-<form method="POST" action="{{ route('locale.update', app()->getLocale()) }}" style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-    @csrf
-    <label for="language-select" style="display:flex;align-items:center;color:#697581">
+<details class="language-switcher">
+    <summary class="language-switcher-trigger" aria-label="{{ __('Language') }}">
         <i class="fi fi-rr-globe" aria-hidden="true"></i>
-        <span class="sr-only">{{ __('Language') }}</span>
-    </label>
-    <select id="language-select" name="locale" aria-label="{{ __('Language') }}" onchange="this.form.action = this.selectedOptions[0].dataset.url; this.form.requestSubmit()" style="font:inherit;font-size:14px;color:#182331;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;cursor:pointer">
+        <span>{{ app()->getLocale() === 'bn' ? 'বাংলা' : 'English' }}</span>
+        <i class="fi fi-rr-angle-small-down language-switcher-chevron" aria-hidden="true"></i>
+    </summary>
+    <div class="language-switcher-menu" aria-label="{{ __('Language') }}">
+        <span class="language-switcher-heading">{{ __('Language') }}</span>
         @foreach (['en' => 'English', 'bn' => 'বাংলা'] as $locale => $label)
-            <option value="{{ $locale }}" lang="{{ $locale }}" data-url="{{ route('locale.update', $locale) }}" @selected(app()->getLocale() === $locale)>{{ $label }}</option>
+            <form method="POST" action="{{ route('locale.update', $locale) }}">
+                @csrf
+                <button type="submit" name="locale" value="{{ $locale }}" class="language-switcher-option {{ app()->getLocale() === $locale ? 'is-selected' : '' }}" lang="{{ $locale }}" @if(app()->getLocale() === $locale) aria-current="true" @endif>
+                    <span class="language-switcher-code" aria-hidden="true">{{ strtoupper($locale) }}</span>
+                    <span>{{ $label }}</span>
+                    @if (app()->getLocale() === $locale)
+                        <i class="fi fi-rr-check" aria-hidden="true"></i>
+                    @endif
+                </button>
+            </form>
         @endforeach
-    </select>
-</form>
+    </div>
+</details>

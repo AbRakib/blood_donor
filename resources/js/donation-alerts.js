@@ -1,5 +1,6 @@
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import 'sweetalert2/dist/sweetalert2.css';
+import '../css/donation-alerts.css';
 import {t} from './donation-http.js';
 
 const alert = options => Swal.fire({
@@ -8,6 +9,25 @@ const alert = options => Swal.fire({
     confirmButtonText: t('OK'),
     heightAuto: false,
     returnFocus: false,
+    width: '340px',
+    padding: '22px',
+    showClass: {
+        popup: 'donation-alert-enter',
+        backdrop: 'donation-alert-backdrop-enter',
+        icon: '',
+    },
+    hideClass: {
+        popup: 'donation-alert-leave',
+        backdrop: 'donation-alert-backdrop-leave',
+        icon: '',
+    },
+    buttonsStyling: false,
+    customClass: {
+        container: 'donation-alert-container',
+        popup: 'donation-alert',
+        confirmButton: 'donation-alert-confirm',
+        cancelButton: 'donation-alert-cancel',
+    },
     ...options,
 });
 

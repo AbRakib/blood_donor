@@ -11,6 +11,7 @@ use App\Models\BloodDonor;
 use App\Models\BloodRequest;
 use App\Services\BloodRequestService;
 use App\Services\DonorMatchingService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -20,9 +21,18 @@ use Illuminate\Validation\Rule;
 
 class BloodRequestController extends Controller
 {
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection|View
     {
         Gate::authorize('viewAny', BloodRequest::class);
+
+        if (! $request->expectsJson()) {
+            $common_data = (object) [
+                'page_title' => __('Blood requests'),
+                'title' => __('Blood requests'),
+            ];
+
+            return view('admin.requests')->with(compact('common_data'));
+        }
 
         return BloodRequestResource::collection(BloodRequest::with('bloodGroup')->orderByDesc('id')->paginate(20));
     }

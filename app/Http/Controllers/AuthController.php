@@ -12,7 +12,12 @@ class AuthController extends Controller
 {
     public function create(): View
     {
-        return view('login');
+        $common_data = (object) [
+            'page_title' => __('Admin login'),
+            'title' => __('Admin login'),
+        ];
+
+        return view('login')->with(compact('common_data'));
     }
 
     public function store(Request $request): RedirectResponse

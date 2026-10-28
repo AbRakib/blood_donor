@@ -14,6 +14,7 @@
         <div class="bg-[#9f1930] text-white text-center text-sm py-2">
             <i class="fi fi-rr-heart" aria-hidden="true"></i> {{ __('Donate blood, save lives — stand with humanity') }}
         </div>
+        @include('partials.preloader')
         <header class="sticky top-0 bg-white/95 border-b z-20">
             <div class="max-w-7xl mx-auto px-5 py-4 flex flex-wrap gap-4 items-center justify-between">
                 <a href="#home" class="flex gap-3 items-center">
@@ -81,21 +82,31 @@
         <section class="max-w-7xl mx-auto px-5 -mt-7 relative">
             <div class="card grid grid-cols-2 md:grid-cols-4 text-center gap-5">
                 <div>
-                    <i class="stat-icon fi fi-rr-users" aria-hidden="true"></i>
-                    <b id="donorTotal" class="text-3xl red">—</b>
+                    <div class="stat-value">
+                        <i class="stat-icon fi fi-rr-users" aria-hidden="true"></i>
+                        <b id="donorTotal" class="text-3xl red">—</b>
+                    </div>
                     <p class="text-gray-500">{{ __('Available donors') }}</p>
                 </div>
                 <div>
-                    <i class="stat-icon fi fi-rr-drop" aria-hidden="true"></i>
-                    <b id="groupTotal" class="text-3xl red">—</b>
+                    <div class="stat-value">
+                        <i class="stat-icon fi fi-rr-blood" aria-hidden="true"></i>
+                        <b id="groupTotal" class="text-3xl red">—</b>
+                    </div>
                     <p class="text-gray-500">{{ __('Blood group') }}</p>
                 </div>
                 <div>
-                    <i class="stat-icon fi fi-rr-marker" aria-hidden="true"></i><b class="text-3xl red">{{ __('24/7') }}</b>
+                    <div class="stat-value">
+                        <i class="stat-icon fi fi-rr-marker" aria-hidden="true"></i>
+                        <b class="text-3xl red">{{ __('24/7') }}</b>
+                    </div>
                     <p class="text-gray-500">{{ __('Search') }}</p>
                 </div>
                 <div>
-                    <i class="stat-icon fi fi-rr-heart" aria-hidden="true"></i><b class="text-3xl red">{{ __('100') }}%</b>
+                    <div class="stat-value">
+                        <i class="stat-icon fi fi-rr-heart" aria-hidden="true"></i>
+                        <b class="text-3xl red">{{ __('100') }}%</b>
+                    </div>
                     <p class="text-gray-500">{{ __('Volunteer initiative') }}</p>
                 </div>
             </div>

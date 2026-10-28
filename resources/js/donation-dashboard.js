@@ -1,3 +1,4 @@
+import {initializeDonorFilters} from './donor-filters.js';
 import {showSuccess, showError, showInfo, confirmAction} from './donation-alerts.js';
 import {t} from './donation-http.js';
 import {locationFields, bindLocations} from './donation-locations.js';
@@ -5,11 +6,7 @@ import {routes, request, send, escapeHtml as esc} from './donation-http.js';
 const $ = id => document.getElementById(id);
 let groups = [], donors = [], summary = null, currentPage = 1, formAction, filterTimer, formSuccessMessage;
 const donorMarkup = $('donorForm').innerHTML;
-const sections = {dashboard:t("Dashboard"),donors:t("Blood donors"),requests:t("Blood requests"),groups:t("Blood group"),reports:t("Reports"),settings:t("Settings"),contacts:t("Contact requests"),donations:t("Donation history")};
-const extra = document.createElement('section'); extra.className = 'panel panel-pad'; extra.hidden = true; $('directory').after(extra);
-for (const [page, label] of Object.entries(sections).filter(([page]) => ['contacts','donations'].includes(page))) {
-    const button = document.createElement('button'); button.dataset.page = page; button.innerHTML = `<i class="fi fi-rr-${({contacts:'comments',donations:'calendar'})[page]}" aria-hidden="true"></i>${esc(label)}`; $('nav').append(button);
-}
+const currentPageName = document.body.dataset.adminPage || 'dashboard';
 function showToast(text) {return showInfo(text);}
 function closeModal() {$('modalOverlay').classList.remove('show');}
 function modal(title, markup, action) {
@@ -30,18 +27,19 @@ const groupSelect = selected => `<div class="field"><label>${t("Blood group")}</
 async function refreshSummary() {
     summary = (await request(routes.admin)).data;
     const stats = [[t("Total active donors"),summary.donors,'users','r'],[t("Available donors"),summary.available_donors,'check-circle','g'],[t("Pending requests"),summary.pending_requests,'clock','o'],[t("Urgent requests"),summary.urgent_requests,'triangle-warning','r'],[t("Completed donations"),summary.donations,'heart','r']];
-    $('stats').innerHTML = stats.map(([label, value, icon, color]) => `<div class="stat"><div class="stat-icon ${color}"><i class="fi fi-rr-${icon}" aria-hidden="true"></i></div><div><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div></div>`).join('');
+    if ($('stats')) $('stats').innerHTML = stats.map(([label, value, icon, color]) => `<div class="stat"><div class="stat-icon ${color}"><i class="fi fi-rr-${icon}" aria-hidden="true"></i></div><div><div class="stat-label">${label}</div><div class="stat-value">${value}</div></div></div>`).join('');
     $('openRequestCount').textContent = summary.open_requests;
     const max = Math.max(...summary.blood_groups.map(group => group.donors_count), 1);
-    $('bloodBars').innerHTML = summary.blood_groups.map(group => `<div class="bloodrow"><strong>${esc(group.name)}</strong><div class="progress"><div style="width:${group.donors_count/max*100}%"></div></div><small>${group.donors_count}</small></div>`).join('');
+    if ($('bloodBars')) $('bloodBars').innerHTML = summary.blood_groups.map(group => `<div class="bloodrow"><strong>${esc(group.name)}</strong><div class="progress"><div style="width:${group.donors_count/max*100}%"></div></div><small>${group.donors_count}</small></div>`).join('');
     drawChart();
 }
 function drawChart() {
-    if (!summary) return;
+    if (!summary || !$('chart')) return;
     const data = summary.monthly_donations.slice(-Number($('chartPeriod').value));
     $('chart').innerHTML = '<div style="display:flex;align-items:end;gap:6px;height:190px">' + data.map(month => `<div style="flex:1;text-align:center"><b class="chart-value">${month.donations}</b><div style="height:${month.donations/Math.max(...data.map(x => x.donations),1)*140}px;min-height:2px;background:#ed1638;border-radius:5px;position:relative"></div><small class="chart-month">${esc(month.month)}</small></div>`).join('') + '</div>';
 }
 async function loadDonors(page = 1) {
+    if (!$('donorRows')) return;
     const params = new URLSearchParams({page, q: $('search').value, area: $('areaFilter').value, availability: $('statusFilter').value});
     const group = groups.find(group => group.name === $('groupFilter').value); if (group) params.set('blood_group_id', group.id);
     const result = await request(`${routes.adminDonors}?${params}`); donors = result.data; currentPage = page;
@@ -55,7 +53,7 @@ function renderTable() {clearTimeout(filterTimer); filterTimer = setTimeout(() =
 function openModal() {
     modal(t("New donor"), donorMarkup + locationFields(), async values => {
         const group = groups.find(group => group.name === values.group); if (!group) throw new Error(t("Select a blood group."));
-        await send(routes.adminDonors, {name:values.name, phone:values.phone, blood_group_id:group.id, area:values.area, address:values.address, is_available:values.status === 'available', consent_to_contact:true, district_id:values.district_id || null, upazila_id:values.upazila_id || null, union_id:values.union_id || null});
+        await send(routes.adminDonors, {name:values.name, phone:values.phone, blood_group_id:group.id, area:values.area, address:values.address, is_available:true, consent_to_contact:true, district_id:values.district_id || null, upazila_id:values.upazila_id || null, union_id:values.union_id || null});
         await loadDonors(); await refreshSummary();
     });
     bindLocations($('donorForm')).catch(error => showError(error.message));
@@ -76,6 +74,7 @@ function openRequestForm() {
     bindLocations($('donorForm')).catch(error => showError(error.message));
 }
 async function loadRequests(page = 1) {
+    if (!$('requestList')) return;
     const result = await request(`${routes.requests}?page=${page}`);
     $('requestList').innerHTML = result.data.map((record, index) => {
         const initials = record.patient_name.trim().split(/\s+/u).slice(0,2).map(part => Array.from(part)[0]).join('').toLocaleUpperCase();
@@ -85,7 +84,7 @@ async function loadRequests(page = 1) {
     $('requestTableCount').textContent = `${result.meta.from || 0}–${result.meta.to || 0} / ${result.meta.total}`;
     $('requestPagination').innerHTML = `<button data-action="requests-page" data-id="${page-1}" aria-label="${t("Previous page")}" ${page <= 1 ? 'disabled' : ''}>‹</button><button class="current" aria-current="page">${page}</button><button data-action="requests-page" data-id="${page+1}" aria-label="${t("Next page")}" ${page >= result.meta.last_page ? 'disabled' : ''}>›</button>`;
 }
-const pageButtons = (meta, action) => `<div><button class="btn" data-action="${action}" data-id="${meta.current_page-1}" ${meta.current_page <= 1 ? 'disabled' : ''}>${t("Previous page")}</button> ${meta.current_page} / ${meta.last_page} <button class="btn" data-action="${action}" data-id="${meta.current_page+1}" ${meta.current_page >= meta.last_page ? 'disabled' : ''}>${t("Next page")}</button></div>`;
+const pageButtons = (meta, action) => `<button data-action="${action}" data-id="${meta.current_page-1}" aria-label="${t("Previous page")}" ${meta.current_page <= 1 ? 'disabled' : ''}>‹</button><button class="current" aria-current="page">${meta.current_page}</button><button data-action="${action}" data-id="${meta.current_page+1}" aria-label="${t("Next page")}" ${meta.current_page >= meta.last_page ? 'disabled' : ''}>›</button>`;
 async function requestDetails(id) {
     const record = (await request(`${routes.requests}/${id}`)).data;
     const open = ['verified','in_progress'].includes(record.request_status);
@@ -94,12 +93,8 @@ async function requestDetails(id) {
 }
 function recordDonation(donorId = '', requestId = '') {
     modal(t("Record donation"),field(t("Donor ID"),'blood_donor_id','number',donorId)+field(t("Requests ID (Optional)"),'blood_request_id','number',requestId,false)+field(t("Donation date"),'donated_at','date',new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()))+field(t("Hospital"),'hospital_name','text','',false), async values => {
-        await send(routes.donations,{...values,blood_request_id:values.blood_request_id || null,bags:1}); await refreshSummary(); await loadDonors(); await loadRequests(); if (!extra.hidden) await loadDonations();
+        await send(routes.donations,{...values,blood_request_id:values.blood_request_id || null,bags:1}); await refreshSummary(); await loadDonors(); await loadRequests(); if (currentPageName === 'donations') await loadDonations();
     });
-}
-async function loadSettings() {
-    const result = await request(routes.settings);
-    $('settingsList').innerHTML = result.data.map(setting => `<form data-setting="${setting.id}" style="margin:16px 0"><label>${esc(setting.key)} <input class="filter" name="value" value="${esc(setting.value)}"></label><button class="btn" type="submit">${t("Save")}</button></form>`).join('');
 }
 async function loadContacts(page = 1) {
     const result = await request(`${routes.contacts}?page=${page}`);
@@ -109,9 +104,12 @@ async function loadContacts(page = 1) {
         const actions = contact.contact_status === 'pending' ? `<button class="row-btn" data-action="contact-approved" data-id="${contact.id}">${t("Approve")}</button><button class="row-btn" data-action="contact-rejected" data-id="${contact.id}">${t("Reject")}</button>` : contact.contact_status === 'approved' ? `<button class="row-btn" data-action="contact-completed" data-id="${contact.id}">${t("Completed")}</button><button class="row-btn" data-action="contact-rejected" data-id="${contact.id}">${t("Reject")}</button>` : '';
         return `<tr><td>${result.from + index}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${esc(initials)}</span><strong>${esc(requesterName)}</strong></div></td><td><a class="phone-link" href="tel:${esc(contact.requester_phone || '')}">${esc(contact.requester_phone || t("No information"))}</a></td><td>${esc(contact.blood_donor?.name || t("No information"))}<small>${esc(contact.blood_donor?.phone || '')}</small></td><td>${esc(contact.message || t("No information"))}</td><td><span class="status ${['approved','completed'].includes(contact.contact_status) ? '' : 'busy'}">${esc(t(({pending:'Pending',approved:'Approved',rejected:'Rejected',completed:'Completed'})[contact.contact_status] || contact.contact_status))}</span></td><td class="donor-actions">${actions ? `<details class="row-menu"><summary aria-label="${t("Actions")}"><i class="fi fi-rr-angle-small-down menu-chevron" aria-hidden="true"></i></summary><div>${actions}</div></details>` : '—'}</td></tr>`;
     }).join('');
-    extra.innerHTML = `<div class="dirheader"><div><h2>${t("Contact requests")}</h2></div></div><div class="tablewrap"><table><thead><tr><th scope="col">${t("Sl No.")}</th><th scope="col">${t("Contact name")}</th><th scope="col">${t("Contact phone")}</th><th scope="col">${t("Donor name")}</th><th scope="col">${t("Message")}</th><th scope="col">${t("Status")}</th><th scope="col">${t("Actions")}</th></tr></thead><tbody>${rows || `<tr><td colspan="7" class="empty">${t("No information")}</td></tr>`}</tbody></table></div><div class="tablefooter"><span>${result.from || 0}–${result.to || 0} / ${result.total}</span><div class="pagination"><button data-action="contacts-page" data-id="${result.current_page-1}" aria-label="${t("Previous page")}" ${result.current_page <= 1 ? 'disabled' : ''}>‹</button><button class="current" aria-current="page">${result.current_page}</button><button data-action="contacts-page" data-id="${result.current_page+1}" aria-label="${t("Next page")}" ${result.current_page >= result.last_page ? 'disabled' : ''}>›</button></div></div>`;
+    $('contactsRows').innerHTML = rows || `<tr><td colspan="7" class="empty">${t("No information")}</td></tr>`;
+    $('contactsTableCount').textContent = `${result.from || 0}–${result.to || 0} / ${result.total}`;
+    $('contactsPagination').innerHTML = pageButtons(result, 'contacts-page');
 }
 async function loadDonations(page = 1) {
+    if (!$('donationsRows')) return;
     const result = await request(`${routes.donations}?page=${page}`);
     const rows = result.data.map((donation, index) => {
         const donorName = donation.bloodDonor?.name || t("No information");
@@ -119,38 +117,18 @@ async function loadDonations(page = 1) {
         const isVerified = donation.donation_status === 'verified';
         return `<tr><td>${result.meta.from + index}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${esc(initials)}</span><strong>${esc(donorName)}</strong></div></td><td><span class="table-date">${esc(donation.donated_at?.slice(0,10) || t("No information"))}</span></td><td>${esc(donation.hospital_name || t("No information"))}</td><td>${esc(donation.bags)}</td><td><span class="status ${isVerified ? '' : 'busy'}">${isVerified ? t("Verified") : esc(donation.donation_status)}</span></td><td class="donor-actions">${donation.donation_status === 'pending' ? `<button class="row-btn" data-action="verify-donation" data-id="${donation.id}">${t("Verify donation")}</button>` : '—'}</td></tr>`;
     }).join('');
-    extra.innerHTML = `<div class="dirheader"><div><h2>${t("Donation history")}</h2></div><button class="btn primary" data-action="new-donation"><i class="fi fi-rr-plus" aria-hidden="true"></i>${t("Record donation")}</button></div><div class="tablewrap"><table><thead><tr><th scope="col">${t("Sl No.")}</th><th scope="col">${t("Donor name")}</th><th scope="col">${t("Donation date")}</th><th scope="col">${t("Hospital")}</th><th scope="col">${t("Number of bags")}</th><th scope="col">${t("Status")}</th><th scope="col">${t("Actions")}</th></tr></thead><tbody>${rows || `<tr><td colspan="7" class="empty">${t("No information")}</td></tr>`}</tbody></table></div><div class="tablefooter"><span>${result.meta.from || 0}–${result.meta.to || 0} / ${result.meta.total}</span><div class="pagination"><button data-action="donations-page" data-id="${page-1}" ${page <= 1 ? 'disabled' : ''}>‹</button><button class="current" aria-current="page">${page}</button><button data-action="donations-page" data-id="${page+1}" ${page >= result.meta.last_page ? 'disabled' : ''}>›</button></div></div>`;
+    $('donationsRows').innerHTML = rows || `<tr><td colspan="7" class="empty">${t("No information")}</td></tr>`;
+    $('donationsTableCount').textContent = `${result.meta.from || 0}–${result.meta.to || 0} / ${result.meta.total}`;
+    $('donationsPagination').innerHTML = pageButtons(result.meta, 'donations-page');
 }
 async function loadGroups() {
-    groups = (await request(routes.groups)).data;
-    await refreshSummary();
-    extra.innerHTML = `<div class="tablewrap"><table><thead><tr><th scope="col">${t("Sl No.")}</th><th scope="col">${t("Blood group")}</th><th scope="col">${t("Number of donors")}</th><th scope="col">${t("Created date")}</th><th scope="col">${t("Created by")}</th></tr></thead><tbody>` + groups.map((group, index) => {
+    $('groupsRows').innerHTML = groups.map((group, index) => {
         const donorCount = summary.blood_groups.find(record => record.id === group.id)?.donors_count ?? 0;
         return `<tr><td>${index + 1}.</td><td><span class="bloodpill">${esc(group.name)}</span></td><td>${donorCount} ${t("people")}</td><td><span class="table-date">${esc(group.created_at ? new Intl.DateTimeFormat(document.documentElement.lang === "bn" ? "bn-BD" : "en-GB", {timeZone: "Asia/Dhaka", day: "2-digit", month: "short", year: "numeric"}).format(new Date(group.created_at)) : t("No information"))}</span></td><td>${esc(group.creator?.name || (group.created_by ? t("No information") : t("System")))}</td></tr>`;
-    }).join('') + (groups.length ? '' : `<tr><td colspan="5">${t("No blood groups.")}</td></tr>`) + '</tbody></table></div>';
+    }).join('') + (groups.length ? '' : `<tr><td colspan="5">${t("No blood groups.")}</td></tr>`);
 }
-async function selectPage(page) {
-    $('headingActions').hidden = ['dashboard','requests','groups','donations'].includes(page);
-    $('requestHeadingActions').hidden = page !== 'requests';
-    $('pageSubtitle').hidden = ['donors','requests','groups','donations'].includes(page);
-    $('stats').style.display = ['donors','requests','groups','donations'].includes(page) ? 'none' : '';
-    $('exportDonors').style.display = page === 'donors' ? 'none' : '';
-    $('pageTitle').textContent = sections[page]; $('crumb').textContent = sections[page];
-    document.querySelectorAll('.nav button').forEach(button => button.classList.toggle('active',button.dataset.page === page));
-    $('dashboardExtra').classList.toggle('active',['dashboard','reports'].includes(page));
-    $('directory').style.display = ['dashboard','donors'].includes(page) ? 'block' : 'none';
-    $('requestsView').classList.toggle('active',page === 'requests'); $('settingsView').classList.toggle('active',page === 'settings');
-    extra.hidden = !['contacts','donations','groups'].includes(page);
-    extra.className = ['contacts','donations'].includes(page) ? 'panel directory' : 'panel panel-pad';
-    $('sidebar').classList.remove('open');
-    try {
-        if (page === 'requests') await loadRequests();
-        if (page === 'settings') await loadSettings();
-        if (page === 'contacts') await loadContacts();
-        if (page === 'donations') await loadDonations();
-        if (page === 'groups') await loadGroups();
-        if (page === 'reports') {await refreshSummary(); $('pageSubtitle').textContent = `${summary.donations} ${t("donations ·")} ${summary.bags_donated} ${t("bags of blood")}`;}
-    } catch (error) {showError(error.message);}
+function navigatePage(page) {
+    if (window.donationPages?.[page]) window.location.assign(window.donationPages[page]);
 }
 async function exportCSV() {
     try {
@@ -166,12 +144,58 @@ $('donorForm').addEventListener('submit',async event => {
     try {await formAction(Object.fromEntries(new FormData(event.target))); closeModal(); showSuccess(formSuccessMessage);}
     catch (error) {$('formError').textContent = error.message; showError(error.message);} finally {if (button) button.disabled = false;}
 });
+document.addEventListener('input', event => {
+    if (event.target.id === 'setting-name') $('settingsLiveName').textContent = event.target.value || t('Blood Donation');
+});
+document.addEventListener('change', event => {
+    const input = event.target.closest('#settingsForm input[type="file"]');
+    if (!input || !input.files[0]) return;
+    const preview = input.form.querySelector(`[data-preview="${input.name}"]`);
+    const reader = new FileReader();
+    reader.onload = () => {
+        preview.src = reader.result;
+        preview.hidden = false;
+        if (input.name === 'logo') {
+            $('settingsLiveLogo').src = reader.result;
+            $('settingsLiveLogo').hidden = false;
+        }
+    };
+    reader.readAsDataURL(input.files[0]);
+});
 document.addEventListener('submit',async event => {
-    const form = event.target.closest('[data-setting]'); if (!form) return; event.preventDefault();
-    try {await send(`${routes.settings}/${form.dataset.setting}`,{value:new FormData(form).get('value')},'PATCH'); showSuccess(t("Settings saved."));} catch (error) {showError(error.message);}
+    const form = event.target.closest('#settingsForm'); if (!form) return; event.preventDefault();
+    const button = form.querySelector('[type="submit"]');
+    if (button.disabled) return;
+    const feedback = form.querySelector('.settings-feedback');
+    const inputs = [...form.querySelectorAll('input,select,textarea')];
+    const values = new FormData(form);
+    for (const [name, value] of [...values]) {
+        if (value instanceof File && !value.size) values.delete(name);
+    }
+    button.disabled = true;
+    inputs.forEach(input => {input.disabled = true;});
+    feedback.textContent = t('Saving settings…');
+    feedback.classList.remove('is-error');
+    try {
+        const result = await request(routes.settings, {method: 'POST', body: values});
+        form.querySelectorAll('input[type="file"]').forEach(input => {
+            input.value = '';
+            const preview = form.querySelector(`[data-preview="${input.name}"]`);
+            preview.src = result.data[input.name + '_url'] || '';
+            preview.hidden = !result.data[input.name + '_url'];
+        });
+        feedback.textContent = t('Settings saved.');
+        showSuccess(t('Settings saved.'));
+    } catch (error) {
+        feedback.textContent = error.message;
+        feedback.classList.add('is-error');
+        showError(error.message);
+    } finally {
+        button.disabled = false;
+        inputs.forEach(input => {input.disabled = false;});
+    }
 });
 document.addEventListener('click',async event => {
-    const nav = event.target.closest('[data-page]'); if (nav) {selectPage(nav.dataset.page); return;}
     const page = event.target.closest('[data-donor-page]'); if (page) {loadDonors(Number(page.dataset.donorPage)).catch(error => showError(error.message)); return;}
     const button = event.target.closest('[data-action]'); if (!button) return;
     const {action,id} = button.dataset; button.disabled = true;
@@ -201,12 +225,37 @@ document.addEventListener('click',async event => {
         if (action === 'donations-page') await loadDonations(Number(id));
     } catch (error) {showError(error.message);} finally {button.disabled = false;}
 });
-Object.assign(window,{showToast,closeModal,openModal,selectPage,renderTable,drawChart,exportCSV,openRequestForm});
+Object.assign(window,{showToast,closeModal,openModal,selectPage:navigatePage,renderTable,drawChart,exportCSV,openRequestForm});
 $('today').textContent = new Intl.DateTimeFormat(document.documentElement.lang === 'bn' ? 'bn-BD' : 'en-GB',{timeZone:'Asia/Dhaka',day:'numeric',month:'long',year:'numeric'}).format(new Date());
 $('weekday').textContent = new Intl.DateTimeFormat(document.documentElement.lang === 'bn' ? 'bn-BD' : 'en-GB',{timeZone:'Asia/Dhaka',weekday:'long'}).format(new Date());
-$('globalSearch').addEventListener('input', event => { $('search').value = event.target.value; selectPage('donors'); renderTable(); });
-try {groups = (await request(routes.groups)).data; await refreshSummary(); await loadDonors();}
-catch (error) {showError(error.message); $('donorRows').innerHTML = `<tr><td colspan="8"><a href="${esc(routes.login)}">${t("Log in as administrator")}</a></td></tr>`;}
+$('globalSearch').value = new URL(window.location.href).searchParams.get('q') || '';
+if ($('search')) $('search').value = $('globalSearch').value;
+$('globalSearch').addEventListener('keydown', event => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    const url = new URL(window.donationPages.donors, window.location.origin);
+    if (event.target.value.trim()) url.searchParams.set('q', event.target.value.trim());
+    window.location.assign(url.href);
+});
+$('globalSearch').addEventListener('input', event => {
+    if (!$('search')) return;
+    $('search').value = event.target.value;
+    renderTable();
+});
+initializeDonorFilters();
+
+try {
+    if (['dashboard', 'donors', 'requests', 'donations', 'groups'].includes(currentPageName)) {
+        groups = (await request(routes.groups)).data;
+    }
+    if (currentPageName !== 'settings') await refreshSummary();
+    if (['dashboard', 'donors'].includes(currentPageName)) await loadDonors();
+    if (currentPageName === 'requests') await loadRequests();
+    if (currentPageName === 'contacts') await loadContacts();
+    if (currentPageName === 'donations') await loadDonations();
+    if (currentPageName === 'groups') await loadGroups();
+    if (currentPageName === 'reports') $('pageSubtitle').textContent = `${summary.donations} ${t("donations ·")} ${summary.bags_donated} ${t("bags of blood")}`;
+} catch (error) {showError(error.message);}
 
 function closeDonorMenus() {
     document.querySelectorAll('.row-menu[open]').forEach(menu => {menu.open = false;});

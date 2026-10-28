@@ -1,0 +1,136 @@
+.swal2-container.donation-alert-container.swal2-backdrop-show {
+    background: rgb(24 35 49 / 28%);
+}
+
+.donation-alert-enter {
+    animation: donation-alert-enter 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.donation-alert-leave {
+    animation: donation-alert-leave 150ms ease-in both;
+}
+
+.donation-alert-backdrop-enter {
+    animation: donation-alert-backdrop 220ms ease-out both;
+}
+
+.donation-alert-backdrop-leave {
+    animation: donation-alert-backdrop-leave 150ms ease-in both;
+}
+
+@keyframes donation-alert-enter {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes donation-alert-backdrop {
+    from { background: transparent; }
+    to { background: rgb(24 35 49 / 28%); }
+}
+
+@keyframes donation-alert-leave {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(10px) scale(0.96);
+    }
+}
+
+@keyframes donation-alert-backdrop-leave {
+    from { background: rgb(24 35 49 / 28%); }
+    to { background: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .donation-alert-enter,
+    .donation-alert-leave,
+    .donation-alert-backdrop-enter,
+    .donation-alert-backdrop-leave {
+        animation: none;
+    }
+}
+
+.swal2-popup.donation-alert {
+    max-width: calc(100vw - 32px);
+    border: 1px solid #e9edf0;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgb(24 35 49 / 12%);
+    color: #182331;
+    font-family: inherit;
+}
+
+.donation-alert .swal2-icon {
+    margin: 0 auto 14px;
+    font-size: 8px;
+}
+
+.donation-alert .swal2-title {
+    padding: 0;
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.donation-alert .swal2-html-container {
+    margin: 8px 0 0;
+    padding: 0;
+    color: #697581;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.donation-alert .swal2-actions {
+    gap: 8px;
+    margin: 18px 0 0;
+}
+
+.donation-alert-confirm,
+.donation-alert-cancel {
+    min-width: 72px;
+    margin: 0;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.donation-alert-confirm {
+    background: #e91335;
+    color: #fff;
+}
+
+.donation-alert-confirm:hover {
+    background: #cc102e;
+}
+
+.donation-alert-cancel {
+    border-color: #e9edf0;
+    background: #f7f9fb;
+    color: #526170;
+}
+
+.donation-alert-cancel:hover {
+    background: #edf0f3;
+}
+
+.donation-alert-confirm:focus-visible,
+.donation-alert-cancel:focus-visible {
+    outline: 2px solid #e91335;
+    outline-offset: 3px;
+}

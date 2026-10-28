@@ -4,7 +4,7 @@ export const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char 
 export async function request(url, options = {}) {
     const response = await fetch(url, {
         credentials: 'same-origin', ...options,
-        headers: {Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, ...options.headers},
+        headers: {Accept: 'application/json', ...(!(options.body instanceof FormData) ? {'Content-Type': 'application/json'} : {}), 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, ...options.headers},
     });
     if (response.status === 204) return null;
     const data = await response.json();

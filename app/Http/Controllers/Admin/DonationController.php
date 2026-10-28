@@ -8,13 +8,23 @@ use App\Http\Resources\DonationResource;
 use App\Models\BloodDonation;
 use App\Models\BloodDonor;
 use App\Services\DonationService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class DonationController extends Controller
 {
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection|View
     {
+        if (! $request->expectsJson()) {
+            $common_data = (object) [
+                'page_title' => __('Donation history'),
+                'title' => __('Donation history'),
+            ];
+
+            return view('admin.donations')->with(compact('common_data'));
+        }
+
         $filters = $request->validate(['blood_donor_id' => ['nullable', 'integer'], 'donation_status' => ['nullable', 'in:pending,verified']]);
         $query = BloodDonation::with('bloodDonor.bloodGroup');
         foreach ($filters as $key => $value) {

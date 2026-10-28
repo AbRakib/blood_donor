@@ -12,6 +12,7 @@
 @include('partials.translations')
 </head>
 <body>
+@include('partials.preloader')
 <div class="flex justify-end bg-white px-5 py-2">
     @include('partials.language-switcher')
 </div>

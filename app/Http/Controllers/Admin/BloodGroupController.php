@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BloodGroup;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,16 @@ use Illuminate\Support\Facades\Gate;
 
 class BloodGroupController extends Controller
 {
+    public function page(): View
+    {
+        $common_data = (object) [
+            'page_title' => __('Blood group'),
+            'title' => __('Blood group'),
+        ];
+
+        return view('admin.groups')->with(compact('common_data'));
+    }
+
     public function index(): JsonResponse
     {
         $query = BloodGroup::query()->active()->orderBy('sort_order');

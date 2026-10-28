@@ -4,6 +4,51 @@ import {t} from './donation-http.js';
 import {locationFields, bindLocations} from './donation-locations.js';
 import {routes, request, send, escapeHtml as esc} from './donation-http.js';
 let groups = [], donors = [], mode = 'register', donorId = null, currentPage = 1, searchSequence = 0;
+const statisticsCard = document.getElementById('donorTotal').closest('.card');
+const statisticCounters = new Map();
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const counterFormatter = new Intl.NumberFormat(document.documentElement.lang, {useGrouping: false});
+function animateStatistic(element) {
+    const counter = statisticCounters.get(element);
+    if (!counter || counter.started) {
+        return;
+    }
+    counter.started = true;
+    if (prefersReducedMotion.matches || !('IntersectionObserver' in window)) {
+        element.textContent = counter.finalText;
+        return;
+    }
+    const startedAt = performance.now();
+    function updateStatistic(now) {
+        const progress = Math.min((now - startedAt) / 1400, 1);
+        const value = Math.floor(counter.total * (1 - Math.pow(1 - progress, 3)));
+        element.textContent = progress === 1 ? counter.finalText : `${counterFormatter.format(value)}${counter.suffix}`;
+        if (progress < 1) {
+            requestAnimationFrame(updateStatistic);
+        }
+    }
+    requestAnimationFrame(updateStatistic);
+}
+const statisticObserver = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+    for (const entry of entries) {
+        if (entry.isIntersecting) {
+            animateStatistic(entry.target);
+            statisticObserver.unobserve(entry.target);
+        }
+    }
+}, {threshold: 0.5}) : null;
+function prepareStatistic(element, total, suffix = '', finalText = `${total}${suffix}`) {
+    statisticCounters.set(element, {total, suffix, finalText, started: false});
+    if (statisticObserver && !prefersReducedMotion.matches) {
+        element.textContent = `${counterFormatter.format(0)}${suffix}`;
+        statisticObserver.observe(element);
+    } else {
+        animateStatistic(element);
+    }
+}
+const staticStatistics = statisticsCard.querySelectorAll('b:not([id])');
+prepareStatistic(staticStatistics[0], 24, `/${counterFormatter.format(7)}`, staticStatistics[0].textContent);
+prepareStatistic(staticStatistics[1], 100, '%', staticStatistics[1].textContent);
 for (const id of ['blood', 'area']) enhanceSearchSelect(document.getElementById(id));
 const form = document.getElementById('form');
 const locationContainer = document.createElement('div'); locationContainer.innerHTML = locationFields(); form.elements.area.after(locationContainer);
@@ -63,8 +108,8 @@ try {
     groups = (await request(routes.groups)).data;
     form.elements.blood_group_id.innerHTML = t("<option value=\"\">Blood group</option>") + groups.map(group => `<option value="${group.id}">${esc(group.name)}</option>`).join('');
     document.getElementById('blood').innerHTML = t("<option value=\"\">All blood groups</option>") + groups.map(group => `<option>${esc(group.name)}</option>`).join('');
-    document.getElementById('groupTotal').textContent = groups.length;
-    const totals = await request(routes.donors); document.getElementById('donorTotal').textContent = totals.meta.total;
+    prepareStatistic(document.getElementById('groupTotal'), groups.length);
+    const totals = await request(routes.donors); prepareStatistic(document.getElementById('donorTotal'), totals.meta.total);
     const districts = (await request(routes.locations)).data;
     document.getElementById('area').innerHTML = t("<option value=\"\">All districts</option>") + districts.map(row => `<option value="${row.id}">${esc((document.documentElement.lang === 'bn' ? row.name_bn || row.name : row.name))}</option>`).join('');
     await render();
