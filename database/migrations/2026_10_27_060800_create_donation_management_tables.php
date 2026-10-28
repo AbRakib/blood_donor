@@ -8,63 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('districts', function (Blueprint $table): void {
-            $table->id();
-            $table->string('name');
-            $table->string('name_bn')->nullable();
-            $table->string('code', 20)->nullable()->unique();
-            $table->tinyInteger('status')->default(1)->comment('1=active,0=inactive');
-            $table->timestamp('created_at')->nullable();
-            $table->unsignedInteger('created_by')->nullable();
-            $table->timestamp('updated_at')->nullable();
-            $table->unsignedInteger('updated_by')->nullable();
-            $table->tinyInteger('deleted')->default(0)->comment('1=deleted,0=active');
-            $table->timestamp('deleted_at')->nullable();
-            $table->unsignedInteger('deleted_by')->nullable();
-        });
-
-        Schema::create('upazilas', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('district_id')->constrained();
-            $table->string('name');
-            $table->string('name_bn')->nullable();
-            $table->unique(['district_id', 'name']);
-            $table->tinyInteger('status')->default(1)->comment('1=active,0=inactive');
-            $table->timestamp('created_at')->nullable();
-            $table->unsignedInteger('created_by')->nullable();
-            $table->timestamp('updated_at')->nullable();
-            $table->unsignedInteger('updated_by')->nullable();
-            $table->tinyInteger('deleted')->default(0)->comment('1=deleted,0=active');
-            $table->timestamp('deleted_at')->nullable();
-            $table->unsignedInteger('deleted_by')->nullable();
-        });
-
-        Schema::create('unions', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('upazila_id')->constrained();
-            $table->string('name');
-            $table->string('name_bn')->nullable();
-            $table->unique(['upazila_id', 'name']);
-            $table->tinyInteger('status')->default(1)->comment('1=active,0=inactive');
-            $table->timestamp('created_at')->nullable();
-            $table->unsignedInteger('created_by')->nullable();
-            $table->timestamp('updated_at')->nullable();
-            $table->unsignedInteger('updated_by')->nullable();
-            $table->tinyInteger('deleted')->default(0)->comment('1=deleted,0=active');
-            $table->timestamp('deleted_at')->nullable();
-            $table->unsignedInteger('deleted_by')->nullable();
-        });
-
-        Schema::table('blood_donors', function (Blueprint $table): void {
-            $table->foreignId('district_id')->nullable()->constrained();
-            $table->foreignId('upazila_id')->nullable()->constrained();
-            $table->foreignId('union_id')->nullable()->constrained();
-            $table->date('date_of_birth')->nullable();
-            $table->string('gender', 20)->nullable();
-            $table->boolean('consent_to_contact')->default(false);
-            $table->index(['blood_group_id', 'status', 'deleted', 'is_available'], 'donor_search_index');
-        });
-
         Schema::create('blood_requests', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('blood_group_id')->constrained();
@@ -80,6 +23,9 @@ return new class extends Migration
             $table->dateTime('needed_at');
             $table->string('urgency', 20)->default('normal');
             $table->string('request_status', 20)->default('pending');
+            $table->timestamp('verified_at')->nullable();
+            $table->unsignedInteger('verified_by')->nullable();
+            $table->timestamp('expires_at')->nullable()->index();
             $table->text('notes')->nullable();
             $table->index(['request_status', 'needed_at']);
             $table->tinyInteger('status')->default(1)->comment('1=active,0=inactive');
@@ -116,6 +62,10 @@ return new class extends Migration
             $table->foreignId('blood_donor_id')->constrained();
             $table->foreignId('blood_request_id')->nullable()->constrained();
             $table->date('donated_at');
+            $table->string('donation_status', 20)->default('pending');
+            $table->timestamp('verified_at')->nullable();
+            $table->unsignedInteger('verified_by')->nullable();
+            $table->index(['donation_status', 'donated_at']);
             $table->unsignedSmallInteger('bags')->default(1);
             $table->string('hospital_name')->nullable();
             $table->text('notes')->nullable();
@@ -226,15 +176,5 @@ return new class extends Migration
         Schema::dropIfExists('blood_donations');
         Schema::dropIfExists('request_donors');
         Schema::dropIfExists('blood_requests');
-        Schema::table('blood_donors', function (Blueprint $table): void {
-            $table->dropForeign(['district_id']);
-            $table->dropForeign(['upazila_id']);
-            $table->dropForeign(['union_id']);
-            $table->dropIndex('donor_search_index');
-            $table->dropColumn(['district_id', 'upazila_id', 'union_id', 'date_of_birth', 'gender', 'consent_to_contact']);
-        });
-        Schema::dropIfExists('unions');
-        Schema::dropIfExists('upazilas');
-        Schema::dropIfExists('districts');
     }
 };

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->unsignedTinyInteger('user_type')->default(1)->comment('admin=0,user=1');
+            $table->boolean('is_admin')->default(false);
             $table->string('name');
             $table->string('email')->unique()->nullable();
             $table->string('phone', 255)->nullable();
@@ -26,7 +27,7 @@ return new class extends Migration
             $table->unsignedInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedInteger('updated_by')->nullable();
-            $table->tinyInteger('deleted')->default(0)->comment("1=deleted,0=active");
+            $table->tinyInteger('deleted')->default(0)->comment('1=deleted,0=active');
             $table->timestamp('deleted_at')->nullable();
             $table->unsignedInteger('deleted_by')->nullable();
         });
