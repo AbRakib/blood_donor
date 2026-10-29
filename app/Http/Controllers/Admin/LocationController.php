@@ -8,7 +8,6 @@ use App\Models\Union;
 use App\Models\Upazila;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class LocationController extends Controller
@@ -61,21 +60,7 @@ class LocationController extends Controller
             $rules['name'][] = Rule::unique($type, 'name')->where($parent.'_id', $request->input($parent.'_id'));
         }
         $data = $request->validate($rules);
-        $location = DB::transaction(function () use ($modelClass, $type, $data): District|Upazila|Union {
-            $location = new $modelClass;
-            $location->name = $data['name'];
-            $location->name_bn = $data['name_bn'] ?? null;
-            if ($type === 'districts') {
-                $location->code = $data['code'] ?? null;
-            } elseif ($type === 'upazilas') {
-                $location->district_id = $data['district_id'];
-            } elseif ($type === 'unions') {
-                $location->upazila_id = $data['upazila_id'];
-            }
-            $location->save();
-
-            return $location;
-        });
+        $location = $modelClass::query()->create($data);
 
         return response()->json(['data' => $location], 201);
     }

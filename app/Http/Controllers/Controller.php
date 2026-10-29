@@ -4,22 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\BloodDonation;
 use App\Models\BloodDonor;
-use App\Models\BloodGroup;
 use App\Models\BloodRequest;
-use App\Models\BloodRequestStatusLog;
 use App\Models\DonorContactRequest;
 use App\Models\RequestDonor;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 abstract class Controller
 {
@@ -223,93 +218,6 @@ abstract class Controller
         ];
 
         return $data;
-    }
-
-    /** @param array<string, mixed> $filters */
-    protected function donorQuery(array $filters = []): Builder
-    {
-        $query = BloodDonor::query()->active()->whereHas('bloodGroup', fn (Builder $group): Builder => $group->active());
-        foreach (['blood_group_id', 'district_id', 'upazila_id', 'union_id'] as $field) {
-            if (! empty($filters[$field])) {
-                $query->where($field, $filters[$field]);
-            }
-        }
-        if (! empty($filters['area'])) {
-            $query->where('area', $filters['area']);
-        }
-        if (! empty($filters['q'])) {
-            $query->where('name', 'like', '%'.$filters['q'].'%');
-        }
-
-        return $query;
-    }
-
-    protected function availableDonors(Builder $query): Builder
-    {
-        return $query->where('is_available', true)->where('consent_to_contact', true);
-    }
-
-    /** @return array<string, mixed> */
-    protected function reportSummary(): array
-    {
-        return [
-            'donors' => BloodDonor::query()->active()->count(),
-            'available_donors' => BloodDonor::query()->active()->where('is_available', true)->count(),
-            'open_requests' => BloodRequest::query()->active()->whereIn('request_status', ['pending', 'verified', 'in_progress'])->count(),
-            'pending_requests' => BloodRequest::query()->active()->where('request_status', 'pending')->count(),
-            'urgent_requests' => BloodRequest::query()->active()->whereIn('request_status', ['pending', 'verified', 'in_progress'])->whereIn('urgency', ['urgent', 'emergency', 'critical'])->count(),
-            'donations' => BloodDonation::query()->active()->where('donation_status', 'verified')->count(),
-            'bags_donated' => (int) BloodDonation::query()->active()->where('donation_status', 'verified')->sum('bags'),
-            'blood_groups' => BloodGroup::query()->active()->withCount(['donors' => fn ($query) => $query->active()])->orderBy('sort_order')->get(),
-        ];
-    }
-
-    public function updateRequestStatus(BloodRequest $bloodRequest, string $status): BloodRequest
-    {
-        return DB::transaction(function () use ($bloodRequest, $status): BloodRequest {
-            $record = BloodRequest::query()->active()->lockForUpdate()->findOrFail($bloodRequest->id);
-
-            return $this->transitionRequest($record, $status);
-        });
-    }
-
-    protected function transitionRequest(BloodRequest $record, string $next): BloodRequest
-    {
-        $from = $record->request_status;
-        if ($from === $next) {
-            return $record;
-        }
-        $allowed = [
-            'pending' => ['verified', 'cancelled', 'expired'],
-            'verified' => ['in_progress', 'cancelled', 'expired'],
-            'in_progress' => ['fulfilled', 'cancelled', 'expired'],
-            'fulfilled' => [], 'cancelled' => [], 'expired' => [],
-        ];
-        if (! in_array($next, $allowed[$from] ?? [], true)) {
-            throw ValidationException::withMessages(['request_status' => 'This request status transition is not allowed.']);
-        }
-        if (in_array($next, ['verified', 'in_progress', 'fulfilled'], true) && $record->expires_at?->isPast()) {
-            throw ValidationException::withMessages(['request_status' => 'The request has expired.']);
-        }
-        if ($next === 'expired' && (! $record->expires_at || $record->expires_at->isFuture())) {
-            throw ValidationException::withMessages(['request_status' => 'The request expiry time has not been reached.']);
-        }
-        if ($next === 'fulfilled' && $record->donations()->active()->where('donation_status', 'verified')->sum('bags') < $record->bags_needed) {
-            throw ValidationException::withMessages(['request_status' => 'The required units must be confirmed by verified donations before fulfillment.']);
-        }
-        if ($next === 'verified') {
-            $record->verified_at = now();
-            $record->verified_by = auth()->id();
-        }
-        $record->request_status = $next;
-        $record->save();
-        $statusLog = new BloodRequestStatusLog;
-        $statusLog->blood_request_id = $record->id;
-        $statusLog->from_status = $from;
-        $statusLog->to_status = $next;
-        $statusLog->save();
-
-        return $record;
     }
 
     /** @return array<string, mixed> */

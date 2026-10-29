@@ -7,7 +7,6 @@ use App\Models\DonorContactRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class DonorContactRequestController extends Controller
@@ -35,19 +34,6 @@ class DonorContactRequestController extends Controller
     {
         $data = $request->validate(['contact_status' => ['required', Rule::in(['approved', 'rejected', 'completed'])]]);
 
-        return DB::transaction(function () use ($contactRequest, $data): JsonResponse {
-            $contactRequest = DonorContactRequest::query()->lockForUpdate()->findOrFail($contactRequest->id);
-            $allowed = ['pending' => ['approved', 'rejected'], 'approved' => ['completed', 'rejected'], 'rejected' => [], 'completed' => []];
-            abort_unless(in_array($data['contact_status'], $allowed[$contactRequest->contact_status], true), 422, 'This contact status transition is not allowed.');
-            if ($data['contact_status'] === 'approved') {
-                $donor = $contactRequest->bloodDonor()->active()->where('is_available', true)->where('consent_to_contact', true)->first();
-                abort_unless($donor, 422, 'The donor is no longer available for contact.');
-            }
-            $contactRequest->contact_status = $data['contact_status'];
-            $contactRequest->handled_at = now();
-            $contactRequest->save();
-
-            return response()->json(['data' => $contactRequest]);
-        });
+        return response()->json(['data' => $contactRequest->changeStatus($data['contact_status'])]);
     }
 }

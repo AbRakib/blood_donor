@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BloodDonor;
-use App\Models\DonorAvailabilityLog;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,20 +31,7 @@ class BloodDonorController extends Controller
             'availability' => ['nullable', 'in:available,busy'],
         ]);
 
-        $query = BloodDonor::with('bloodGroup');
-        foreach (['area', 'blood_group_id'] as $field) {
-            if (! empty($filters[$field])) {
-                $query->where($field, $filters[$field]);
-            }
-        }
-        if (! empty($filters['q'])) {
-            $query->where(function ($query) use ($filters): void {
-                $query->where('name', 'like', '%'.$filters['q'].'%')->orWhere('phone', 'like', '%'.$filters['q'].'%')->orWhere('area', 'like', '%'.$filters['q'].'%');
-            });
-        }
-        if (! empty($filters['availability'])) {
-            $query->where('is_available', $filters['availability'] === 'available');
-        }
+        $query = BloodDonor::with('bloodGroup')->filteredForAdmin($filters);
 
         return $this->collectionResponse($query->orderByDesc('id')->paginate(20), $this->formatBloodDonor(...));
     }
@@ -69,21 +55,7 @@ class BloodDonorController extends Controller
             'consent_to_contact' => ['required', 'accepted'],
         ]);
 
-        $donor = new BloodDonor;
-        $donor->name = $data['name'];
-        $donor->phone = $data['phone'];
-        $donor->blood_group_id = $data['blood_group_id'];
-        $donor->district_id = $data['district_id'] ?? null;
-        $donor->upazila_id = $data['upazila_id'] ?? null;
-        $donor->union_id = $data['union_id'] ?? null;
-        $donor->area = $data['area'] ?? null;
-        $donor->address = $data['address'] ?? null;
-        $donor->date_of_birth = $data['date_of_birth'] ?? null;
-        $donor->gender = $data['gender'] ?? null;
-        $donor->is_available = $data['is_available'] ?? true;
-        $donor->consent_to_contact = true;
-        $donor->save();
-        $donor->refresh();
+        $donor = BloodDonor::register($data);
 
         $donor->load('bloodGroup');
 
@@ -122,33 +94,7 @@ class BloodDonorController extends Controller
         ])->validate();
         $data = array_intersect_key($data, $request->all());
 
-        $donor->getConnection()->transaction(function () use ($bloodDonor, $data): void {
-            $donor = BloodDonor::query()->lockForUpdate()->findOrFail($bloodDonor);
-            $wasAvailable = $donor->is_available;
-            $data += $donor->only(['name', 'phone', 'blood_group_id', 'district_id', 'upazila_id', 'union_id', 'area', 'address', 'date_of_birth', 'gender', 'is_available', 'consent_to_contact', 'status']);
-            $donor->name = $data['name'];
-            $donor->phone = $data['phone'];
-            $donor->blood_group_id = $data['blood_group_id'];
-            $donor->district_id = $data['district_id'];
-            $donor->upazila_id = $data['upazila_id'];
-            $donor->union_id = $data['union_id'];
-            $donor->area = $data['area'];
-            $donor->address = $data['address'];
-            $donor->date_of_birth = $data['date_of_birth'];
-            $donor->gender = $data['gender'];
-            $donor->is_available = $data['is_available'];
-            $donor->consent_to_contact = $data['consent_to_contact'];
-            $donor->status = $data['status'];
-            $donor->save();
-
-            if ($wasAvailable !== $donor->is_available) {
-                $availabilityLog = new DonorAvailabilityLog;
-                $availabilityLog->blood_donor_id = $donor->id;
-                $availabilityLog->was_available = $wasAvailable;
-                $availabilityLog->is_available = $donor->is_available;
-                $availabilityLog->save();
-            }
-        });
+        $donor = $donor->updateProfile($data);
 
         $donor->refresh();
         $donor->load('bloodGroup');
@@ -169,20 +115,7 @@ class BloodDonorController extends Controller
         $data = $request->validate(['is_available' => ['required', 'boolean']]);
         $donor = BloodDonor::findOrFail($bloodDonor);
 
-        $donor->getConnection()->transaction(function () use ($bloodDonor, $data): void {
-            $donor = BloodDonor::query()->lockForUpdate()->findOrFail($bloodDonor);
-            $wasAvailable = $donor->is_available;
-            $donor->is_available = $data['is_available'];
-            $donor->save();
-
-            if ($wasAvailable !== $donor->is_available) {
-                $availabilityLog = new DonorAvailabilityLog;
-                $availabilityLog->blood_donor_id = $donor->id;
-                $availabilityLog->was_available = $wasAvailable;
-                $availabilityLog->is_available = $donor->is_available;
-                $availabilityLog->save();
-            }
-        });
+        $donor = $donor->updateProfile($data);
 
         $donor->refresh();
         $donor->load('bloodGroup');

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\BloodDonation;
 use App\Models\BloodRequest;
+use App\Services\DonationReport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
@@ -39,42 +39,19 @@ class DashboardController extends Controller
         return view('admin.dashboard')->with(compact('common_data'));
     }
 
-    public function getOverview(): JsonResponse
+    public function getOverview(DonationReport $report): JsonResponse
     {
-        return response()->json(['data' => $this->overview()]);
+        return response()->json(['data' => $report->overview()]);
     }
 
-    public function getStatistics(): JsonResponse
+    public function getStatistics(DonationReport $report): JsonResponse
     {
-        return response()->json(['data' => $this->reportSummary()]);
+        return response()->json(['data' => $report->summary()]);
     }
 
     public function getRecentRequests(): JsonResponse
     {
         return $this->collectionResponse($this->recentRequests(), $this->formatBloodRequest(...));
-    }
-
-    /** @return array<string, mixed> */
-    private function overview(): array
-    {
-        $months = [];
-
-        for ($offset = 5; $offset >= 0; $offset--) {
-            $start = now()->startOfMonth()->subMonths($offset);
-            $months[] = [
-                'month' => $start->format('Y-m'),
-                'donations' => BloodDonation::query()
-                    ->active()
-                    ->where('donation_status', 'verified')
-                    ->whereBetween('donated_at', [
-                        $start->toDateString(),
-                        $start->copy()->endOfMonth()->toDateString(),
-                    ])
-                    ->count(),
-            ];
-        }
-
-        return array_merge($this->reportSummary(), ['monthly_donations' => $months]);
     }
 
     /** @return Collection<int, BloodRequest> */

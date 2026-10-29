@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Http\Controllers\Admin\BloodRequestController;
 use App\Models\BloodRequest;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ExpireBloodRequests extends Command
@@ -13,14 +13,14 @@ class ExpireBloodRequests extends Command
 
     protected $description = 'Close open blood requests whose configured expiry time has passed';
 
-    public function handle(BloodRequestController $controller): int
+    public function handle(): int
     {
-        BloodRequest::query()->active()->whereIn('request_status', ['pending', 'verified', 'in_progress'])->where('expires_at', '<=', now())->orderBy('id')->chunkById(100, function ($records) use ($controller): void {
+        BloodRequest::query()->active()->whereIn('request_status', ['pending', 'verified', 'in_progress'])->where('expires_at', '<=', now())->orderBy('id')->chunkById(100, function (Collection $records): void {
             foreach ($records as $record) {
-                DB::transaction(function () use ($record, $controller): void {
+                DB::transaction(function () use ($record): void {
                     $locked = BloodRequest::query()->active()->lockForUpdate()->find($record->id);
                     if ($locked && in_array($locked->request_status, ['pending', 'verified', 'in_progress'], true) && $locked->expires_at?->lessThanOrEqualTo(now())) {
-                        $controller->updateRequestStatus($locked, 'expired');
+                        $locked->changeStatus('expired');
                     }
                 });
             }
