@@ -17,7 +17,7 @@ class AuthController extends Controller
             'title' => __('Admin login'),
         ];
 
-        return view('login')->with(compact('common_data'));
+        return view('admin.auth.login')->with(compact('common_data'));
     }
 
     public function store(Request $request): RedirectResponse

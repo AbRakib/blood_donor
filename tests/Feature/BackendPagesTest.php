@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 uses(LazilyRefreshDatabase::class);
 
 dataset('backend pages', [
-    'dashboard' => ['dashboard', 'dashboard', 'dashboardExtra'],
+    'dashboard' => ['dashboard', 'admin.dashboard', 'dashboardExtra'],
     'donors' => ['admin.blood-donors.index', 'admin.donors', 'directory'],
     'requests' => ['admin.blood-requests.index', 'admin.requests', 'requestsView'],
     'blood groups' => ['admin.blood-groups.index', 'admin.groups', 'groupsView'],
@@ -92,5 +92,5 @@ it('renders the dashboard for an unknown legacy page', function () {
     $admin = User::factory()->make(['is_admin' => true]);
 
     $this->actingAs($admin)->get(route('dashboard', ['page' => 'unknown']))
-        ->assertOk()->assertViewIs('dashboard');
+        ->assertOk()->assertViewIs('admin.dashboard');
 });

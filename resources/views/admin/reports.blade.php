@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('admin.layouts.admin')
 
 @section('page', 'reports')
 @section('title', __('Reports'))
@@ -8,5 +8,5 @@
 @endsection
 
 @section('content')
-@include('partials.admin-overview')
+@include('admin.partials.admin-overview')
 @endsection

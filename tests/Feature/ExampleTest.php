@@ -10,5 +10,5 @@ test('the application returns a successful response', function () {
 
 test('the dashboard renders its blade view', function () {
     $this->actingAs(User::factory()->make(['is_admin' => true]))
-        ->get('/dashboard')->assertStatus(200)->assertViewIs('dashboard');
+        ->get('/dashboard')->assertStatus(200)->assertViewIs('admin.dashboard');
 });

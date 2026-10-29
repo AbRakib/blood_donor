@@ -10,7 +10,7 @@ beforeEach(function () {
 });
 
 it('renders the admin login form for guests', function () {
-    $this->get(route('login'))->assertOk()->assertViewIs('login')->assertSee('লগইন করুন');
+    $this->get(route('login'))->assertOk()->assertViewIs('admin.auth.login')->assertSee('লগইন করুন');
 });
 
 it('redirects dashboard guests to login', function () {

@@ -36,7 +36,7 @@ class DashboardController extends Controller
             'title' => __('Dashboard'),
         ];
 
-        return view('dashboard')->with(compact('common_data'));
+        return view('admin.dashboard')->with(compact('common_data'));
     }
 
     public function getOverview(): JsonResponse

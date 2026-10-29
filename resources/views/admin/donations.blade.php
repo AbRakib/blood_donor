@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('admin.layouts.admin')
 
 @section('page', 'donations')
 @section('title', __('Donation history'))

@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('admin.layouts.admin')
 
 @section('page', 'settings')
 @section('title', __('Settings'))
@@ -16,10 +16,10 @@
                     <h2>{{ __('General information') }}</h2>
                     <p>{{ __('Basic information about your blood donation platform.') }}</p>
                     <div class="settings-fields">
-                        @include('partials.settings-field', ['name' => 'name', 'label' => 'Site name', 'type' => 'text', 'icon' => 'building'])
-                        @include('partials.settings-field', ['name' => 'email', 'label' => 'Contact email', 'type' => 'email', 'icon' => 'envelope'])
-                        @include('partials.settings-field', ['name' => 'phone', 'label' => 'Mobile number', 'type' => 'tel', 'icon' => 'phone-call'])
-                        @include('partials.settings-field', ['name' => 'address', 'label' => 'Address', 'type' => 'textarea', 'icon' => 'marker'])
+                        @include('admin.partials.settings-field', ['name' => 'name', 'label' => 'Site name', 'type' => 'text', 'icon' => 'building'])
+                        @include('admin.partials.settings-field', ['name' => 'email', 'label' => 'Contact email', 'type' => 'email', 'icon' => 'envelope'])
+                        @include('admin.partials.settings-field', ['name' => 'phone', 'label' => 'Mobile number', 'type' => 'tel', 'icon' => 'phone-call'])
+                        @include('admin.partials.settings-field', ['name' => 'address', 'label' => 'Address', 'type' => 'textarea', 'icon' => 'marker'])
                     </div>
                 </div>
             </section>
@@ -29,9 +29,9 @@
                     <h2>{{ __('Branding') }}</h2>
                     <p>{{ __('Upload your logo and site icon. Recommended size: PNG, JPG, WebP or GIF (Max 2 MB).') }}</p>
                     <div class="settings-fields settings-branding-fields">
-                        @include('partials.settings-upload', ['name' => 'logo', 'label' => 'Logo (Header)'])
-                        @include('partials.settings-upload', ['name' => 'footer_logo', 'label' => 'Footer logo'])
-                        @include('partials.settings-upload', ['name' => 'meta_icon', 'label' => 'Website icon (Favicon)', 'uploadLabel' => 'Click to upload icon'])
+                        @include('admin.partials.settings-upload', ['name' => 'logo', 'label' => 'Logo (Header)'])
+                        @include('admin.partials.settings-upload', ['name' => 'footer_logo', 'label' => 'Footer logo'])
+                        @include('admin.partials.settings-upload', ['name' => 'meta_icon', 'label' => 'Website icon (Favicon)', 'uploadLabel' => 'Click to upload icon'])
                     </div>
                 </div>
             </section>
@@ -41,10 +41,10 @@
                     <h2>{{ __('Social media links') }}</h2>
                     <p>{{ __('Add your social media profiles. Leave empty if not available.') }}</p>
                     <div class="settings-fields">
-                        @include('partials.settings-field', ['name' => 'facebook', 'label' => 'Facebook', 'type' => 'url', 'icon' => 'globe', 'placeholder' => 'https://facebook.com/yourpage'])
-                        @include('partials.settings-field', ['name' => 'twitter', 'label' => 'Twitter / X', 'type' => 'url', 'icon' => 'globe', 'placeholder' => 'https://x.com/yourprofile'])
-                        @include('partials.settings-field', ['name' => 'instagram', 'label' => 'Instagram', 'type' => 'url', 'icon' => 'camera', 'placeholder' => 'https://instagram.com/yourprofile'])
-                        @include('partials.settings-field', ['name' => 'linkedin', 'label' => 'LinkedIn', 'type' => 'url', 'icon' => 'globe', 'placeholder' => 'https://linkedin.com/company/yourpage'])
+                        @include('admin.partials.settings-field', ['name' => 'facebook', 'label' => 'Facebook', 'type' => 'url', 'icon' => 'globe', 'placeholder' => 'https://facebook.com/yourpage'])
+                        @include('admin.partials.settings-field', ['name' => 'twitter', 'label' => 'Twitter / X', 'type' => 'url', 'icon' => 'globe', 'placeholder' => 'https://x.com/yourprofile'])
+                        @include('admin.partials.settings-field', ['name' => 'instagram', 'label' => 'Instagram', 'type' => 'url', 'icon' => 'camera', 'placeholder' => 'https://instagram.com/yourprofile'])
+                        @include('admin.partials.settings-field', ['name' => 'linkedin', 'label' => 'LinkedIn', 'type' => 'url', 'icon' => 'globe', 'placeholder' => 'https://linkedin.com/company/yourpage'])
 
                     </div>
                 </div>

@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::define('admin', fn (User $user): bool => (bool) $user->is_admin);
 
-        View::composer('layouts.admin', function (ViewInstance $view): void {
+        View::composer('admin.layouts.admin', function (ViewInstance $view): void {
             $name = trim((string) Setting::query()->orderBy('id')->value('name'));
 
             $view->with('sidebarName', $name !== '' ? $name : __('Blood Donation'));

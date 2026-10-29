@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>{{ __('Manda Blood Donation Program') }}</title>
-        <link rel="stylesheet" href="{{ asset('build/assets/app-CBsRxY3c.css') }}">
+        <link rel="stylesheet" href="{{ asset('frontend/css/app.css') }}">
         <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
@@ -268,7 +268,8 @@
 'reports' => route('admin.reports.index'),
 'locationStore' => route('admin.locations.store', ['type' => 'districts']), 'login' => route('login'),
 ]) }};</script>
-<script type="module" src="{{ asset('build/assets/app-B_yrBtlR.js') }}"></script>
+<link rel="stylesheet" href="{{ asset('frontend/css/style.css') }}">
+        <script type="module" src="{{ asset('frontend/js/main.js') }}"></script>
 
     </body>
 </html>
