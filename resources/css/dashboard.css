@@ -3418,3 +3418,77 @@ td small {
         transition: none
     }
 }
+/* Request preview and matched donors. */
+.request-details-modal { width: min(760px, 100%); padding: 24px; border: 1px solid var(--line); box-shadow: 0 16px 56px #18233120; }
+.request-details-modal .modal-header { align-items: flex-start; gap: 20px; }
+.request-details-modal .modal-header h2 { font-size: 20px; }
+.request-details-modal .modal-header p { font-size: 12px; max-width: 48ch; }
+.request-details { display: grid; gap: 22px; }
+.request-overview { display: flex; align-items: center; gap: 12px; }
+.request-avatar { flex: 0 0 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: #f2f5f8; color: #526170; font-weight: 600; }
+.request-avatar--patient { background: #fff0f2; color: var(--red); width: 46px; height: 46px; flex-basis: 46px; }
+.request-details h3, .request-details p { margin: 0; }
+.request-details h3 { font-size: 16px; }
+.request-eyebrow, .request-hospital, .request-section-heading p { color: #75818d; font-size: 12px; }
+.request-hospital { display: flex; align-items: center; gap: 6px; margin-top: 3px !important; }
+.request-badges { margin-left: auto; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.request-urgency { border-radius: 6px; background: #fff6ed; color: #a25b22; padding: 4px 9px; font-size: 11px; }
+.request-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 16px; border-radius: 12px; background: #f8fafb; }
+.request-facts dt { color: #75818d; font-size: 11px; margin-bottom: 6px; }
+.request-facts dd { margin: 0; font-size: 13px; overflow-wrap: anywhere; }
+.request-facts dd strong, .request-facts dd a { display: block; }
+.request-details a { color: #526170; text-decoration: none; }
+.request-details a:hover { color: var(--red); text-decoration: underline; }
+.request-section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.request-search { display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; margin-bottom: 12px; color: #84909b; }
+.request-search:focus-within { border-color: #e33c49; box-shadow: 0 0 0 3px #e33c490d; }
+.request-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 13px; }
+.request-donors { display: grid; gap: 8px; max-height: 310px; overflow-y: auto; }
+.request-donor { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 13px; border: 1px solid var(--line); border-radius: 11px; transition: border-color .15s, background .15s; }
+.request-donor:hover { background: #fcfdfe; border-color: #d3dbe2; }
+.request-donor[hidden], .request-empty[hidden] { display: none; }
+.request-donor-info { flex: 1; min-width: 100px; }
+.request-donor-info strong, .request-donor-info a { display: block; font-size: 13px; }
+.request-donor-info a { font-size: 12px; margin-top: 2px; }
+.request-response { background: #f3f5f7; color: #65717f; font-size: 11px; padding: 3px 8px; border-radius: 6px; text-transform: capitalize; }
+.request-response--accepted, .request-response--donated { background: #ecf8f1; color: #258259; }
+.request-response--declined { background: #fff0f2; color: #bf4152; }
+.request-donor-actions { display: flex; gap: 6px; }
+.request-donor-actions .btn { padding: 7px 10px; font-size: 11px; border-radius: 7px; box-shadow: none; }
+.request-empty { padding: 16px; text-align: center; font-size: 13px; color: #84909b; background: #f8fafb; border-radius: 9px; }
+.request-history { border-top: 1px solid var(--line); padding-top: 14px; }
+.request-history summary { cursor: pointer; color: #65717f; font-size: 12px; padding: 4px 0; }
+.request-history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+.request-history-grid h3 { font-size: 13px; margin-bottom: 12px; }
+.request-timeline, .request-donations { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.request-timeline li { display: flex; gap: 9px; font-size: 12px; }
+.request-timeline-dot { flex: 0 0 7px; height: 7px; margin-top: 6px; background: #d4dce3; border-radius: 50%; }
+.request-timeline p, .request-timeline time, .request-donations span { color: #84909b; font-size: 11px; }
+.request-donations li { display: grid; gap: 3px; font-size: 12px; }
+.request-details-modal .modal-actions { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.request-details-modal :is(button, a, summary):focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+@media (max-width: 600px) {
+    .request-details-modal { padding: 18px; max-height: 90dvh; border-radius: 14px; }
+    .request-overview { flex-wrap: wrap; }
+    .request-badges { width: 100%; margin-left: 58px; justify-content: flex-start; }
+    .request-facts { grid-template-columns: 1fr 1fr; gap: 14px; }
+    .request-donor-actions { width: 100%; padding-left: 48px; }
+    .request-history-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .request-donor { transition: none; } }
+
+.assign-context { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8fafb; border-radius: 10px; margin-bottom: 18px; }
+.assign-context small, .assign-donor-info small { display: block; color: #84909b; font-size: 12px; margin-top: 3px; }
+.assign-heading { font-size: 14px; margin: 18px 0 4px; }
+.assign-status { color: #84909b; font-size: 12px; margin: 0 0 12px; }
+.assign-results { display: grid; gap: 8px; max-height: 320px; overflow-y: auto; padding: 3px; }
+.assign-option { display: flex; align-items: center; gap: 12px; padding: 13px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.assign-option:hover { background: #fafbfc; border-color: #cbd5df; }
+.assign-option:has(input:checked) { border-color: var(--red); background: #fff5f6; }
+.assign-option:focus-within { outline: 2px solid var(--red); outline-offset: 1px; }
+.assign-option input { accent-color: var(--red); width: 16px; height: 16px; flex-shrink: 0; }
+.assign-donor-info { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.assign-donor-info strong { font-size: 14px; }
+.assign-option.is-assigned { opacity: .6; cursor: default; }
+#assignDonorPages { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 14px; }
+#donorForm .btn:disabled { opacity: .5; cursor: not-allowed; }

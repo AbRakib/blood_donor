@@ -307,5 +307,15 @@
     "For best result, use transparent background": "For best result, use transparent background",
     "Recommended size: 200 × 60 px (logo)": "Recommended size: 200 × 60 px (logo)",
     "Recommended size: 32 × 32 px (favicon)": "Recommended size: 32 × 32 px (favicon)",
-    "Configure your website information, contact details and appearance.": "Configure your website information, contact details and appearance."
+    "Configure your website information, contact details and appearance.": "Configure your website information, contact details and appearance.",
+    "Search matched donors": "Search matched donors",
+    "No donors match your search.": "No donors match your search.",
+    "Search donor by name": "Search donor by name",
+    "Select a donor to assign.": "Select a donor to assign.",
+    "Search by name, select a matching donor, then update to assign.": "Search by name, select a matching donor, then update to assign.",
+    "Searching donors…": "Searching donors…",
+    "Assigned": "Assigned",
+    "Previous": "Previous",
+    "Next": "Next",
+    "Update": "Update"
 }

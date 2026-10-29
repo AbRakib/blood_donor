@@ -8,7 +8,12 @@ let groups = [], donors = [], summary = null, currentPage = 1, formAction, filte
 const donorMarkup = $('donorForm').innerHTML;
 const currentPageName = document.body.dataset.adminPage || 'dashboard';
 function showToast(text) { return showInfo(text); }
-function closeModal() { $('modalOverlay').classList.remove('show'); }
+let modalTrigger;
+function closeModal() {
+    $('modalOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+    modalTrigger?.focus();
+}
 function modal(title, markup, action, options = {}) {
     formSuccessMessage = ({
         [t('New donor')]: t('Donor created successfully.'),
@@ -23,7 +28,11 @@ function modal(title, markup, action, options = {}) {
     $('modalOverlay').querySelector('h2').textContent = title;
     $('modalOverlay').querySelector('.modal-header p').textContent = options.description || t('Add details with consent. History updates from verified donations.');
     $('donorForm').innerHTML = markup + t("<p id=\"formError\" role=\"alert\" style=\"color:#c92d3b;white-space:pre-line\"></p><div class=\"modal-actions\"><button type=\"button\" class=\"btn\" onclick=\"closeModal()\">Cancel</button><button type=\"submit\" class=\"btn primary\">Save</button></div>");
-    formAction = action; $('modalOverlay').classList.add('show');
+    formAction = action;
+    if (!$('modalOverlay').classList.contains('show')) modalTrigger = document.activeElement;
+    $('modalOverlay').classList.add('show');
+    document.body.style.overflow = 'hidden';
+    $('modalOverlay').querySelector('.close').focus();
 }
 const field = (label, name, type = 'text', value = '', required = true) => `<div class="field"><label>${esc(label)}</label><input name="${name}" type="${type}" value="${esc(value)}" ${required ? 'required' : ''}></div>`;
 const groupSelect = selected => `<div class="field"><label>${t("Blood group")}</label><select name="blood_group_id" required>${groups.map(group => `<option value="${group.id}" ${Number(selected) === group.id ? 'selected' : ''}>${esc(group.name)}</option>`).join('')}</select></div>`;
@@ -88,6 +97,60 @@ async function loadRequests(page = 1) {
     $('requestPagination').innerHTML = `<button data-action="requests-page" data-id="${page - 1}" aria-label="${t("Previous page")}" ${page <= 1 ? 'disabled' : ''}>‹</button><button class="current" aria-current="page">${page}</button><button data-action="requests-page" data-id="${page + 1}" aria-label="${t("Next page")}" ${page >= result.meta.last_page ? 'disabled' : ''}>›</button>`;
 }
 const pageButtons = (meta, action) => `<button data-action="${action}" data-id="${meta.current_page - 1}" aria-label="${t("Previous page")}" ${meta.current_page <= 1 ? 'disabled' : ''}>‹</button><button class="current" aria-current="page">${meta.current_page}</button><button data-action="${action}" data-id="${meta.current_page + 1}" aria-label="${t("Next page")}" ${meta.current_page >= meta.last_page ? 'disabled' : ''}>›</button>`;
+async function openAssignDonor(id) {
+    const record = (await request(`${routes.requests}/${id}`)).data;
+    const assigned = new Set(record.request_donors.map(match => Number(match.blood_donor_id)));
+    modal(t('Assign donor'), `<div class="assign-context"><span class="bloodpill">${esc(record.bloodGroup?.name || '')}</span><div><strong>${esc(record.patient_name)}</strong><small>${esc(record.hospital_name)}</small></div></div><label class="request-search"><i class="fi fi-rr-search" aria-hidden="true"></i><input type="search" id="assignDonorSearch" maxlength="100" placeholder="${esc(t('Search donor by name'))}" aria-label="${esc(t('Search donor by name'))}" aria-controls="assignDonorResults"></label><h3 class="assign-heading">${t('Matched donors')}</h3><p id="assignDonorStatus" class="assign-status" role="status"></p><div id="assignDonorResults" class="assign-results"></div><div id="assignDonorPages" class="pagination"></div>`, async values => {
+        if (!values.blood_donor_id) throw new Error(t('Select a donor to assign.'));
+        await send(`${routes.requests}/${id}/assign-donor`, { blood_donor_id: values.blood_donor_id });
+        await loadRequests(); await refreshSummary();
+    }, { description: t('Search by name, select a matching donor, then update to assign.') });
+    const form = $('donorForm');
+    const submit = form.querySelector('[type=submit]');
+    submit.textContent = t('Update'); submit.disabled = true;
+    const search = $('assignDonorSearch');
+    const results = $('assignDonorResults');
+    const status = $('assignDonorStatus');
+    const pages = $('assignDonorPages');
+    let timer, searchVersion = 0;
+    async function loadMatches(page = 1) {
+        const version = ++searchVersion;
+        submit.disabled = true;
+        results.replaceChildren(); pages.replaceChildren();
+        status.textContent = t('Searching donors…');
+        const params = new URLSearchParams({ q: search.value.trim(), page });
+        for (const key of ['blood_group_id', 'district_id', 'upazila_id', 'union_id']) {
+            if (record[key]) params.set(key, record[key]);
+        }
+        try {
+            const result = await request(`${routes.donors}?${params}`);
+            if (version !== searchVersion || !results.isConnected) return;
+            status.textContent = result.data.length ? `${result.meta.total} ${t('donors matched')}` : t('No donors match your search.');
+            results.innerHTML = result.data.map(donor => {
+                const isAssigned = assigned.has(Number(donor.id));
+                return `<label class="assign-option ${isAssigned ? 'is-assigned' : ''}"><input type="radio" name="blood_donor_id" value="${donor.id}" required ${isAssigned ? 'disabled' : ''}><span class="assign-donor-info"><strong>${esc(donor.name)}</strong><small>${esc([donor.union, donor.upazila, donor.district].filter(Boolean).join(', ') || t('No information'))}</small></span><span class="${isAssigned ? 'request-response' : 'bloodpill'}">${esc(isAssigned ? t('Assigned') : donor.blood_group)}</span></label>`;
+            }).join('');
+            if (result.meta.last_page > 1) {
+                pages.innerHTML = `<button type="button" data-assign-page="${page - 1}" ${page <= 1 ? 'disabled' : ''} aria-label="${esc(t('Previous'))}">‹</button><span>${page} / ${result.meta.last_page}</span><button type="button" data-assign-page="${page + 1}" ${page >= result.meta.last_page ? 'disabled' : ''} aria-label="${esc(t('Next'))}">›</button>`;
+            }
+        } catch (error) {
+            if (version === searchVersion && results.isConnected) status.textContent = error.message;
+        }
+    }
+    search.addEventListener('input', () => {
+        ++searchVersion; clearTimeout(timer);
+        submit.disabled = true; results.replaceChildren(); pages.replaceChildren();
+        status.textContent = t('Searching donors…');
+        timer = setTimeout(() => loadMatches(), 250);
+    });
+    results.addEventListener('change', () => { submit.disabled = !results.querySelector('input:checked'); });
+    pages.addEventListener('click', event => {
+        const button = event.target.closest('[data-assign-page]');
+        if (button) loadMatches(Number(button.dataset.assignPage));
+    });
+    search.focus();
+    await loadMatches();
+}
 async function requestDetails(id) {
     const record = (await request(`${routes.requests}/${id}`)).data;
     const open = ['verified', 'in_progress'].includes(record.request_status);
@@ -102,12 +165,11 @@ async function requestDetails(id) {
     }).join('') : `<p class="request-empty">${t('No donors have been matched yet.')}</p>`;
     const statusHistory = record.status_logs.length ? record.status_logs.map(log => `<li><span class="request-timeline-dot" aria-hidden="true"></span><div><strong>${statusLabel(log.to_status)}</strong><p>${statusLabel(log.from_status || t('New'))} → ${statusLabel(log.to_status)}</p><time>${esc(formatDate(log.created_at))}</time></div></li>`).join('') : `<p class="request-empty">${t('No status updates yet.')}</p>`;
     const donations = record.donations.length ? record.donations.map(donation => `<li><strong>${donation.bags} ${t('bags')}</strong><span>${esc(formatDate(donation.donated_at))}</span></li>`).join('') : `<p class="request-empty">${t('No donations recorded yet.')}</p>`;
-    const markup = `<section class="request-details" aria-label="${t('Request details')}"><div class="request-overview"><span class="request-avatar request-avatar--patient" aria-hidden="true">${esc(initials)}</span><div><p class="request-eyebrow">${t('Patient')}</p><h3>${esc(record.patient_name)}</h3><p class="request-hospital"><i class="fi fi-rr-hospital" aria-hidden="true"></i>${esc(record.hospital_name)}</p></div><div class="request-badges"><span class="status ${['verified', 'in_progress', 'completed'].includes(record.request_status) ? '' : 'busy'}">${statusLabel(record.request_status)}</span><span class="request-urgency">${statusLabel(record.urgency)}</span></div></div><dl class="request-facts"><div><dt>${t('Blood group')}</dt><dd><span class="bloodpill">${esc(record.bloodGroup?.name || t('No information'))}</span></dd></div><div><dt>${t('Bags needed')}</dt><dd>${record.bags_needed} ${t('bags')}</dd></div><div><dt>${t('Needed at')}</dt><dd>${esc(formatDate(record.needed_at))}</dd></div><div><dt>${t('Contact')}</dt><dd><strong>${esc(record.contact_name)}</strong><a href="tel:${esc(record.contact_phone)}">${esc(record.contact_phone)}</a></dd></div></dl><section class="request-section"><div class="request-section-heading"><div><h3>${t('Matched donors')}</h3><p>${record.request_donors.length} ${t('donors matched')}</p></div></div><div class="request-donors">${matchedDonors}</div></section><div class="request-history-grid"><section class="request-section"><h3>${t('Status history')}</h3><ol class="request-timeline">${statusHistory}</ol></section><section class="request-section"><h3>${t('Donation history')}</h3><ul class="request-donations">${donations}</ul></section></div></section>`;
+    const markup = `<section class="request-details" aria-label="${t('Request details')}"><div class="request-overview"><span class="request-avatar request-avatar--patient" aria-hidden="true">${esc(initials)}</span><div><p class="request-eyebrow">${t('Patient')}</p><h3>${esc(record.patient_name)}</h3><p class="request-hospital"><i class="fi fi-rr-hospital" aria-hidden="true"></i>${esc(record.hospital_name)}</p></div><div class="request-badges"><span class="status ${['verified', 'in_progress', 'completed'].includes(record.request_status) ? '' : 'busy'}">${statusLabel(record.request_status)}</span><span class="request-urgency">${statusLabel(record.urgency)}</span></div></div><dl class="request-facts"><div><dt>${t('Blood group')}</dt><dd><span class="bloodpill">${esc(record.bloodGroup?.name || t('No information'))}</span></dd></div><div><dt>${t('Bags needed')}</dt><dd>${record.bags_needed} ${t('bags')}</dd></div><div><dt>${t('Needed at')}</dt><dd>${esc(formatDate(record.needed_at))}</dd></div><div><dt>${t('Contact')}</dt><dd><strong>${esc(record.contact_name)}</strong><a href="tel:${esc(record.contact_phone)}">${esc(record.contact_phone)}</a></dd></div></dl><section class="request-section"><div class="request-section-heading"><div><h3>${t('Matched donors')}</h3><p>${record.request_donors.length} ${t('donors matched')}</p></div></div><label class="request-search"><i class="fi fi-rr-search" aria-hidden="true"></i><input type="search" id="matchedDonorSearch" placeholder="${esc(t('Search matched donors'))}" aria-label="${esc(t('Search matched donors'))}" aria-controls="matchedDonorList"></label><div class="request-donors" id="matchedDonorList">${matchedDonors}</div><p class="request-empty" id="matchedDonorEmpty" role="status" hidden>${t('No donors match your search.')}</p></section><details class="request-history"><summary>${t('Status history')} · ${t('Donation history')}</summary><div class="request-history-grid"><section class="request-section"><h3>${t('Status history')}</h3><ol class="request-timeline">${statusHistory}</ol></section><section class="request-section"><h3>${t('Donation history')}</h3><ul class="request-donations">${donations}</ul></section></div></details></section>`;
     modal(t('Request details'), markup, async () => { }, { requestDetails: true, description: t('Review request information, matched donors, and progress at a glance.') });
     $('donorForm').querySelector('[type=submit]').hidden = true;
-    return;
-    modal(t("Request details"), `<p>${esc(record.patient_name)} · ${esc(record.hospital_name)} · ${record.bags_needed} ${t("bags ·")} ${esc(record.request_status)} · ${esc(record.urgency)}</p><h3>${t("Matched donors")}</h3>` + record.request_donors.map(match => `<p>${esc(match.blood_donor?.name)} · ${esc(match.blood_donor?.phone)} · ${esc(match.response_status)} ${open && match.response_status !== 'donated' ? `<button type="button" class="btn" data-action="respond" data-request="${id}" data-id="${match.id}">${t("Response")}</button><button type="button" class="btn" data-action="record-donation" data-request="${id}" data-id="${match.blood_donor_id}">${t("Record donation")}</button>` : ''}</p>`).join('') + t("<h3>Status history</h3>") + record.status_logs.map(log => `<p>${esc(log.from_status || t("New"))} → ${esc(log.to_status)} · ${esc(log.created_at)}</p>`).join('') + t("<h3>Donation history</h3>") + record.donations.map(donation => `<p>#${donation.blood_donor_id} · ${esc(donation.donated_at?.slice(0, 10))} · ${donation.bags} ${t("bags")}</p>`).join(''), async () => { });
-    $('donorForm').querySelector('[type=submit]').hidden = true;
+    $('donorForm').querySelector('.modal-actions .btn').textContent = t('Close');
+
 }
 function recordDonation(donorId = '', requestId = '') {
     modal(t("Record donation"), field(t("Donor ID"), 'blood_donor_id', 'number', donorId) + field(t("Requests ID (Optional)"), 'blood_request_id', 'number', requestId, false) + field(t("Donation date"), 'donated_at', 'date', new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Dhaka', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())) + field(t("Hospital"), 'hospital_name', 'text', '', false), async values => {
@@ -248,7 +310,7 @@ document.addEventListener('click', async event => {
         if (action === 'verify-request') { await send(`${routes.requests}/${id}/verify`, {}); showSuccess(t('Blood request verified successfully.')); await loadRequests(); await refreshSummary(); await requestDetails(id); }
         if (action === 'verify-donation') { await send(`${routes.donations}/${id}/verify`, {}); showSuccess(t('Donation verified successfully.')); await loadDonations(); await loadDonors(); await loadRequests(); await refreshSummary(); }
         if (action === 'donation-preview') { const donation = (await request(`${routes.donations}/${id}`)).data; modal(t("Donation details"), `<p>${esc(donation.bloodDonor?.name)} · ${esc(donation.donated_at?.slice(0, 10))} · ${esc(donation.hospital_name || t("No information"))} · ${donation.bags} ${t("bags")}</p><p>${esc(donation.notes || t("No notes."))}</p>`, async () => { }); $('donorForm').querySelector('[type=submit]').hidden = true; }
-        if (action === 'assign-donor') { modal(t("Assign donor"), field(t("Donor ID"), 'blood_donor_id', 'number'), async values => { await send(`${routes.requests}/${id}/assign-donor`, values); await loadRequests(); await refreshSummary(); }); }
+        if (action === 'assign-donor') await openAssignDonor(id);
         if (action === 'match') { await send(`${routes.requests}/${id}/matches`, {}); showSuccess(t('Donor matching completed successfully.')); await refreshSummary(); await loadRequests(); await requestDetails(id); }
         if (action === 'request-details') await requestDetails(id);
         if (action === 'cancel-request' && await confirmAction(t("Cancel this request?"))) { await send(`${routes.requests}/${id}`, { request_status: 'cancelled' }, 'PATCH'); showSuccess(t('Blood request cancelled successfully.')); await loadRequests(); await refreshSummary(); }
@@ -327,3 +389,19 @@ document.addEventListener('scroll', event => {
     if (!(event.target instanceof Element) || !event.target.closest('.row-menu > div')) closeDonorMenus();
 }, true);
 window.addEventListener('resize', closeDonorMenus);
+
+$('modalOverlay').addEventListener('keydown', event => {
+    if (event.key === 'Escape') { closeModal(); return; }
+    if (event.key !== 'Tab') return;
+    const controls = [...$('modalOverlay').querySelectorAll('button, a[href], input, select, textarea, summary, [tabindex="0"]')].filter(control => !control.disabled && control.getClientRects().length);
+    const first = controls[0], last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+});
+document.addEventListener('input', event => {
+    if (event.target.id !== 'matchedDonorSearch') return;
+    const query = event.target.value.trim().toLocaleLowerCase();
+    const cards = [...document.querySelectorAll('#matchedDonorList .request-donor')];
+    cards.forEach(card => { card.hidden = !card.querySelector('.request-donor-info').textContent.toLocaleLowerCase().includes(query); });
+    $('matchedDonorEmpty').hidden = !cards.length || cards.some(card => !card.hidden);
+});
