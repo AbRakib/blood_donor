@@ -26,9 +26,10 @@ it('seeds active domain models without duplicating records on subsequent runs', 
 
     $this->assertDatabaseCount('activity_logs', 0);
     $this->assertDatabaseCount('users', 1);
-    $this->assertDatabaseCount('districts', 1);
-    $this->assertDatabaseCount('upazilas', 1);
-    $this->assertDatabaseCount('unions', 2);
+    $this->assertDatabaseCount('divisions', 8);
+    $this->assertDatabaseCount('districts', 64);
+    $this->assertDatabaseCount('upazilas', 494);
+    $this->assertDatabaseCount('unions', 4537);
     $this->assertDatabaseCount('system_settings', 2);
 
     $donation = BloodDonation::firstOrFail();

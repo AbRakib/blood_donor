@@ -14,7 +14,7 @@ class BloodDonorSeeder extends Seeder
         $this->call(BloodGroupSeeder::class);
         $this->call(UnionSeeder::class);
 
-        $unions = Union::with('upazila')->whereHas('upazila', fn ($query) => $query->where('name', 'Manda')->whereHas('district', fn ($query) => $query->where('code', '64')))->orderBy('id')->get();
+        $unions = Union::with('upazila')->whereHas('upazila', fn ($query) => $query->where('name', 'Manda')->whereHas('district', fn ($query) => $query->where('name', 'Naogaon')))->orderBy('id')->get();
 
         foreach (BloodGroup::orderBy('sort_order')->get() as $index => $bloodGroup) {
             $union = $unions[$index % $unions->count()];

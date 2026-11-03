@@ -8,7 +8,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([AdminUserSeeder::class, BloodGroupSeeder::class, UnionSeeder::class, SystemSettingSeeder::class]);
+        $this->call([AdminUserSeeder::class, BloodGroupSeeder::class, BangladeshLocationSeeder::class, SystemSettingSeeder::class]);
 
         if (app()->environment(['local', 'testing'])) {
             $this->call([
