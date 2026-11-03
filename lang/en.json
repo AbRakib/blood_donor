@@ -317,5 +317,10 @@
     "Assigned": "Assigned",
     "Previous": "Previous",
     "Next": "Next",
-    "Update": "Update"
+    "Update": "Update",
+    "All": "All",
+    "Emergency": "Emergency",
+    "Normal": "Normal",
+    "Complete": "Complete",
+    "Expired": "Expired"
 }

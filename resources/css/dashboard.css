@@ -789,6 +789,13 @@ td small {
     gap: 15px
 }
 
+.donor-location-section {
+    margin-top: 18px;
+    padding: 16px;
+    border: 1px dashed #c5cdd6;
+    border-radius: 10px
+}
+
 .field {
     display: grid;
     gap: 6px
@@ -817,6 +824,75 @@ td small {
 .field input:focus,
 .field select:focus {
     border-color: #e33c49
+}
+
+.donor-location-section select {
+    min-height: 44px;
+    color: #172338;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s
+}
+
+.donor-location-section select:focus-visible {
+    border-color: #ed1638;
+    box-shadow: 0 0 0 3px rgb(237 22 56 / 10%)
+}
+
+.donor-location-section select:disabled {
+    background: #f7f9fb;
+    color: #98a3ac;
+    cursor: not-allowed
+}
+
+@supports (appearance: base-select) {
+    .donor-location-section select,
+    .donor-location-section select::picker(select) {
+        appearance: base-select
+    }
+
+    .donor-location-section select::picker(select) {
+        margin-top: 6px;
+        padding: 6px;
+        border: 1px solid #e4e9ed;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 12px 30px rgb(23 35 56 / 14%);
+        max-height: 240px;
+        overflow-y: auto
+    }
+
+    .donor-location-section select::picker-icon {
+        color: #7a8797;
+        transition: rotate .2s
+    }
+
+    .donor-location-section select:open::picker-icon {
+        rotate: 180deg
+    }
+
+    .donor-location-section select option {
+        padding: 10px 12px;
+        border-radius: 7px;
+        color: #344054;
+        font-size: 13px;
+        cursor: pointer
+    }
+
+    .donor-location-section select option:hover,
+    .donor-location-section select option:focus {
+        background: #f5f7fa;
+        outline: none
+    }
+
+    .donor-location-section select option:checked {
+        background: #fff0f3;
+        color: #d51030;
+        font-weight: 600
+    }
+
+    .donor-location-section select option::checkmark {
+        color: #ed1638
+    }
 }
 
 .modal-actions {
@@ -3570,4 +3646,37 @@ td small {
         display: flex;
         padding-left: 8px;
     }
+}
+
+.request-tabs {
+    display: flex;
+    justify-content: safe center;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 0 24px 16px;
+    border-bottom: 1px solid #eee;
+}
+.request-tabs a {
+    flex-shrink: 0;
+    padding: 7px 11px;
+    border-radius: 4px;
+    background: #ddd;
+    color: #888;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 19px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.request-tabs a:hover {
+    background: #d1d1d1;
+    color: #666;
+}
+.request-tabs a[aria-current="page"] {
+    background: linear-gradient(110deg, #ff365e, #e60028);
+    color: #fff;
+}
+.request-tabs a:focus-visible {
+    outline: 2px solid #e60028;
+    outline-offset: 2px;
 }

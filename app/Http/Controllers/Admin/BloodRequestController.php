@@ -23,7 +23,16 @@ class BloodRequestController extends Controller
             return view('admin.requests')->with(compact('common_data'));
         }
 
-        return $this->collectionResponse(BloodRequest::with('bloodGroup')->orderByDesc('id')->paginate(20), $this->formatBloodRequest(...));
+        $query = BloodRequest::with('bloodGroup');
+        $tab = $request->query('tab', 'all');
+
+        if (in_array($tab, ['pending', 'complete', 'expired'], true)) {
+            $query->where('request_status', $tab === 'complete' ? 'fulfilled' : $tab);
+        } elseif (in_array($tab, ['emergency', 'normal'], true)) {
+            $query->where('urgency', $tab);
+        }
+
+        return $this->collectionResponse($query->orderByDesc('id')->paginate(20), $this->formatBloodRequest(...));
     }
 
     public function store(Request $request): JsonResponse

@@ -1604,37 +1604,55 @@ async function v(e) {
 	})).isConfirmed;
 }
 // resources/js/donation-locations.js
-var ne = () => [
-	"district_id",
-	"upazila_id",
-	"union_id"
-].map((e, t) => `<div class="field"><label>${[
-	d("District"),
-	d("Upazila"),
-	d("Union")
-][t]}</label><select name="${e}" data-location="${e}"><option value="">${d("Select (optional)")}</option></select></div>`).join("");
-async function re(e, t = {}) {
-	let n = e.querySelector("[data-location=\"district_id\"]"), r = e.querySelector("[data-location=\"upazila_id\"]"), i = e.querySelector("[data-location=\"union_id\"]");
-	if (!n) return;
-	let a = (e, t, n) => {
-		e.innerHTML = d("<option value=\"\">Select (optional)</option>") + t.map((e) => `<option value="${e.id}" ${Number(n) === e.id ? "selected" : ""}>${p(document.documentElement.lang === "bn" && e.name_bn || e.name)}</option>`).join("");
-	};
-	a(r, []), a(i, []), a(n, (await m(f.locations)).data, t.district_id), t.district_id && a(r, (await m(`${f.locations}?district_id=${t.district_id}`)).data, t.upazila_id), t.upazila_id && a(i, (await m(`${f.locations}?upazila_id=${t.upazila_id}`)).data, t.union_id), n.onchange = async () => {
-		if (n.setCustomValidity(""), a(r, []), a(i, []), n.value) try {
-			let e = n.value, t = await m(`${f.locations}?district_id=${e}`);
-			n.value === e && a(r, t.data);
-		} catch (e) {
-			n.setCustomValidity(e.message), n.reportValidity();
-		}
-	}, r.onchange = async () => {
-		if (r.setCustomValidity(""), a(i, []), r.value) try {
-			let e = r.value, t = await m(`${f.locations}?upazila_id=${e}`);
-			r.value === e && a(i, t.data);
-		} catch (e) {
-			r.setCustomValidity(e.message), r.reportValidity();
-		}
-	};
+
+const ne = () => ['division_id', 'district_id', 'upazila_id', 'union_id'].map((name, index) => `<div class="field"><label>${[d("Division"), d("District"), d("Upazila"), d("Union")][index]}</label><select name="${name}" data-location="${name}" ${index ? 'disabled' : ''}><option value="">${d("Select (optional)")}</option></select></div>`).join('');
+
+async function re(form, values = {}) {
+    const names = ['division_id', 'district_id', 'upazila_id', 'union_id'];
+    const fields = names.map(name => form.querySelector(`[data-location="${name}"]`));
+    if (fields.some(field => !field)) return;
+    const fill = (field, rows = [], selected = '') => {
+        field.setCustomValidity('');
+        field.innerHTML = `<option value="">${d("Select (optional)")}</option>` + rows.map(row => `<option value="${row.id}" ${String(selected) === String(row.id) ? 'selected' : ''}>${p(document.documentElement.lang === 'bn' ? row.name_bn || row.name : row.name)}</option>`).join('');
+        field.disabled = rows.length === 0;
+    };
+    let revision = 0;
+    fields.forEach(field => fill(field));
+    fields.forEach((field, index) => {
+        field.onchange = async () => {
+            const currentRevision = ++revision;
+            field.setCustomValidity('');
+            fields.slice(index + 1).forEach(child => fill(child));
+            if (!field.value || index === fields.length - 1) return;
+            try {
+                const result = await m(`${f.locations}?${names[index]}=${encodeURIComponent(field.value)}`);
+                if (currentRevision === revision) fill(fields[index + 1], result.data);
+            } catch (error) {
+                if (currentRevision !== revision) return;
+                field.setCustomValidity(error.message);
+                field.reportValidity();
+            }
+        };
+    });
+    const initialRevision = revision;
+    const divisions = (await m(`${f.locations}?type=divisions`)).data;
+    if (revision !== initialRevision) return;
+    let divisionId = values.division_id;
+    if (!divisionId && values.district_id) {
+        const districts = (await m(f.locations)).data;
+        if (revision !== initialRevision) return;
+        divisionId = districts.find(district => String(district.id) === String(values.district_id))?.division_id;
+    }
+    fill(fields[0], divisions, divisionId);
+    const selections = [divisionId, values.district_id, values.upazila_id, values.union_id];
+    for (let index = 0; index < fields.length - 1; index++) {
+        if (!fields[index].value) break;
+        const result = await m(`${f.locations}?${names[index]}=${encodeURIComponent(fields[index].value)}`);
+        if (revision !== initialRevision) return;
+        fill(fields[index + 1], result.data, selections[index + 1]);
+    }
 }
+
 // resources/js/donation-dashboard.js
 var y = (e) => document.getElementById(e), b = [], x = [], S = null, C = 1, ie, ae, oe, se = y("donorForm").innerHTML, w = document.body.dataset.adminPage || "dashboard";
 function ce(e) {
@@ -1716,7 +1734,7 @@ function ue() {
 	clearTimeout(ae), ae = setTimeout(() => j().catch((e) => _(e.message)), 250);
 }
 function de() {
-	D(d("New donor"), se + ne(), async (e) => {
+	D(d("New donor"), se + '<div class="formgrid donor-location-section">' + ne() + '</div>', async (e) => {
 		let t = b.find((t) => t.name === e.group);
 		if (!t) throw Error(d("Select a blood group."));
 		await h(f.adminDonors, {
@@ -1736,14 +1754,25 @@ function de() {
 	e.length > 1 && e[0].remove();
 }
 async function fe(e) {
-	let t = (await m(`${f.adminDonors}/${e}`)).data;
-	D(d("Edit donor"), O(d("Name"), "name", "text", t.name) + O(d("Phone (enter to change number)"), "phone", "tel", t.phone || "", !1) + k(t.blood_group_id) + O(d("Area"), "area", "text", t.area, !1) + O(d("Address"), "address", "text", t.address, !1) + `<label style="display:flex;gap:8px;align-items:flex-start;color:#6e7b86;font-size:12px;margin-top:18px"><input type="checkbox" name="consent_to_contact" value="1" style="margin-top:4px" ${t.consent_to_contact ? "checked" : ""}> ${d("Consent to store donor details and receive contact requests has been obtained.")}</label>` + ne(), async (t) => {
-		t.phone || delete t.phone, await h(`${f.adminDonors}/${e}`, {
-			...t,
-			consent_to_contact: t.consent_to_contact === "1"
-		}, "PATCH"), await j(C), await A();
-	}), await re(y("donorForm"), t);
+    const donor = (await m(`${f.adminDonors}/${e}`)).data;
+    const template = document.createElement('template');
+    template.innerHTML = se;
+    template.content.querySelectorAll('.modal-actions').forEach(actions => actions.remove());
+    const bloodGroup = template.content.querySelector('[name="group"]');
+    bloodGroup.name = 'blood_group_id';
+    bloodGroup.innerHTML = b.map(group => `<option value="${group.id}">${p(group.name)}</option>`).join('');
+    template.content.querySelector('[name="phone"]').required = false;
+    template.content.querySelector('[name="area"]').required = false;
+    D(d("Edit donor"), template.innerHTML + '<div class="formgrid donor-location-section">' + ne() + '</div>', async values => {
+        if (!values.phone) delete values.phone;
+        await h(`${f.adminDonors}/${e}`, values, 'PATCH'); await j(C); await A();
+    });
+    for (const name of ['name', 'blood_group_id', 'phone', 'area', 'address']) {
+        y('donorForm').elements.namedItem(name).value = donor[name] ?? '';
+    }
+    await re(y('donorForm'), donor);
 }
+
 function pe() {
 	D(d("Blood requests"), k() + ne() + O(d("Patient name"), "patient_name") + O(d("Contact name"), "contact_name") + O(d("Contact phone"), "contact_phone", "tel") + O(d("Hospital"), "hospital_name") + O(d("Hospital address"), "hospital_address", "text", "", !1) + O(d("Number of bags"), "bags_needed", "number", 1) + O(d("Needed at"), "needed_at", "datetime-local") + O(d("Expires at (optional)"), "expires_at", "datetime-local", "", !1) + d("<div class=\"field\"><label>Urgency</label><select name=\"urgency\"><option value=\"normal\">Normal</option><option value=\"urgent\">Urgent</option><option value=\"emergency\">Very urgent</option><option value=\"critical\">Critical</option></select></div>"), async (e) => {
 		await h(f.requests, {
@@ -1753,9 +1782,34 @@ function pe() {
 		}), await M(), await A();
 	}), re(y("donorForm")).catch((e) => _(e.message));
 }
-async function M(e = 1) {
+let requestTabLoading = false;
+document.addEventListener('click', async event => {
+    const tab = event.target.closest('.request-tabs a');
+    if (!tab || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (requestTabLoading) return;
+    requestTabLoading = true;
+    const url = new URL(tab.href);
+    const requestView = document.getElementById('requestsView');
+    requestView.setAttribute('aria-busy', 'true');
+    try {
+        await M(1, url.searchParams.get('tab') || 'all');
+        window.history.replaceState(null, '', url);
+        document.querySelectorAll('.request-tabs a').forEach(link => {
+            if (link === tab) link.setAttribute('aria-current', 'page');
+            else link.removeAttribute('aria-current');
+        });
+    } catch (error) {
+        _(error.message);
+    } finally {
+        requestTabLoading = false;
+        requestView.removeAttribute('aria-busy');
+    }
+});
+async function M(e = 1, tab = new URLSearchParams(window.location.search).get('tab') || 'all') {
 	if (!y("requestList")) return;
-	let t = await m(`${f.requests}?page=${e}`);
+	let params = new URLSearchParams({ page: e, tab });
+	let t = await m(`${f.requests}?${params}`);
 	y("requestList").innerHTML = t.data.map((e, n) => {
 		let r = e.patient_name.trim().split(/\s+/u).slice(0, 2).map((e) => Array.from(e)[0]).join("").toLocaleUpperCase(), i = `<button class="row-btn" data-action="request-details" data-id="${e.id}">${d("Details")}</button>` + (e.request_status === "pending" ? `<button class="row-btn" data-action="verify-request" data-id="${e.id}">${d("Verify")}</button><button class="row-btn" data-action="cancel-request" data-id="${e.id}">${d("Cancel")}</button>` : ["verified", "in_progress"].includes(e.request_status) ? `<button class="row-btn" data-action="assign-donor" data-id="${e.id}">${d("Assign donor")}</button><button class="row-btn" data-action="match" data-id="${e.id}">${d("Match donors")}</button><button class="row-btn" data-action="cancel-request" data-id="${e.id}">${d("Cancel")}</button>` : "");
 		return `<tr><td>${t.meta.from + n}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${p(r)}</span><strong>${p(e.patient_name)}</strong></div></td><td><span class="bloodpill">${p(e.bloodGroup?.name)}</span></td><td>${p(e.hospital_name)}<small>${p(e.hospital_address || "")}</small></td><td>${e.bags_needed}</td><td><span class="status ${[

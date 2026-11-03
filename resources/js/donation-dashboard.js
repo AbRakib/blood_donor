@@ -63,7 +63,7 @@ async function loadDonors(page = 1) {
 }
 function renderTable() { clearTimeout(filterTimer); filterTimer = setTimeout(() => loadDonors().catch(error => showError(error.message)), 250); }
 function openModal() {
-    modal(t("New donor"), donorMarkup + locationFields(), async values => {
+    modal(t("New donor"), donorMarkup + '<div class="formgrid donor-location-section">' + locationFields() + '</div>', async values => {
         const group = groups.find(group => group.name === values.group); if (!group) throw new Error(t("Select a blood group."));
         await send(routes.adminDonors, { name: values.name, phone: values.phone, blood_group_id: group.id, area: values.area, address: values.address, is_available: true, consent_to_contact: values.consent_to_contact === '1', district_id: values.district_id || null, upazila_id: values.upazila_id || null, union_id: values.union_id || null });
         await loadDonors(); await refreshSummary();
@@ -73,10 +73,21 @@ function openModal() {
 }
 async function editDonor(id) {
     const donor = (await request(`${routes.adminDonors}/${id}`)).data;
-    modal(t("Edit donor"), field(t("Name"), 'name', 'text', donor.name) + field(t("Phone (enter to change number)"), 'phone', 'tel', donor.phone || '', false) + groupSelect(donor.blood_group_id) + field(t("Area"), 'area', 'text', donor.area, false) + field(t("Address"), 'address', 'text', donor.address, false) + `<label style="display:flex;gap:8px;align-items:flex-start;color:#6e7b86;font-size:12px;margin-top:18px"><input type="checkbox" name="consent_to_contact" value="1" style="margin-top:4px" ${donor.consent_to_contact ? 'checked' : ''}> ${t("Consent to store donor details and receive contact requests has been obtained.")}</label>` + locationFields(), async values => {
+    const template = document.createElement('template');
+    template.innerHTML = donorMarkup;
+    template.content.querySelectorAll('.modal-actions').forEach(actions => actions.remove());
+    const bloodGroup = template.content.querySelector('[name="group"]');
+    bloodGroup.name = 'blood_group_id';
+    bloodGroup.innerHTML = groups.map(group => `<option value="${group.id}">${esc(group.name)}</option>`).join('');
+    template.content.querySelector('[name="phone"]').required = false;
+    template.content.querySelector('[name="area"]').required = false;
+    modal(t("Edit donor"), template.innerHTML + '<div class="formgrid donor-location-section">' + locationFields() + '</div>', async values => {
         if (!values.phone) delete values.phone;
-        await send(`${routes.adminDonors}/${id}`, { ...values, consent_to_contact: values.consent_to_contact === '1' }, 'PATCH'); await loadDonors(currentPage); await refreshSummary();
+        await send(`${routes.adminDonors}/${id}`, values, 'PATCH'); await loadDonors(currentPage); await refreshSummary();
     });
+    for (const name of ['name', 'blood_group_id', 'phone', 'area', 'address']) {
+        $('donorForm').elements.namedItem(name).value = donor[name] ?? '';
+    }
     await bindLocations($('donorForm'), donor);
 }
 function openRequestForm() {
@@ -85,9 +96,34 @@ function openRequestForm() {
     });
     bindLocations($('donorForm')).catch(error => showError(error.message));
 }
-async function loadRequests(page = 1) {
+let requestTabLoading = false;
+document.addEventListener('click', async event => {
+    const tab = event.target.closest('.request-tabs a');
+    if (!tab || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (requestTabLoading) return;
+    requestTabLoading = true;
+    const url = new URL(tab.href);
+    const requestView = document.getElementById('requestsView');
+    requestView.setAttribute('aria-busy', 'true');
+    try {
+        await loadRequests(1, url.searchParams.get('tab') || 'all');
+        window.history.replaceState(null, '', url);
+        document.querySelectorAll('.request-tabs a').forEach(link => {
+            if (link === tab) link.setAttribute('aria-current', 'page');
+            else link.removeAttribute('aria-current');
+        });
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        requestTabLoading = false;
+        requestView.removeAttribute('aria-busy');
+    }
+});
+async function loadRequests(page = 1, tab = new URLSearchParams(window.location.search).get('tab') || 'all') {
     if (!$('requestList')) return;
-    const result = await request(`${routes.requests}?page=${page}`);
+    const params = new URLSearchParams({ page, tab });
+    const result = await request(`${routes.requests}?${params}`);
     $('requestList').innerHTML = result.data.map((record, index) => {
         const initials = record.patient_name.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0]).join('').toLocaleUpperCase();
         const actions = `<button class="row-btn" data-action="request-details" data-id="${record.id}">${t("Details")}</button>` + (record.request_status === 'pending' ? `<button class="row-btn" data-action="verify-request" data-id="${record.id}">${t("Verify")}</button><button class="row-btn" data-action="cancel-request" data-id="${record.id}">${t("Cancel")}</button>` : ['verified', 'in_progress'].includes(record.request_status) ? `<button class="row-btn" data-action="assign-donor" data-id="${record.id}">${t("Assign donor")}</button><button class="row-btn" data-action="match" data-id="${record.id}">${t("Match donors")}</button><button class="row-btn" data-action="cancel-request" data-id="${record.id}">${t("Cancel")}</button>` : '');
