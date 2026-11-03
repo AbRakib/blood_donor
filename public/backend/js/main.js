@@ -1726,7 +1726,7 @@ function de() {
 			area: e.area,
 			address: e.address,
 			is_available: !0,
-			consent_to_contact: !0,
+			consent_to_contact: e.consent_to_contact === "1",
 			district_id: e.district_id || null,
 			upazila_id: e.upazila_id || null,
 			union_id: e.union_id || null
@@ -1737,10 +1737,10 @@ function de() {
 }
 async function fe(e) {
 	let t = (await m(`${f.adminDonors}/${e}`)).data;
-	D(d("Edit donor"), O(d("Name"), "name", "text", t.name) + O(d("Phone (enter to change number)"), "phone", "tel", t.phone || "", !1) + k(t.blood_group_id) + O(d("Area"), "area", "text", t.area, !1) + O(d("Address"), "address", "text", t.address, !1) + ne() + `<label><input type="checkbox" name="consent_to_contact" ${t.consent_to_contact ? "checked" : ""}> ${d("Consent to contact given")}</label>`, async (t) => {
+	D(d("Edit donor"), O(d("Name"), "name", "text", t.name) + O(d("Phone (enter to change number)"), "phone", "tel", t.phone || "", !1) + k(t.blood_group_id) + O(d("Area"), "area", "text", t.area, !1) + O(d("Address"), "address", "text", t.address, !1) + `<label style="display:flex;gap:8px;align-items:flex-start;color:#6e7b86;font-size:12px;margin-top:18px"><input type="checkbox" name="consent_to_contact" value="1" style="margin-top:4px" ${t.consent_to_contact ? "checked" : ""}> ${d("Consent to store donor details and receive contact requests has been obtained.")}</label>` + ne(), async (t) => {
 		t.phone || delete t.phone, await h(`${f.adminDonors}/${e}`, {
 			...t,
-			consent_to_contact: t.consent_to_contact === "on"
+			consent_to_contact: t.consent_to_contact === "1"
 		}, "PATCH"), await j(C), await A();
 	}), await re(y("donorForm"), t);
 }
@@ -2072,3 +2072,23 @@ document.addEventListener("click", (e) => {
 		e.hidden = !e.querySelector(".request-donor-info").textContent.toLocaleLowerCase().includes(t);
 	}), y("matchedDonorEmpty").hidden = !n.length || n.some((e) => !e.hidden);
 });
+
+{
+const accountDropdown = document.getElementById('accountDropdown');
+const accountProfile = document.getElementById('accountProfile');
+document.addEventListener('click', event => {
+    if (accountDropdown && !accountDropdown.contains(event.target)) accountDropdown.open = false;
+});
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && accountDropdown?.open) {
+        accountDropdown.open = false;
+        accountDropdown.querySelector('summary').focus();
+    }
+});
+document.getElementById('showAccountProfile')?.addEventListener('click', () => {
+    accountDropdown.open = false;
+    accountProfile.showModal();
+});
+accountProfile?.addEventListener('close', () => accountDropdown.querySelector('summary').focus());
+
+}

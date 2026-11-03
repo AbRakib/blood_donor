@@ -3362,7 +3362,7 @@ td small {
 
 .side .adminmini {
     margin: 0;
-    padding: 14px 12px;
+    padding: 10px 10px;
     border: 1px solid #e8ecf2;
     border-radius: 12px;
     background: #f8fafc;
@@ -3495,3 +3495,82 @@ td small {
 .assign-option.is-assigned { opacity: .6; cursor: default; }
 #assignDonorPages { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 14px; }
 #donorForm .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+
+.account-dropdown {
+    position: relative;
+}
+
+.account-dropdown > summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.account-dropdown > summary::-webkit-details-marker {
+    display: none;
+}
+
+.account-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    z-index: 45;
+    width: 170px;
+    padding: 6px;
+    border: 1px solid #e8ecf2;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 12px 32px #1823311a;
+}
+
+.account-menu button {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #293645;
+    text-align: left;
+}
+
+.account-menu button:hover,
+.account-menu button:focus-visible {
+    background: #fff0f1;
+    color: #df3947;
+}
+
+.account-profile {
+    width: min(420px, calc(100% - 32px));
+    padding: 24px;
+    border: 1px solid #e8ecf2;
+    border-radius: 16px;
+    color: var(--dark);
+}
+
+.account-profile::backdrop {
+    background: #1e293b78;
+}
+
+.account-profile dt {
+    color: #8490a5;
+    margin-top: 16px;
+}
+
+.account-profile dd {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+
+@media(max-width:950px) {
+    .account-name {
+        display: none;
+    }
+}
+
+@media(max-width:580px) {
+    .account-dropdown .userline {
+        display: flex;
+        padding-left: 8px;
+    }
+}

@@ -65,7 +65,7 @@ function renderTable() { clearTimeout(filterTimer); filterTimer = setTimeout(() 
 function openModal() {
     modal(t("New donor"), donorMarkup + locationFields(), async values => {
         const group = groups.find(group => group.name === values.group); if (!group) throw new Error(t("Select a blood group."));
-        await send(routes.adminDonors, { name: values.name, phone: values.phone, blood_group_id: group.id, area: values.area, address: values.address, is_available: true, consent_to_contact: true, district_id: values.district_id || null, upazila_id: values.upazila_id || null, union_id: values.union_id || null });
+        await send(routes.adminDonors, { name: values.name, phone: values.phone, blood_group_id: group.id, area: values.area, address: values.address, is_available: true, consent_to_contact: values.consent_to_contact === '1', district_id: values.district_id || null, upazila_id: values.upazila_id || null, union_id: values.union_id || null });
         await loadDonors(); await refreshSummary();
     });
     bindLocations($('donorForm')).catch(error => showError(error.message));
@@ -73,9 +73,9 @@ function openModal() {
 }
 async function editDonor(id) {
     const donor = (await request(`${routes.adminDonors}/${id}`)).data;
-    modal(t("Edit donor"), field(t("Name"), 'name', 'text', donor.name) + field(t("Phone (enter to change number)"), 'phone', 'tel', donor.phone || '', false) + groupSelect(donor.blood_group_id) + field(t("Area"), 'area', 'text', donor.area, false) + field(t("Address"), 'address', 'text', donor.address, false) + locationFields() + `<label><input type="checkbox" name="consent_to_contact" ${donor.consent_to_contact ? 'checked' : ''}> ${t("Consent to contact given")}</label>`, async values => {
+    modal(t("Edit donor"), field(t("Name"), 'name', 'text', donor.name) + field(t("Phone (enter to change number)"), 'phone', 'tel', donor.phone || '', false) + groupSelect(donor.blood_group_id) + field(t("Area"), 'area', 'text', donor.area, false) + field(t("Address"), 'address', 'text', donor.address, false) + `<label style="display:flex;gap:8px;align-items:flex-start;color:#6e7b86;font-size:12px;margin-top:18px"><input type="checkbox" name="consent_to_contact" value="1" style="margin-top:4px" ${donor.consent_to_contact ? 'checked' : ''}> ${t("Consent to store donor details and receive contact requests has been obtained.")}</label>` + locationFields(), async values => {
         if (!values.phone) delete values.phone;
-        await send(`${routes.adminDonors}/${id}`, { ...values, consent_to_contact: values.consent_to_contact === 'on' }, 'PATCH'); await loadDonors(currentPage); await refreshSummary();
+        await send(`${routes.adminDonors}/${id}`, { ...values, consent_to_contact: values.consent_to_contact === '1' }, 'PATCH'); await loadDonors(currentPage); await refreshSummary();
     });
     await bindLocations($('donorForm'), donor);
 }
@@ -345,6 +345,24 @@ $('globalSearch').addEventListener('input', event => {
     renderTable();
 });
 initializeDonorFilters();
+
+
+const accountDropdown = $('accountDropdown');
+const accountProfile = $('accountProfile');
+document.addEventListener('click', event => {
+    if (accountDropdown && !accountDropdown.contains(event.target)) accountDropdown.open = false;
+});
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && accountDropdown?.open) {
+        accountDropdown.open = false;
+        accountDropdown.querySelector('summary').focus();
+    }
+});
+$('showAccountProfile')?.addEventListener('click', () => {
+    accountDropdown.open = false;
+    accountProfile.showModal();
+});
+accountProfile?.addEventListener('close', () => accountDropdown.querySelector('summary').focus());
 
 try {
     if (['dashboard', 'donors', 'requests', 'donations', 'groups'].includes(currentPageName)) {

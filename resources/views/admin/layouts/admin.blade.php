@@ -76,13 +76,19 @@
                         <div><span id="today"></span><small id="weekday"></small></div>
                     </div><button class="iconbtn" onclick="showToast('{{ __('No new notifications') }}')"><i
                             class="fi fi-rr-bell" aria-hidden="true"></i><span class="dot"></span></button>
-                    <div class="userline">
-                        <div class="avatar">AD</div>
-                        <div><b>{{ auth()->user()->name }}</b><small>{{ __('Administrator') }}</small></div>
-                    </div>
-                    <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="btn"
-                            aria-label="{{ __('Log out') }}"><i class="fi fi-rr-sign-out-alt" aria-hidden="true"></i>
-                            {{ __('Log out') }}</button></form>
+                    <details class="account-dropdown" id="accountDropdown">
+                        <summary class="userline" aria-label="{{ __('Account') }}">
+                            <span class="avatar">AD</span>
+                            <span class="account-name"><b>{{ auth()->user()->name }}</b><small>{{ __('Administrator') }}</small></span>
+                        </summary>
+                        <div class="account-menu">
+                            <button type="button" id="showAccountProfile">{{ __('Profile') }}</button>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit">{{ __('Log out') }}</button>
+                            </form>
+                        </div>
+                    </details>
                 </div>
             </header>
             <div class="content">
@@ -99,6 +105,16 @@
             </div>
         </main>
     </div>
+    <dialog id="accountProfile" class="account-profile" aria-labelledby="accountProfileTitle">
+        <div class="modal-header">
+            <h2 id="accountProfileTitle">{{ __('Profile') }}</h2>
+            <form method="dialog"><button class="close" aria-label="{{ __('Close') }}">×</button></form>
+        </div>
+        <dl>
+            <dt>{{ __('Name') }}</dt><dd>{{ auth()->user()->name }}</dd>
+            <dt>{{ __('Email') }}</dt><dd>{{ auth()->user()->email }}</dd>
+        </dl>
+    </dialog>
     @include('admin.partials.admin-modal')
     <div class="toast" id="toast"></div>
     <meta name="csrf-token" content="{{ csrf_token() }}">
