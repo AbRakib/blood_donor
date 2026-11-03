@@ -61,4 +61,53 @@ var e=Object.create,t=Object.defineProperty,n=Object.getOwnPropertyDescriptor,r=
 showLoaderOnConfirm should be used together with preConfirm, see usage example:
 https://sweetalert2.github.io/#ajax-request`),$r(e),typeof e.title==`string`&&(e.title=e.title.split(`
 `).join(`<br />`)),Le(e)}let Q;var ti=new WeakMap;class ${constructor(...e){if(r(this,ti,Promise.resolve({isConfirmed:!1,isDenied:!1,isDismissed:!0})),typeof window>`u`)return;Q=this;let t=Object.freeze(this.constructor.argsToParams(e));this.params=t,this.isAwaitingPromise=!1,i(ti,this,this._main(Q.params))}_main(e,t={}){if(rr(Object.assign({},t,e)),a.currentInstance){let e=G.swalPromiseResolve.get(a.currentInstance),{isAwaitingPromise:t}=a.currentInstance;a.currentInstance._destroy(),t||e({isDismissed:!0}),ge()&&Yt()}a.currentInstance=Q;let n=ri(e,t);ei(n),Object.freeze(n),a.timeout&&(a.timeout.stop(),delete a.timeout),clearTimeout(a.restoreFocusTimeout);let r=ii(Q);return Nt(Q,n),V.innerParams.set(Q,n),ni(Q,r,n)}then(e){return n(ti,this).then(e)}finally(e){return n(ti,this).finally(e)}}let ni=(e,t,n)=>new Promise((r,i)=>{let o=t=>{e.close({isDismissed:!0,dismiss:t,isConfirmed:!1,isDenied:!1})};G.swalPromiseResolve.set(e,r),G.swalPromiseReject.set(e,i),t.confirmButton.onclick=()=>{On(e)},t.denyButton.onclick=()=>{kn(e)},t.cancelButton.onclick=()=>{An(e,o)},t.closeButton.onclick=()=>{o(W.close)},dr(n,t,o),zt(a,n,o),_n(e,n),Kr(n),ai(a,n,o),oi(t,n),setTimeout(()=>{t.container.scrollTop=0})}),ri=(e,t)=>{let n=Lr(e),r=Object.assign({},X,t,n,e);return r.showClass=Object.assign({},X.showClass,r.showClass),r.hideClass=Object.assign({},X.hideClass,r.hideClass),r.animation===!1&&(r.showClass={backdrop:`swal2-noanimation`},r.hideClass={}),r},ii=e=>{let t={popup:b(),container:_(),actions:E(),confirmButton:S(),denyButton:w(),cancelButton:C(),loader:T(),closeButton:me(),validationMessage:de(),progressSteps:ue()};return V.domCache.set(e,t),t},ai=(e,t,n)=>{let r=D();L(r),t.timer&&(e.timeout=new Fr(()=>{n(`timer`),delete e.timeout},t.timer),t.timerProgressBar&&r&&(I(r),j(r,t,`timerProgressBar`),setTimeout(()=>{e.timeout&&e.timeout.running&&Oe(t.timer)})))},oi=(e,t)=>{t.toast||(h(t.allowEnterKey)?si(e)||ci(e,t)||Bt(-1,1):(ne(`allowEnterKey`,`preConfirm: () => false`),e.popup.focus()))},si=e=>{let t=Array.from(e.popup.querySelectorAll(`[autofocus]`));for(let e of t)if(e instanceof HTMLElement&&z(e))return e.focus(),!0;return!1},ci=(e,t)=>t.focusDeny&&z(e.denyButton)?(e.denyButton.focus(),!0):t.focusCancel&&z(e.cancelButton)?(e.cancelButton.focus(),!0):t.focusConfirm&&z(e.confirmButton)?(e.confirmButton.focus(),!0):!1;$.prototype.disableButtons=Un,$.prototype.enableButtons=Hn,$.prototype.getInput=zn,$.prototype.disableInput=Gn,$.prototype.enableInput=Wn,$.prototype.hideLoading=Ln,$.prototype.disableLoading=Ln,$.prototype.showValidationMessage=Kn,$.prototype.resetValidationMessage=qn,$.prototype.close=q,$.prototype.closePopup=q,$.prototype.closeModal=q,$.prototype.closeToast=q,$.prototype.rejectPromise=dn,$.prototype.update=ir,$.prototype._destroy=or,Object.assign($,Pr),Object.keys(ur).forEach(e=>{$[e]=function(...t){if(Q&&Q[e])return Q[e](...t)}}),$.DismissReason=W,$.version=`11.26.25`;let li=$;return li.default=li,li})),n!==void 0&&n.Sweetalert2&&(n.swal=n.sweetAlert=n.Swal=n.SweetAlert=n.Sweetalert2)}))(),1),l=e=>window.donationTranslations?.[e]??e,u=window.donationRoutes,d=e=>String(e??``).replace(/[&<>"']/g,e=>({"&":`&amp;`,"<":`&lt;`,">":`&gt;`,'"':`&quot;`,"'":`&#39;`})[e]);async function f(e,t={}){let n=await fetch(e,{credentials:`same-origin`,...t,headers:{Accept:`application/json`,...t.body instanceof FormData?{}:{"Content-Type":`application/json`},"X-CSRF-TOKEN":document.querySelector(`meta[name="csrf-token"]`).content,...t.headers}});if(n.status===204)return null;let r=await n.json();if(!n.ok)throw n.status===401?Error(l(`Please log in as administrator.`)):Error(r.errors?Object.values(r.errors).flat().join(`
-`):r.message||l(`The request failed.`));return r}var p=(e,t,n=`POST`)=>f(e,{method:n,body:JSON.stringify(t)}),m=e=>c.default.fire({confirmButtonColor:`#e91335`,cancelButtonColor:`#64748b`,confirmButtonText:l(`OK`),heightAuto:!1,returnFocus:!1,width:`340px`,padding:`22px`,showClass:{popup:`donation-alert-enter`,backdrop:`donation-alert-backdrop-enter`,icon:``},hideClass:{popup:`donation-alert-leave`,backdrop:`donation-alert-backdrop-leave`,icon:``},buttonsStyling:!1,customClass:{container:`donation-alert-container`,popup:`donation-alert`,confirmButton:`donation-alert-confirm`,cancelButton:`donation-alert-cancel`},...e}),ee=e=>m({icon:`success`,titleText:l(`Success`),text:e}),te=e=>m({icon:`error`,titleText:l(`Action failed`),text:e}),ne=e=>m({icon:`info`,titleText:l(`Notice`),text:e});async function h(e){return(await m({icon:`warning`,titleText:l(`Are you sure?`),text:e,showCancelButton:!0,confirmButtonText:l(`Confirm`),cancelButtonText:l(`Cancel`),focusCancel:!0})).isConfirmed}var re=()=>[`district_id`,`upazila_id`,`union_id`].map((e,t)=>`<div class="field"><label>${[l(`District`),l(`Upazila`),l(`Union`)][t]}</label><select name="${e}" data-location="${e}"><option value="">${l(`Select (optional)`)}</option></select></div>`).join(``);async function g(e,t={}){let n=e.querySelector(`[data-location="district_id"]`),r=e.querySelector(`[data-location="upazila_id"]`),i=e.querySelector(`[data-location="union_id"]`);if(!n)return;let a=(e,t,n)=>{e.innerHTML=l(`<option value="">Select (optional)</option>`)+t.map(e=>`<option value="${e.id}" ${Number(n)===e.id?`selected`:``}>${d(document.documentElement.lang===`bn`&&e.name_bn||e.name)}</option>`).join(``)};a(r,[]),a(i,[]),a(n,(await f(u.locations)).data,t.district_id),t.district_id&&a(r,(await f(`${u.locations}?district_id=${t.district_id}`)).data,t.upazila_id),t.upazila_id&&a(i,(await f(`${u.locations}?upazila_id=${t.upazila_id}`)).data,t.union_id),n.onchange=async()=>{if(n.setCustomValidity(``),a(r,[]),a(i,[]),n.value)try{let e=n.value,t=await f(`${u.locations}?district_id=${e}`);n.value===e&&a(r,t.data)}catch(e){n.setCustomValidity(e.message),n.reportValidity()}},r.onchange=async()=>{if(r.setCustomValidity(``),a(i,[]),r.value)try{let e=r.value,t=await f(`${u.locations}?upazila_id=${e}`);r.value===e&&a(i,t.data)}catch(e){r.setCustomValidity(e.message),r.reportValidity()}}}export{ne as a,f as c,l as d,te as i,u as l,re as n,ee as o,h as r,d as s,g as t,p as u};
+`):r.message||l(`The request failed.`));return r}var p=(e,t,n=`POST`)=>f(e,{method:n,body:JSON.stringify(t)}),m=e=>c.default.fire({confirmButtonColor:`#e91335`,cancelButtonColor:`#64748b`,confirmButtonText:l(`OK`),heightAuto:!1,returnFocus:!1,width:`340px`,padding:`22px`,showClass:{popup:`donation-alert-enter`,backdrop:`donation-alert-backdrop-enter`,icon:``},hideClass:{popup:`donation-alert-leave`,backdrop:`donation-alert-backdrop-leave`,icon:``},buttonsStyling:!1,customClass:{container:`donation-alert-container`,popup:`donation-alert`,confirmButton:`donation-alert-confirm`,cancelButton:`donation-alert-cancel`},...e}),ee=e=>m({icon:`success`,titleText:l(`Success`),text:e}),te=e=>m({icon:`error`,titleText:l(`Action failed`),text:e}),ne=e=>m({icon:`info`,titleText:l(`Notice`),text:e});async function h(e){return(await m({icon:`warning`,titleText:l(`Are you sure?`),text:e,showCancelButton:!0,confirmButtonText:l(`Confirm`),cancelButtonText:l(`Cancel`),focusCancel:!0})).isConfirmed}
+const re = () => ['division_id', 'district_id', 'upazila_id', 'union_id'].map((name, index) => `<div class="field"><label>${[l("Division"), l("District"), l("Upazila"), l("Union")][index]}</label><select name="${name}" data-location="${name}" ${index ? 'disabled' : ''}><option value="">${l("Select (optional)")}</option></select></div>`).join('');
+
+async function g(form, values = {}) {
+    const names = ['division_id', 'district_id', 'upazila_id', 'union_id'];
+    const fields = names.map(name => form.querySelector(`[data-location="${name}"]`));
+    if (fields.some(field => !field)) return;
+    const fill = (field, rows = [], selected = '') => {
+        field.setCustomValidity('');
+        field.innerHTML = `<option value="">${l("Select (optional)")}</option>` + rows.map(row => `<option value="${row.id}" ${String(selected) === String(row.id) ? 'selected' : ''}>${d(document.documentElement.lang === 'bn' ? row.name_bn || row.name : row.name)}</option>`).join('');
+        field.disabled = rows.length === 0;
+    };
+    let revision = 0;
+    fields.forEach(field => fill(field));
+    fields.forEach((field, index) => {
+        field.onchange = async () => {
+            const currentRevision = ++revision;
+            field.setCustomValidity('');
+            fields.slice(index + 1).forEach(child => fill(child));
+            if (!field.value || index === fields.length - 1) return;
+            try {
+                const result = await f(`${u.locations}?${names[index]}=${encodeURIComponent(field.value)}`);
+                if (currentRevision === revision) fill(fields[index + 1], result.data);
+            } catch (error) {
+                if (currentRevision !== revision) return;
+                field.setCustomValidity(error.message);
+                field.reportValidity();
+            }
+        };
+    });
+    const initialRevision = revision;
+    const divisions = (await f(`${u.locations}?type=divisions`)).data;
+    if (revision !== initialRevision) return;
+    let divisionId = values.division_id;
+    if (!divisionId && values.district_id) {
+        const districts = (await f(u.locations)).data;
+        if (revision !== initialRevision) return;
+        divisionId = districts.find(district => String(district.id) === String(values.district_id))?.division_id;
+    }
+    fill(fields[0], divisions, divisionId);
+    const selections = [divisionId, values.district_id, values.upazila_id, values.union_id];
+    for (let index = 0; index < fields.length - 1; index++) {
+        if (!fields[index].value) break;
+        const result = await f(`${u.locations}?${names[index]}=${encodeURIComponent(fields[index].value)}`);
+        if (revision !== initialRevision) return;
+        fill(fields[index + 1], result.data, selections[index + 1]);
+    }
+}
+
+export{ne as a,f as c,l as d,te as i,u as l,re as n,ee as o,h as r,d as s,g as t,p as u};

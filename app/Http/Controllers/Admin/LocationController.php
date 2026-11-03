@@ -8,22 +8,34 @@ use App\Models\Union;
 use App\Models\Upazila;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class LocationController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $data = $request->validate(['district_id' => ['nullable', 'integer', 'exists:districts,id'], 'upazila_id' => ['nullable', 'integer', 'exists:upazilas,id']]);
+        $data = $request->validate(['type' => ['nullable', 'in:divisions'], 'division_id' => ['nullable', 'integer', 'exists:divisions,id'], 'district_id' => ['nullable', 'integer', 'exists:districts,id'], 'upazila_id' => ['nullable', 'integer', 'exists:upazilas,id']]);
+        if (($data['type'] ?? null) === 'divisions') {
+            return response()->json(['data' => DB::table('divisions')->where('status', 1)->where('deleted', 0)->whereNull('deleted_at')->orderBy('name')->get(['id', 'name', 'name_bn'])]);
+        }
         if (! empty($data['upazila_id'])) {
             $query = Union::query()->active()->whereHas('upazila', fn ($query) => $query->active()->whereHas('district', fn ($query) => $query->active()))->where('upazila_id', $data['upazila_id']);
         } elseif (! empty($data['district_id'])) {
             $query = Upazila::query()->active()->whereHas('district', fn ($query) => $query->active())->where('district_id', $data['district_id']);
         } else {
             $query = District::query()->active();
+            if (! empty($data['division_id'])) {
+                $query->where('division_id', $data['division_id']);
+            }
         }
 
-        return response()->json(['data' => $query->orderBy('name')->get(['id', 'name', 'name_bn'])]);
+        $columns = ['id', 'name', 'name_bn'];
+        if ($query->getModel() instanceof District) {
+            $columns[] = 'division_id';
+        }
+
+        return response()->json(['data' => $query->orderBy('name')->get($columns)]);
     }
 
     public function districts(): JsonResponse

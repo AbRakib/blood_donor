@@ -2,11 +2,33 @@
 
 use App\Models\BloodDonor;
 use App\Models\BloodGroup;
+use App\Models\District;
 use App\Models\Union;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(LazilyRefreshDatabase::class);
+
+it('lists active divisions and filters districts by their division', function () {
+    $divisionId = DB::table('divisions')->insertGetId(['name' => 'Dhaka']);
+    $otherDivisionId = DB::table('divisions')->insertGetId(['name' => 'Sylhet']);
+    DB::table('divisions')->insert(['name' => 'Inactive division', 'status' => 0]);
+    DB::table('divisions')->insert(['name' => 'Deleted division', 'deleted' => 1]);
+    DB::table('divisions')->insert(['name' => 'Soft deleted division', 'deleted_at' => now()]);
+    $district = District::factory()->create(['division_id' => $divisionId]);
+    District::factory()->create(['division_id' => $otherDivisionId]);
+    District::factory()->create(['division_id' => $divisionId, 'status' => 0]);
+
+    $this->getJson(route('locations.index', ['type' => 'divisions']))
+        ->assertOk()->assertJsonCount(2, 'data')->assertJsonPath('data.0.id', $divisionId);
+    $this->getJson(route('locations.index', ['division_id' => $divisionId]))
+        ->assertOk()->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $district->id)
+        ->assertJsonPath('data.0.division_id', $divisionId);
+    $this->getJson(route('locations.index', ['division_id' => 'invalid']))
+        ->assertUnprocessable()->assertJsonValidationErrors('division_id');
+});
 
 it('stores donor consent and location and restores them for editing', function () {
     $admin = User::factory()->create(['is_admin' => true]);
