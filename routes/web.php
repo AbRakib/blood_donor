@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\Public\BloodRequestController as PublicBloodRequestController;
 use App\Http\Controllers\Public\DonorRegistrationController;
 use App\Http\Controllers\Public\DonorSearchController;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +55,10 @@ Route::group(['prefix' => 'donors'], function (): void {
 Route::group(['prefix' => 'contact-requests'], function (): void {
     Route::post('/', [DonorSearchController::class, 'contact'])->middleware('throttle:5,1')->name('contact-requests.store');
 });
+
+Route::post('/blood-requests', [PublicBloodRequestController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('public.blood-requests.store');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'can:admin'])->name('dashboard');
 

@@ -35,6 +35,9 @@
                 </nav>
                 <div class="flex flex-wrap items-center gap-3">
                     @include('partials.language-switcher')
+                    <button type="button" class="btn" onclick="showBloodRequestModal()">
+                        {{ __('Request blood') }}
+                    </button>
                     <button class="btn" onclick="showModal('register')">
                         {{ __('Become a donor') }}
                     </button>
@@ -200,6 +203,27 @@
             </div>
         </section>
         </main>
+        <div id="bloodRequestModal" class="donation-modal hidden fixed inset-0 z-50 p-4 items-center justify-center" aria-hidden="true">
+            <div role="dialog" aria-modal="true" aria-labelledby="bloodRequestTitle" class="donation-modal-panel">
+                <button type="button" aria-label="{{ __('Close') }}" onclick="hideBloodRequestModal()" class="donation-modal-close">×</button>
+                <h2 id="bloodRequestTitle" class="donation-modal-title">{{ __('Request blood') }}</h2>
+                <form id="bloodRequestForm" class="donation-modal-form">
+                    <label class="modal-field"><span>{{ __('Patient name') }}</span><input name="patient_name" required maxlength="255" class="field" placeholder="{{ __('Enter patient name') }}"></label>
+                    <label class="modal-field"><span>{{ __('Contact person') }}</span><input name="contact_name" required maxlength="255" class="field" placeholder="{{ __('Enter contact person name') }}"></label>
+                    <label class="modal-field"><span>{{ __('Phone number') }}</span><input name="contact_phone" type="tel" required pattern="(?:\+?88)?01[3-9][0-9]{8}" inputmode="tel" class="field" placeholder="01XXXXXXXXX"></label>
+                    <label class="modal-field"><span>{{ __('Blood group') }}</span><select name="blood_group_id" required class="field"><option value="">{{ __('Select blood group') }}</option></select></label>
+                    <label class="modal-field"><span>{{ __('Units needed') }}</span><input name="bags_needed" type="number" min="1" max="20" value="1" required class="field" placeholder="{{ __('Enter units needed') }}"></label>
+                    <label class="modal-field"><span>{{ __('Needed by') }}</span><input name="needed_at" type="date" min="{{ now()->toDateString() }}" required class="field"></label>
+                    <label class="modal-field"><span>{{ __('Urgency') }}</span><select name="urgency" required class="field"><option value="normal">{{ __('Normal') }}</option><option value="urgent">{{ __('Urgent') }}</option><option value="emergency">{{ __('Emergency') }}</option><option value="critical">{{ __('Critical') }}</option></select></label>
+                    <label class="modal-field"><span>{{ __('Hospital') }}</span><input name="hospital_name" required maxlength="255" class="field" placeholder="{{ __('Enter hospital name') }}"></label>
+                    <label class="modal-field"><span>{{ __('Hospital address') }}</span><input name="hospital_address" maxlength="2000" class="field" placeholder="{{ __('Enter hospital address') }}"></label>
+                    <div class="modal-locations" data-request-locations></div>
+                    <label class="modal-field"><span>{{ __('Additional details') }}</span><textarea name="notes" maxlength="5000" class="field" placeholder="{{ __('Add any additional details') }}"></textarea></label>
+                    <button class="btn w-full" type="submit">{{ __('Submit blood request') }}</button>
+                </form>
+                <p id="bloodRequestMessage" class="hidden text-sm rounded-lg p-3 mt-4" role="status" data-success="{{ __('Your blood request has been submitted for admin review.') }}"></p>
+            </div>
+        </div>
         <footer id="contact" class="bg-[#192333] text-white">
             <div class="max-w-7xl mx-auto px-5 py-12 grid md:grid-cols-4 gap-8">
                 <div>
@@ -228,12 +252,121 @@
 <script>window.donationRoutes = {{ Illuminate\Support\Js::from([
 'groups' => route('blood-groups.index'), 'locations' => route('locations.index'),
 'donors' => route('donors.index'), 'register' => route('donors.store'), 'contact' => route('contact-requests.store'),
+'bloodRequest' => route('public.blood-requests.store'),
 'admin' => route('admin.dashboard'), 'adminDonors' => route('admin.blood-donors.index'),
 'requests' => route('admin.blood-requests.index'), 'donations' => route('admin.donations.index'),
 'contacts' => route('admin.contact-requests.index'), 'settings' => route('admin.settings.index'),
 'reports' => route('admin.reports.index'),
 'locationStore' => route('admin.locations.store', ['type' => 'districts']), 'login' => route('login'),
 ]) }};</script>
+<script>
+    (() => {
+        const modal = document.getElementById('bloodRequestModal');
+        const form = document.getElementById('bloodRequestForm');
+        const message = document.getElementById('bloodRequestMessage');
+        const locations = form.querySelector('[data-request-locations]');
+        const locationNames = ['division_id', 'district_id', 'upazila_id', 'union_id'];
+        const locationLabels = [@json(__('Division')), @json(__('District')), @json(__('Upazila')), @json(__('Union'))];
+        const chooseLabel = @json(__('Select (optional)'));
+        const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[character]));
+        const getJson = async url => {
+            const response = await fetch(url, {headers: {Accept: 'application/json'}});
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.message || @json(__('Unable to load locations.')));
+            }
+            return result.data;
+        };
+        const fields = locationNames.map((name, index) => {
+            const field = document.createElement('div');
+            field.className = 'field';
+            field.innerHTML = `<label>${escapeHtml(locationLabels[index])}</label><select name="${name}" data-location="${name}" ${index ? 'disabled' : ''}><option value="">${escapeHtml(chooseLabel)}</option></select>`;
+            locations.append(field);
+            return field.querySelector('select');
+        });
+        const fill = (select, rows) => {
+            select.innerHTML = `<option value="">${escapeHtml(chooseLabel)}</option>` + rows.map(row => `<option value="${row.id}">${escapeHtml(document.documentElement.lang === 'bn' ? row.name_bn || row.name : row.name)}</option>`).join('');
+            select.disabled = rows.length === 0;
+        };
+        const modalOpen = () => {
+            form.reset();
+            message.classList.add('hidden');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+            form.elements.patient_name.focus();
+        };
+        const modalClose = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        };
+        window.showBloodRequestModal = modalOpen;
+        window.hideBloodRequestModal = modalClose;
+        modal.addEventListener('click', event => {
+            if (event.target === modal) modalClose();
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && !modal.classList.contains('hidden')) modalClose();
+        });
+        fields.forEach((field, index) => {
+            field.addEventListener('change', async () => {
+                fields.slice(index + 1).forEach(child => fill(child, []));
+                if (!field.value || index === fields.length - 1) return;
+                const queryName = locationNames[index];
+                try {
+                    const rows = await getJson(`${window.donationRoutes.locations}?${queryName}=${encodeURIComponent(field.value)}`);
+                    fill(fields[index + 1], rows);
+                } catch (error) {
+                    message.textContent = error.message;
+                    message.classList.remove('hidden');
+                }
+            });
+        });
+        getJson(`${window.donationRoutes.locations}?type=divisions`).then(rows => fill(fields[0], rows)).catch(error => {
+            message.textContent = error.message;
+            message.classList.remove('hidden');
+        });
+        getJson(window.donationRoutes.groups).then(rows => {
+            form.elements.blood_group_id.innerHTML = `<option value="">${escapeHtml(@json(__('Select blood group')))}</option>` + rows.map(row => `<option value="${row.id}">${escapeHtml(row.name)}</option>`).join('');
+        }).catch(error => {
+            message.textContent = error.message;
+            message.classList.remove('hidden');
+        });
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const button = form.querySelector('[type="submit"]');
+            const values = Object.fromEntries(new FormData(form));
+            delete values.division_id;
+            Object.keys(values).forEach(key => { if (values[key] === '') delete values[key]; });
+            button.disabled = true;
+            message.classList.add('hidden');
+            try {
+                const response = await fetch(window.donationRoutes.bloodRequest, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content},
+                    body: JSON.stringify(values),
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.errors ? Object.values(result.errors).flat().join('\n') : result.message || @json(__('The request failed.')));
+                message.textContent = message.dataset.success;
+                message.classList.remove('hidden', 'text-red-700', 'bg-red-50');
+                message.classList.add('text-green-700', 'bg-green-50');
+                form.reset();
+                fields.slice(1).forEach(field => fill(field, []));
+            } catch (error) {
+                message.textContent = error.message;
+                message.classList.remove('hidden', 'text-green-700', 'bg-green-50');
+                message.classList.add('text-red-700', 'bg-red-50');
+            } finally {
+                button.disabled = false;
+            }
+        });
+    })();
+</script>
 <link rel="stylesheet" href="{{ asset('frontend/css/style.css') }}">
         <script type="module" src="{{ asset('frontend/js/main.js') }}"></script>
 

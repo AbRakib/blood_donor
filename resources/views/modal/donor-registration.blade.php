@@ -4,7 +4,7 @@
         <button aria-label="{{ __('Close') }}" onclick="hideModal()" class="donation-modal-close">
             ×
         </button>
-        <h2 id="modalTitle" class="text-2xl font-bold mb-3">{{ __('Donor registration') }}</h2>
+        <h2 id="modalTitle" class="donation-modal-title">{{ __('Donor registration') }}</h2>
         <p id="modalDesc" class="text-gray-500 text-sm mb-5">{{ __('Complete the details below') }}</p>
         <form id="form" class="donation-modal-form">
             <label class="modal-field">

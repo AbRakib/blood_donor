@@ -97,7 +97,7 @@ html {
     gap: 12px;
     background: var(--donation-red);
     color: #fff;
-    padding: 15px 25px;
+    padding: 8px 15px;
     border: 1px solid #ed073a;
     border-radius: 999px;
     font-size: 14px;
@@ -184,7 +184,7 @@ html {
 }
 
 [data-donation-page='home'] header .btn {
-    padding: 12px 16px;
+    padding: 8px 15px;
     font-size: 12px;
 }
 
@@ -1090,7 +1090,7 @@ html {
     backdrop-filter: blur(5px);
 }
 
-[data-donation-page='home'] #modal>.donation-modal-panel {
+[data-donation-page='home'] :is(#modal, #bloodRequestModal)>.donation-modal-panel {
     position: relative;
     width: 100%;
     max-width: 540px;
@@ -1101,7 +1101,88 @@ html {
     border-radius: 24px;
     background: #fff;
     box-shadow: 0 24px 80px #101b3533;
-    scrollbar-width: thin;
+    scrollbar-width: none;
+}
+
+[data-donation-page='home'] :is(#modal, #bloodRequestModal)>.donation-modal-panel::-webkit-scrollbar {
+    display: none;
+}
+
+[data-donation-page='home'] #bloodRequestModal .donation-modal-form {
+    gap: 8px 12px;
+}
+
+[data-donation-page='home'] #bloodRequestModal .modal-field {
+    gap: 3px;
+}
+
+[data-donation-page='home'] #bloodRequestModal .donation-modal-form .field {
+    min-height: 36px;
+    padding: 7px 10px;
+    border-radius: 5px;
+}
+
+[data-donation-page='home'] #bloodRequestModal .modal-locations {
+    gap: 6px 20px;
+    padding: 8px;
+    border: 1px dashed #d8dce3;
+    border-radius: 7px;
+}
+
+[data-donation-page='home'] #bloodRequestModal .modal-locations select {
+    min-height: 36px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-radius: 5px;
+}
+
+[data-donation-page='home'] #bloodRequestModal textarea {
+    min-height: 64px;
+}
+
+[data-donation-page='home'] #bloodRequestModal .donation-modal-form>.btn {
+    min-height: 38px;
+}
+
+[data-donation-page='home'] #modal>.donation-modal-panel {
+    padding: 22px;
+}
+
+[data-donation-page='home'] #modal .donation-modal-form {
+    gap: 8px 12px;
+}
+
+[data-donation-page='home'] #modal .modal-field {
+    gap: 3px;
+}
+
+[data-donation-page='home'] #modal .donation-modal-form .field {
+    min-height: 36px;
+    padding: 7px 10px;
+    border-radius: 5px;
+}
+
+[data-donation-page='home'] #modal .modal-locations {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 20px;
+    padding: 8px;
+    border: 1px dashed #d8dce3;
+    border-radius: 7px;
+}
+
+[data-donation-page='home'] #modal .modal-locations select {
+    min-height: 36px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-radius: 5px;
+}
+
+[data-donation-page='home'] #modal textarea {
+    min-height: 64px;
+}
+
+[data-donation-page='home'] #modal .donation-modal-form>.btn {
+    min-height: 38px;
 }
 
 .donation-modal-close {
@@ -1125,13 +1206,13 @@ html {
     color: #ed073a;
 }
 
-.donation-modal #modalTitle {
-    margin-bottom: 8px;
-    font-size: 24px;
+.donation-modal :is(#modalTitle, .donation-modal-title) {
+    margin-bottom: 15px;
+    font-size: 20px;
     letter-spacing: -.5px;
 }
 
-.donation-modal #modalDesc {
+.donation-modal :is(#modalDesc, .donation-modal-description) {
     margin-bottom: 24px;
     max-width: 390px;
     line-height: 1.6;
@@ -1199,7 +1280,7 @@ html {
 
 .modal-locations {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -1247,7 +1328,7 @@ html {
 }
 
 @media (max-width: 480px) {
-    [data-donation-page='home'] #modal>.donation-modal-panel {
+    [data-donation-page='home'] :is(#modal, #bloodRequestModal)>.donation-modal-panel {
         padding: 23px 20px;
         border-radius: 20px;
     }
@@ -1257,11 +1338,7 @@ html {
         gap: 14px;
     }
 
-    .modal-locations {
-        grid-template-columns: 1fr;
-    }
-
-    .donation-modal #modalTitle {
+    .donation-modal :is(#modalTitle, .donation-modal-title) {
         font-size: 22px;
     }
 }
