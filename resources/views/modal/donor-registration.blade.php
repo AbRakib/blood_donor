@@ -39,10 +39,6 @@
                 <span>{{ __('Reason for contact') }}</span>
                 <textarea name="message" class="field" placeholder="{{ __('Reason for contact') }}" hidden></textarea>
             </label>
-            <label class="modal-consent">
-                <input name="consent_to_contact" value="1" required type="checkbox">
-                {{ __('I consent to data collection and contact requests.') }}
-            </label>
             <button class="btn w-full" type="submit">
                 {{ __('Submit') }}
             </button>

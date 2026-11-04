@@ -80,6 +80,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'c
         Route::get('/{blood_request}', [BloodRequestController::class, 'show'])->name('blood-requests.show');
         Route::match(['put', 'patch'], '/{blood_request}', [BloodRequestController::class, 'update'])->name('blood-requests.update');
         Route::post('/{blood_request}/verify', [BloodRequestController::class, 'verify'])->name('blood-requests.verify');
+        Route::post('/{blood_request}/complete', [BloodRequestController::class, 'complete'])->name('blood-requests.complete');
         Route::post('/{blood_request}/assign-donor', [BloodRequestController::class, 'assignDonor'])->name('blood-requests.assign-donor');
         Route::patch('/{blood_request}/status', [BloodRequestController::class, 'changeStatus'])->name('blood-requests.status');
         Route::post('/{blood_request}/matches', [BloodRequestController::class, 'match'])->name('blood-requests.matches');

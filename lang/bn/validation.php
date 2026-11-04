@@ -34,7 +34,7 @@ return [
         'email' => 'ইমেইল', 'password' => 'পাসওয়ার্ড', 'name' => 'নাম',
         'phone' => 'মোবাইল নম্বর', 'blood_group_id' => 'রক্তের গ্রুপ',
         'district_id' => 'জেলা', 'upazila_id' => 'উপজেলা', 'union_id' => 'ইউনিয়ন',
-        'area' => 'এলাকা', 'address' => 'ঠিকানা', 'consent_to_contact' => 'যোগাযোগের সম্মতি',
+        'area' => 'এলাকা', 'address' => 'ঠিকানা',
         'patient_name' => 'রোগীর নাম', 'contact_name' => 'যোগাযোগের নাম',
         'contact_phone' => 'যোগাযোগের ফোন', 'hospital_name' => 'হাসপাতালের নাম',
         'bags_needed' => 'ব্যাগের সংখ্যা', 'needed_at' => 'প্রয়োজনের সময়',

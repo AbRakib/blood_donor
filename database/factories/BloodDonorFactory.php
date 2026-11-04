@@ -41,7 +41,6 @@ class BloodDonorFactory extends Factory
             'gender' => $gender,
             'last_donation_date' => null,
             'is_available' => true,
-            'consent_to_contact' => true,
         ];
     }
 }

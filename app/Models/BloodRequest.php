@@ -73,6 +73,36 @@ class BloodRequest extends DomainModel
         });
     }
 
+    public function complete(): BloodRequest
+    {
+        return DB::transaction(function (): BloodRequest {
+            $record = BloodRequest::query()->active()->lockForUpdate()->findOrFail($this->id);
+            if ($record->request_status !== 'in_progress' || $record->expires_at?->isPast()) {
+                throw ValidationException::withMessages(['request_status' => 'Only assigned, unexpired requests can be completed.']);
+            }
+
+            $remainingBags = $record->bags_needed - $record->donations()->active()->verified()->sum('bags');
+            $assignedDonors = $record->requestDonors()->whereNotIn('response_status', ['declined', 'donated'])->orderBy('id')->lockForUpdate()->get();
+            if ($assignedDonors->count() < $remainingBags) {
+                throw ValidationException::withMessages(['blood_donor_id' => 'Assign enough donors to cover the remaining bags before completing this request.']);
+            }
+
+            foreach ($assignedDonors->take($remainingBags) as $assignedDonor) {
+                $donation = $record->donations()->active()->where('blood_donor_id', $assignedDonor->blood_donor_id)->first();
+                $donation ??= BloodDonation::record([
+                    'blood_donor_id' => $assignedDonor->blood_donor_id,
+                    'blood_request_id' => $record->id,
+                    'donated_at' => today()->toDateString(),
+                    'bags' => 1,
+                    'hospital_name' => $record->hospital_name,
+                ]);
+                $donation->verify();
+            }
+
+            return $record->refresh()->transitionTo('fulfilled');
+        });
+    }
+
     private function transitionTo(string $next): BloodRequest
     {
         $record = $this;
@@ -189,7 +219,7 @@ class BloodRequest extends DomainModel
             if (! in_array($bloodRequest->request_status, ['verified', 'in_progress'], true) || $bloodRequest->expires_at?->isPast()) {
                 throw ValidationException::withMessages(['blood_request' => 'Only verified, unexpired requests can be matched.']);
             }
-            $query = BloodDonor::query()->matchingFilters($bloodRequest->only(['blood_group_id', 'district_id', 'upazila_id', 'union_id']))->availableForContact();
+            $query = BloodDonor::query()->matchingFilters($bloodRequest->only(['blood_group_id']))->availableForContact();
             $query->orderBy('id')->chunkById(100, function (Collection $donors) use ($bloodRequest): void {
                 foreach ($donors as $donor) {
                     $bloodRequest->requestDonors()->firstOrCreate(['blood_donor_id' => $donor->id]);
@@ -212,9 +242,9 @@ class BloodRequest extends DomainModel
             if (! in_array($record->request_status, ['verified', 'in_progress'], true) || $record->expires_at?->isPast()) {
                 throw ValidationException::withMessages(['blood_request_id' => 'Verify the request before assigning donors.']);
             }
-            $query = BloodDonor::query()->matchingFilters($record->only(['blood_group_id', 'district_id', 'upazila_id', 'union_id']))->availableForContact();
+            $query = BloodDonor::query()->matchingFilters($record->only(['blood_group_id']))->availableForContact();
             if (! $query->whereKey($donor->id)->lockForUpdate()->first()) {
-                throw ValidationException::withMessages(['blood_donor_id' => 'The donor must be active, available, consenting and match the request location and blood group.']);
+                throw ValidationException::withMessages(['blood_donor_id' => 'The donor must be active, available and match the request blood group.']);
             }
             $match = $record->requestDonors()->firstOrCreate(['blood_donor_id' => $donor->id]);
             if ($record->request_status === 'verified') {

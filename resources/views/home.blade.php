@@ -150,7 +150,7 @@
                 <div>
                     <span class="red font-bold">{{ __('Our mission') }}</span>
                     <h2 data-donor-heading aria-label="{{ __('So a lack of blood') }} {{ __('Let no life stop') }}" class="text-4xl font-bold my-5"><span data-typing-part aria-hidden="true">{{ __('So a lack of blood') }} </span><span data-typing-part aria-hidden="true" class="red">{{ __('Let no life stop') }}</span></h2>
-                    <p class="text-gray-600 leading-8">{{ __('Manda Blood Donation Program is a volunteer platform for donor registration, searching by blood group and area, and consent-based contact.') }}</p>
+                    <p class="text-gray-600 leading-8">{{ __('Manda Blood Donation Program is a volunteer platform for donor registration, searching by blood group and area, and connecting with blood donors.') }}</p>
                     <button class="btn mt-6" onclick="showModal('register')">
                         <i class="fi fi-rr-user-add" aria-hidden="true"></i>
                         {{ __('Register') }}
@@ -183,7 +183,7 @@
                             <i class="fi fi-rr-shield-check" aria-hidden="true"></i>
                         </div>
                         <h3 class="font-bold mt-4">{{ __('Privacy') }}</h3>
-                        <p class="text-gray-500 text-sm">{{ __('Consent-based contact') }}</p>
+                        <p class="text-gray-500 text-sm">{{ __('Contact blood donors') }}</p>
                     </div>
                 </div>
             </div>

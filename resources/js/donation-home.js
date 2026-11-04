@@ -140,7 +140,7 @@ form.addEventListener('submit', async event => {
     event.preventDefault(); const button = form.querySelector('[type=submit]'); button.disabled = true;
     const values = Object.fromEntries(new FormData(form));
     try {
-        const data = mode === 'register' ? {...values, consent_to_contact: true} : {blood_donor_id: donorId, requester_name: values.name, requester_phone: values.phone, message: values.message};
+        const data = mode === 'register' ? values : {blood_donor_id: donorId, requester_name: values.name, requester_phone: values.phone, message: values.message};
         await send(mode === 'register' ? routes.register : routes.contact, data);
         hideModal(); showSuccess(mode === 'register' ? t("Registration submitted. An administrator will verify it.") : t("Contact request submitted.")); form.reset();
     } catch (error) {showMessage(error.message); showError(error.message);} finally {button.disabled = false;}

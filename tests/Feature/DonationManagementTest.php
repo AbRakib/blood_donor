@@ -28,10 +28,9 @@ it('seeds eight groups and locations idempotently without creating an admin pass
     $this->assertDatabaseCount('users', 0);
 });
 
-it('exposes only consenting active donors and keeps their contact details private', function () {
+it('exposes only active available donors and keeps their contact details private', function () {
     $group = BloodGroup::factory()->create();
     $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id]);
-    BloodDonor::factory()->create(['blood_group_id' => $group->id, 'consent_to_contact' => false]);
     BloodDonor::factory()->create(['blood_group_id' => $group->id, 'status' => 0]);
     BloodDonor::factory()->create(['blood_group_id' => $group->id, 'is_available' => false]);
     BloodDonor::factory()->create(['blood_group_id' => $group->id, 'deleted' => 1]);
@@ -46,17 +45,17 @@ it('stores public registrations for admin review and ignores injected administra
 
     $this->postJson(route('donors.store'), [
         'name' => 'New donor', 'phone' => '01712345678', 'blood_group_id' => $group->id,
-        'consent_to_contact' => true, 'status' => 1, 'created_by' => 99, 'deleted' => 1,
+        'status' => 1, 'created_by' => 99, 'deleted' => 1,
     ])->assertCreated();
 
     $this->assertDatabaseHas('blood_donors', ['name' => 'New donor', 'status' => 0, 'deleted' => 0, 'created_by' => null]);
 });
 
-it('rejects registration without consent or a valid Bangladesh phone', function () {
+it('rejects registration without a valid Bangladesh phone', function () {
     $group = BloodGroup::factory()->create();
 
-    $this->postJson(route('donors.store'), ['name' => 'Donor', 'phone' => '123', 'blood_group_id' => $group->id, 'consent_to_contact' => false])
-        ->assertUnprocessable()->assertJsonValidationErrors(['phone', 'consent_to_contact']);
+    $this->postJson(route('donors.store'), ['name' => 'Donor', 'phone' => '123', 'blood_group_id' => $group->id])
+        ->assertUnprocessable()->assertJsonValidationErrors(['phone']);
 
     $this->assertDatabaseCount('blood_donors', 0);
 });
@@ -67,7 +66,7 @@ it('rejects inconsistent location hierarchies', function () {
     $upazila = Upazila::factory()->create();
 
     $this->postJson(route('donors.store'), ['name' => 'Donor', 'phone' => '01712345678', 'blood_group_id' => $group->id,
-        'district_id' => $district->id, 'upazila_id' => $upazila->id, 'consent_to_contact' => true])
+        'district_id' => $district->id, 'upazila_id' => $upazila->id])
         ->assertUnprocessable()->assertJsonValidationErrors('upazila_id');
 
     $this->assertDatabaseCount('blood_donors', 0);
@@ -115,20 +114,21 @@ it('logs availability changes and soft deletion with the acting administrator', 
     $this->getJson(route('admin.blood-donors.show', $donor))->assertNotFound();
 });
 
-it('matches available consenting donors by blood group and location without duplicates', function () {
+it('matches available donors by blood group regardless of location without duplicates', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $group = BloodGroup::factory()->create();
     $district = District::factory()->create();
     $request = BloodRequest::factory()->verified()->create(['blood_group_id' => $group->id, 'district_id' => $district->id]);
     $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id, 'district_id' => $district->id]);
     BloodDonor::factory()->create(['blood_group_id' => $group->id, 'district_id' => $district->id, 'is_available' => false]);
-    BloodDonor::factory()->create(['blood_group_id' => $group->id]);
+    $otherDonor = BloodDonor::factory()->create(['blood_group_id' => $group->id]);
 
-    $this->actingAs($admin)->postJson(route('admin.blood-requests.matches', $request))->assertOk()->assertJsonCount(1, 'data');
-    $this->postJson(route('admin.blood-requests.matches', $request))->assertOk()->assertJsonCount(1, 'data');
+    $this->actingAs($admin)->postJson(route('admin.blood-requests.matches', $request))->assertOk()->assertJsonCount(2, 'data');
+    $this->postJson(route('admin.blood-requests.matches', $request))->assertOk()->assertJsonCount(2, 'data');
 
     $this->assertDatabaseHas('request_donors', ['blood_request_id' => $request->id, 'blood_donor_id' => $donor->id]);
-    $this->assertDatabaseCount('request_donors', 1);
+    $this->assertDatabaseHas('request_donors', ['blood_request_id' => $request->id, 'blood_donor_id' => $otherDonor->id]);
+    $this->assertDatabaseCount('request_donors', 2);
     $this->assertDatabaseHas('blood_request_status_logs', ['blood_request_id' => $request->id, 'from_status' => 'verified', 'to_status' => 'in_progress']);
 });
 
@@ -177,8 +177,8 @@ it('stores contact requests without disclosing the donor phone', function () {
     $this->assertDatabaseHas('donor_contact_requests', ['blood_donor_id' => $donor->id, 'contact_status' => 'pending']);
 });
 
-it('rejects contact requests for nonconsenting donors', function () {
-    $donor = BloodDonor::factory()->create(['consent_to_contact' => false]);
+it('rejects contact requests for unavailable donors', function () {
+    $donor = BloodDonor::factory()->create(['is_available' => false]);
 
     $this->postJson(route('contact-requests.store'), ['blood_donor_id' => $donor->id,
         'requester_name' => 'Requester', 'requester_phone' => '01812345678', 'message' => 'Please help.'])

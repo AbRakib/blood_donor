@@ -52,7 +52,6 @@ class BloodDonorController extends Controller
             'last_donation_date' => ['prohibited'],
             'total_donations' => ['prohibited'],
             'is_available' => ['sometimes', 'boolean'],
-            'consent_to_contact' => ['required', 'accepted'],
         ]);
 
         $donor = BloodDonor::register($data);
@@ -89,7 +88,6 @@ class BloodDonorController extends Controller
             'last_donation_date' => ['sometimes', 'prohibited'],
             'total_donations' => ['sometimes', 'prohibited'],
             'is_available' => ['sometimes', 'boolean'],
-            'consent_to_contact' => ['sometimes', 'boolean'],
             'status' => ['sometimes', 'integer', 'in:0,1'],
         ])->validate();
         $data = array_intersect_key($data, $request->all());

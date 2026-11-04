@@ -54,7 +54,7 @@ abstract class Controller
             'id' => $bloodDonor->id,
             'name' => $bloodDonor->name,
             'blood_group_id' => $bloodDonor->blood_group_id,
-            'phone' => $bloodDonor->consent_to_contact && request()->user()?->is_admin ? $bloodDonor->phone : null,
+            'phone' => request()->user()?->is_admin ? $bloodDonor->phone : null,
             'area' => $bloodDonor->area,
             'address' => $bloodDonor->address,
             'district_id' => $bloodDonor->district_id,
@@ -65,7 +65,6 @@ abstract class Controller
             'total_donations' => $bloodDonor->total_donations,
             'last_donation_date' => $bloodDonor->last_donation_date,
             'is_available' => $bloodDonor->is_available,
-            'consent_to_contact' => $bloodDonor->consent_to_contact,
             'status' => $bloodDonor->status,
         ];
 
@@ -238,14 +237,12 @@ abstract class Controller
             'last_donation_date' => ['prohibited'],
             'total_donations' => ['prohibited'],
             'is_available' => ['sometimes', 'boolean'],
-            'consent_to_contact' => ['required', 'accepted'],
         ];
 
         if ($bloodDonor !== null) {
             foreach ($rules as $field => $fieldRules) {
                 $rules[$field] = array_merge(['sometimes'], $fieldRules);
             }
-            $rules['consent_to_contact'] = ['sometimes', 'boolean'];
             $rules['status'] = ['sometimes', 'integer', 'in:0,1'];
         }
 
@@ -268,7 +265,7 @@ abstract class Controller
             'hospital_address' => ['nullable', 'string', 'max:2000'],
             'bags_needed' => ['required', 'integer', 'min:1', 'max:20'],
             'expires_at' => ['nullable', 'date', 'after_or_equal:needed_at'],
-            'needed_at' => ['required', 'date', 'after:now'],
+            'needed_at' => ['required', 'date', 'after_or_equal:today'],
             'urgency' => ['sometimes', Rule::in(['normal', 'urgent', 'emergency', 'critical'])],
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
@@ -281,6 +278,11 @@ abstract class Controller
             $rules['request_status'] = ['sometimes', Rule::in(['pending', 'verified', 'in_progress', 'fulfilled', 'cancelled', 'expired'])];
         }
 
-        return Validator::make($data, $rules)->validate();
+        $validated = Validator::make($data, $rules)->validate();
+        if (! empty($validated['expires_at']) && strlen($validated['expires_at']) === 10) {
+            $validated['expires_at'] = $validated['expires_at'].' 23:59:59';
+        }
+
+        return $validated;
     }
 }

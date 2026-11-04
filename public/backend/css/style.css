@@ -846,11 +846,14 @@ td small {
 
 @supports (appearance: base-select) {
     .donor-location-section select,
-    .donor-location-section select::picker(select) {
+    .blood-request-modal .field select,
+    .donor-location-section select::picker(select),
+    .blood-request-modal .field select::picker(select) {
         appearance: base-select
     }
 
-    .donor-location-section select::picker(select) {
+    .donor-location-section select::picker(select),
+    .blood-request-modal .field select::picker(select) {
         margin-top: 6px;
         padding: 6px;
         border: 1px solid #e4e9ed;
@@ -861,16 +864,19 @@ td small {
         overflow-y: auto
     }
 
-    .donor-location-section select::picker-icon {
+    .donor-location-section select::picker-icon,
+    .blood-request-modal .field select::picker-icon {
         color: #7a8797;
         transition: rotate .2s
     }
 
-    .donor-location-section select:open::picker-icon {
+    .donor-location-section select:open::picker-icon,
+    .blood-request-modal .field select:open::picker-icon {
         rotate: 180deg
     }
 
-    .donor-location-section select option {
+    .donor-location-section select option,
+    .blood-request-modal .field select option {
         padding: 10px 12px;
         border-radius: 7px;
         color: #344054;
@@ -879,18 +885,22 @@ td small {
     }
 
     .donor-location-section select option:hover,
-    .donor-location-section select option:focus {
+    .blood-request-modal .field select option:hover,
+    .donor-location-section select option:focus,
+    .blood-request-modal .field select option:focus {
         background: #f5f7fa;
         outline: none
     }
 
-    .donor-location-section select option:checked {
+    .donor-location-section select option:checked,
+    .blood-request-modal .field select option:checked {
         background: #fff0f3;
         color: #d51030;
         font-weight: 600
     }
 
-    .donor-location-section select option::checkmark {
+    .donor-location-section select option::checkmark,
+    .blood-request-modal .field select option::checkmark {
         color: #ed1638
     }
 }
@@ -3563,8 +3573,8 @@ td small {
 .assign-results { display: grid; gap: 8px; max-height: 320px; overflow-y: auto; padding: 3px; }
 .assign-option { display: flex; align-items: center; gap: 12px; padding: 13px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
 .assign-option:hover { background: #fafbfc; border-color: #cbd5df; }
-.assign-option:has(input:checked) { border-color: var(--red); background: #fff5f6; }
-.assign-option:focus-within { outline: 2px solid var(--red); outline-offset: 1px; }
+.assign-option:has(input:checked) { border-color: #f2b8c0; background: #fff8f9; }
+.assign-option:has(input:focus-visible) { outline: 2px solid #f7dce0; outline-offset: 2px; }
 .assign-option input { accent-color: var(--red); width: 16px; height: 16px; flex-shrink: 0; }
 .assign-donor-info { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .assign-donor-info strong { font-size: 14px; }
@@ -3682,4 +3692,114 @@ td small {
 .request-tabs a:focus-visible {
     outline: 2px solid #e60028;
     outline-offset: 2px;
+}
+
+/* Keep button corners consistent across the application. */
+button,
+.btn,
+[role='button'],
+input[type='button'],
+input[type='submit'],
+input[type='reset'] {
+    border-radius: 5px !important;
+}
+
+/* Blood request form */
+.blood-request-modal {
+    width: min(680px, 100%);
+    padding: 0;
+    border: 1px solid #e9edf0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 16px 48px #18233124;
+}
+.blood-request-modal .modal-header { gap: 16px; margin: 0; padding: 20px 24px; border-bottom: 1px solid #e9edf0; }
+.blood-request-modal .modal-header > div { min-width: 0; }
+.blood-request-modal .modal-header h2 { color: #182331; font-size: 21px; line-height: 1.4; }
+.blood-request-modal .modal-header p { margin-top: 4px !important; color: #667281 !important; font-size: 13px; line-height: 1.5; }
+.blood-request-modal .close { flex-shrink: 0; align-self: flex-start; width: 36px; height: 36px; cursor: pointer; }
+.blood-request-modal #donorForm { padding: 20px 24px; }
+.blood-request-modal .request-form-section { margin: 0 0 20px; }
+.blood-request-modal .request-form-section h3 { margin: 0 0 12px; color: #182331; font-size: 14px; font-weight: 700; line-height: 1.5; }
+.blood-request-modal .request-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.blood-request-modal .field { min-width: 0; gap: 6px; }
+.blood-request-modal .field label { color: #4b5663; font-size: 13px; font-weight: 500; line-height: 1.4; }
+.blood-request-modal .request-required { color: #c92d3b; }
+.blood-request-modal .field input,
+.blood-request-modal .field select { min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid #dce1e6; border-radius: 6px; background: #fff; color: #182331; font: inherit; line-height: 1.4; }
+.blood-request-modal .field input::placeholder { color: #84909b; opacity: 1; }
+.blood-request-modal .field select:disabled { color: #84909b; background: #f7f9fb; }
+.blood-request-modal .field input:focus,
+.blood-request-modal .field select:focus { border-color: #e33c49; box-shadow: 0 0 0 3px #e33c4914; }
+.blood-request-modal .request-optional { border-top: 1px solid #e9edf0; padding-top: 4px; }
+.blood-request-modal .request-optional summary { padding: 12px 0; color: #4b5663; font-size: 13px; font-weight: 500; cursor: pointer; }
+.blood-request-modal .request-optional[open] summary { margin-bottom: 4px; }
+.blood-request-modal #formError:empty { display: none; }
+.blood-request-modal .modal-actions { gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #e9edf0; }
+.blood-request-modal .modal-actions .btn { display: inline-flex; justify-content: center; align-items: center; min-height: 44px; padding: 10px 18px; border: 1px solid #dce1e6; background: #fff; color: #4b5663; font-size: 14px; font-weight: 600; box-shadow: none; }
+.blood-request-modal .modal-actions .primary { border-color: #e33c49; background: #e33c49; color: #fff; }
+.blood-request-modal .modal-actions .primary:hover { background: #c92d3b; border-color: #c92d3b; }
+.blood-request-modal button:focus-visible,
+.blood-request-modal summary:focus-visible { outline: 2px solid #e33c49; outline-offset: 3px; }
+@media (max-width: 600px) {
+    .blood-request-modal .modal-header { padding: 18px 16px; }
+    .blood-request-modal #donorForm { padding: 18px 16px; }
+    .blood-request-modal .request-form-grid { grid-template-columns: minmax(0, 1fr); }
+    .blood-request-modal .field input,
+    .blood-request-modal .field select { font-size: 16px; }
+    .blood-request-modal .modal-actions .btn { flex: 1; min-width: 0; }
+}
+
+.admin-requests th:nth-child(3),
+.admin-requests td:nth-child(3),
+.admin-requests th:nth-child(5),
+.admin-requests td:nth-child(5),
+.admin-requests th:nth-child(6),
+.admin-requests td:nth-child(6) {
+    text-align: center;
+}
+
+.admin-requests .request-blood-bags {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.admin-requests .request-bag-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border: 1px solid #dbeafe;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.admin-requests .status::before {
+    content: none;
+    display: none;
+}
+
+.admin-requests button.request-status {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.admin-requests button.request-status:hover {
+    filter: brightness(0.96);
+}
+
+.admin-requests button.request-status:focus-visible {
+    outline: 2px solid #e91335;
+    outline-offset: 3px;
+}
+
+.admin-requests button.request-status:disabled {
+    cursor: wait;
+    opacity: 0.65;
 }

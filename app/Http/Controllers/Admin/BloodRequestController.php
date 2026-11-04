@@ -23,7 +23,7 @@ class BloodRequestController extends Controller
             return view('admin.requests')->with(compact('common_data'));
         }
 
-        $query = BloodRequest::with('bloodGroup');
+        $query = BloodRequest::with(['bloodGroup', 'requestDonors.bloodDonor']);
         $tab = $request->query('tab', 'all');
 
         if (in_array($tab, ['pending', 'complete', 'expired'], true)) {
@@ -37,6 +37,8 @@ class BloodRequestController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $request->validate(['expires_at' => ['required', 'date']]);
+
         return $this->modelResponse(BloodRequest::submit($this->validateBloodRequest($request))->load('bloodGroup'), $this->formatBloodRequest(...));
     }
 
@@ -58,6 +60,11 @@ class BloodRequestController extends Controller
     public function verify(BloodRequest $bloodRequest): JsonResponse
     {
         return $this->modelResponse($bloodRequest->changeStatus('verified')->load('bloodGroup'), $this->formatBloodRequest(...));
+    }
+
+    public function complete(BloodRequest $bloodRequest): JsonResponse
+    {
+        return $this->modelResponse($bloodRequest->complete()->load('bloodGroup'), $this->formatBloodRequest(...));
     }
 
     public function changeStatus(Request $request, BloodRequest $bloodRequest): JsonResponse

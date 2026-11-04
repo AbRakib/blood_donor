@@ -26,7 +26,6 @@ return new class extends Migration
             $table->foreignId('union_id')->nullable()->constrained();
             $table->date('date_of_birth')->nullable();
             $table->string('gender', 20)->nullable();
-            $table->boolean('consent_to_contact')->default(false);
             $table->index(['blood_group_id', 'status', 'deleted', 'is_available'], 'donor_search_index');
 
             $table->tinyInteger('status')->default(1)->comment('1=active,0=inactive');

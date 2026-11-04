@@ -57,3 +57,13 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px soli
 @media (max-width: 480px) { .login-header { padding: 18px; gap: 10px; align-items: flex-start; } .brand { gap: 9px; } .brand-mark { width: 40px; height: 40px; border-radius: 11px; font-size: 25px; } .brand strong { max-width: 170px; font-size: 15px; } .brand small { font-size: 7px; letter-spacing: 1px; } .language-switcher-trigger { padding: 9px; gap: 5px; font-size: 12px; } .login-shell { padding: 8px 18px 24px; } .story h1 { font-size: 36px; } .eyebrow { font-size: 12px; } .login-card { padding: 26px 22px; border-radius: 20px; } .login-card h2 { font-size: 28px; } .intro { font-size: 14px; } }
 
 .icon-credit-wrapper { text-align: center; padding: 12px; }
+
+/* Keep button corners consistent across the application. */
+button,
+.btn,
+[role='button'],
+input[type='button'],
+input[type='submit'],
+input[type='reset'] {
+    border-radius: 5px !important;
+}

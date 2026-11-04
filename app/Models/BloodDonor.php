@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'blood_group_id', 'phone', 'area', 'address', 'is_available', 'district_id', 'upazila_id', 'union_id', 'date_of_birth', 'gender', 'consent_to_contact', 'status'])]
+#[Fillable(['name', 'blood_group_id', 'phone', 'area', 'address', 'is_available', 'district_id', 'upazila_id', 'union_id', 'date_of_birth', 'gender', 'status'])]
 #[Hidden(['phone'])]
 class BloodDonor extends DomainModel
 {
@@ -20,7 +20,7 @@ class BloodDonor extends DomainModel
 
     protected function casts(): array
     {
-        return array_merge(parent::casts(), ['total_donations' => 'integer', 'last_donation_date' => 'date', 'date_of_birth' => 'date', 'is_available' => 'boolean', 'consent_to_contact' => 'boolean']);
+        return array_merge(parent::casts(), ['total_donations' => 'integer', 'last_donation_date' => 'date', 'date_of_birth' => 'date', 'is_available' => 'boolean']);
     }
 
     public function bloodGroup(): BelongsTo
@@ -86,7 +86,7 @@ class BloodDonor extends DomainModel
     #[Scope]
     protected function availableForContact(Builder $query): Builder
     {
-        return $query->where('is_available', true)->where('consent_to_contact', true);
+        return $query->where('is_available', true);
     }
 
     /** @param array<string, mixed> $data */
@@ -129,7 +129,6 @@ class BloodDonor extends DomainModel
         $donor->date_of_birth = $data['date_of_birth'] ?? null;
         $donor->gender = $data['gender'] ?? null;
         $donor->is_available = $data['is_available'] ?? true;
-        $donor->consent_to_contact = true;
         $donor->status = $data['status'] ?? 1;
         $donor->save();
         $donor->refresh();

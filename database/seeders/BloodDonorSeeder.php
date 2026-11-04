@@ -64,9 +64,6 @@ class BloodDonorSeeder extends Seeder
             if (array_key_exists('gender', $data)) {
                 $bloodDonor->gender = $data['gender'];
             }
-            if (array_key_exists('consent_to_contact', $data)) {
-                $bloodDonor->consent_to_contact = $data['consent_to_contact'];
-            }
             if (array_key_exists('status', $data)) {
                 $bloodDonor->status = $data['status'];
             }

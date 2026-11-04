@@ -33,9 +33,9 @@ it('leaves donor totals and request fulfillment unchanged until a donation is ve
     $this->assertDatabaseHas('blood_requests', ['id' => $request->id, 'request_status' => 'fulfilled']);
 });
 
-it('records actual donations independently of contact availability and consent', function () {
+it('records actual donations independently of contact availability', function () {
     $admin = User::factory()->create(['is_admin' => true]);
-    $donor = BloodDonor::factory()->create(['is_available' => false, 'consent_to_contact' => false]);
+    $donor = BloodDonor::factory()->create(['is_available' => false]);
 
     $response = $this->actingAs($admin)->postJson(route('admin.donations.store'), [
         'blood_donor_id' => $donor->id, 'bags' => 1, 'donated_at' => today()->toDateString(),
@@ -121,7 +121,6 @@ it('rejects assigning donors who are not contactable', function (array $attribut
 })->with([
     'inactive' => [['status' => 0]],
     'unavailable' => [['is_available' => false]],
-    'no consent' => [['consent_to_contact' => false]],
 ]);
 
 it('accepts critical urgency and includes it among open urgent dashboard requests', function () {
@@ -186,21 +185,21 @@ it('does not allow donor registration or edits to inject verified history', func
     expect($donor->fresh())->total_donations->toBe(0)->last_donation_date->toBeNull();
 });
 
-it('redacts mobile numbers when donor consent has been withdrawn including nested matches', function () {
+it('shows donor mobile numbers to admins including nested matches', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $group = BloodGroup::factory()->create();
-    $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id, 'consent_to_contact' => false]);
+    $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id]);
     $request = BloodRequest::factory()->verified()->create(['blood_group_id' => $group->id]);
     RequestDonor::factory()->create(['blood_donor_id' => $donor->id, 'blood_request_id' => $request->id]);
 
-    $this->actingAs($admin)->getJson(route('admin.blood-donors.show', $donor))->assertOk()->assertJsonPath('data.phone', null)->assertDontSee($donor->phone);
-    $this->getJson(route('admin.blood-requests.show', $request))->assertOk()->assertJsonPath('data.request_donors.0.blood_donor.phone', null)->assertDontSee($donor->phone);
+    $this->actingAs($admin)->getJson(route('admin.blood-donors.show', $donor))->assertOk()->assertJsonPath('data.phone', $donor->phone);
+    $this->getJson(route('admin.blood-requests.show', $request))->assertOk()->assertJsonPath('data.request_donors.0.blood_donor.phone', $donor->phone);
 });
 
 it('excludes pending donations from history and reports and excludes inactive or deleted donors from totals', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $group = BloodGroup::factory()->create();
-    $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id, 'consent_to_contact' => false]);
+    $donor = BloodDonor::factory()->create(['blood_group_id' => $group->id]);
     BloodDonor::factory()->create(['blood_group_id' => $group->id, 'status' => 0]);
     BloodDonor::factory()->create(['blood_group_id' => $group->id, 'deleted' => 1]);
     BloodDonation::factory()->create(['blood_donor_id' => $donor->id]);
