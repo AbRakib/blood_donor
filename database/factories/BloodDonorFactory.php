@@ -18,14 +18,22 @@ class BloodDonorFactory extends Factory
      */
     public function definition(): array
     {
+        $faker = $this->faker;
         $gender = fake()->randomElement(['male', 'female']);
         $area = fake()->randomElement(['Prasadpur', 'Kusumba']);
 
         return [
-            'name' => fake('bn_BD')->name($gender),
+            'name' => $faker->name($gender),
             'blood_group_id' => function (): int {
-                $name = fake()->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']);
-                $bloodGroup = BloodGroup::withoutGlobalScopes()->where('name', $name)->first();
+                $name = $this->faker->randomElement([
+                    'A+', 'A-', 'B+', 'B-',
+                    'AB+', 'AB-', 'O+', 'O-'
+                ]);
+
+                $bloodGroup = BloodGroup::withoutGlobalScopes()
+                    ->where('name', $name)
+                    ->first();
+
                 if ($bloodGroup === null) {
                     $bloodGroup = new BloodGroup;
                     $bloodGroup->name = $name;
@@ -34,7 +42,12 @@ class BloodDonorFactory extends Factory
 
                 return $bloodGroup->id;
             },
-            'phone' => fake()->unique()->numerify(fake()->randomElement(['013', '014', '015', '016', '017', '018', '019']).'########'),
+            'phone' => $faker->unique()->numerify(
+                $faker->randomElement([
+                    '013', '014', '015', '016',
+                    '017', '018', '019'
+                ]) . '########'
+            ),
             'area' => $area,
             'address' => $area.', Manda, Naogaon, Bangladesh',
             'date_of_birth' => fake()->dateTimeBetween('-60 years', '-18 years')->format('Y-m-d'),
