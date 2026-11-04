@@ -244,7 +244,7 @@ class BloodRequest extends DomainModel
             }
             $query = BloodDonor::query()->matchingFilters($record->only(['blood_group_id']))->availableForContact();
             if (! $query->whereKey($donor->id)->lockForUpdate()->first()) {
-                throw ValidationException::withMessages(['blood_donor_id' => 'The donor must be active, available and match the request blood group.']);
+                throw ValidationException::withMessages(['blood_donor_id' => 'The donor must be active, available, match the request blood group and have no donation within the last three months.']);
             }
             $match = $record->requestDonors()->firstOrCreate(['blood_donor_id' => $donor->id]);
             if ($record->request_status === 'verified') {

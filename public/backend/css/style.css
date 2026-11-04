@@ -3803,3 +3803,14 @@ input[type='reset'] {
     cursor: wait;
     opacity: 0.65;
 }
+
+.donation-alert .donation-alert-details {
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px dashed #c8a15a;
+    border-radius: 8px;
+    background: #fffbf2;
+    color: #72551f;
+    text-align: start;
+    line-height: 1.7;
+}

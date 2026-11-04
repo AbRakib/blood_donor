@@ -334,5 +334,7 @@
     "Manda Blood Donation Program is a volunteer platform for donor registration, searching by blood group and area, and connecting with blood donors.": "মান্দা রক্ত দান কর্মসূচি রক্তদাতা নিবন্ধন, রক্তের গ্রুপ ও এলাকা অনুসারে অনুসন্ধান এবং রক্তদাতাদের সাথে যোগাযোগের একটি স্বেচ্ছাসেবী প্ল্যাটফর্ম।",
     "Contact blood donors": "রক্তদাতাদের সাথে যোগাযোগ",
     "Expires at": "মেয়াদ শেষ",
-    "Location (optional)": "এলাকা (ঐচ্ছিক)"
+    "Location (optional)": "এলাকা (ঐচ্ছিক)",
+    "This donor cannot be activated or marked available until three months after their last donation.": "শেষ রক্তদানের পর তিন মাস পূর্ণ না হওয়া পর্যন্ত এই রক্তদাতাকে সক্রিয় বা রক্তদানের জন্য উপলব্ধ করা যাবে না।",
+    "Last donation: :last_date. Eligible from: :eligible_date. Remaining waiting time: :days days.": "শেষ রক্তদান: :last_date। পুনরায় যোগ্য হওয়ার তারিখ: :eligible_date। অবশিষ্ট অপেক্ষার সময়: :days দিন।"
 }

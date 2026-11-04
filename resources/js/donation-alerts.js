@@ -32,7 +32,24 @@ const alert = options => Swal.fire({
 });
 
 export const showSuccess = text => alert({icon: 'success', titleText: t('Success'), text});
-export const showError = text => alert({icon: 'error', titleText: t('Action failed'), text});
+export const showError = text => alert({
+    icon: 'error',
+    titleText: t('Action failed'),
+    text,
+    didOpen: popup => {
+        const detailsLabel = t('Last donation: :last_date. Eligible from: :eligible_date. Remaining waiting time: :days days.').split(':last_date')[0];
+        const detailsStart = text.indexOf(detailsLabel);
+        if (detailsStart < 0) return;
+
+        const container = popup.querySelector('.swal2-html-container');
+        const message = document.createElement('div');
+        message.textContent = text.slice(0, detailsStart).trim();
+        const details = document.createElement('div');
+        details.className = 'donation-alert-details';
+        details.textContent = text.slice(detailsStart).trim();
+        container.replaceChildren(message, details);
+    },
+});
 export const showInfo = text => alert({icon: 'info', titleText: t('Notice'), text});
 export async function confirmAction(text) {
     const result = await alert({

@@ -107,6 +107,17 @@
     margin: 18px 0 0;
 }
 
+.donation-alert .donation-alert-details {
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px dashed #c8a15a;
+    border-radius: 8px;
+    background: #fffbf2;
+    color: #72551f;
+    text-align: start;
+    line-height: 1.7;
+}
+
 .donation-alert-confirm,
 .donation-alert-cancel {
     min-width: 72px;

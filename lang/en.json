@@ -334,5 +334,7 @@
     "Manda Blood Donation Program is a volunteer platform for donor registration, searching by blood group and area, and connecting with blood donors.": "Manda Blood Donation Program is a volunteer platform for donor registration, searching by blood group and area, and connecting with blood donors.",
     "Contact blood donors": "Contact blood donors",
     "Expires at": "Expires at",
-    "Location (optional)": "Location (optional)"
+    "Location (optional)": "Location (optional)",
+    "This donor cannot be activated or marked available until three months after their last donation.": "This donor cannot be activated or marked available until three months after their last donation.",
+    "Last donation: :last_date. Eligible from: :eligible_date. Remaining waiting time: :days days.": "Last donation: :last_date. Eligible from: :eligible_date. Remaining waiting time: :days days."
 }

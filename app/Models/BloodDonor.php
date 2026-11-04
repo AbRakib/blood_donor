@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Validation\ValidationException;
 
 #[Fillable(['name', 'blood_group_id', 'phone', 'area', 'address', 'is_available', 'district_id', 'upazila_id', 'union_id', 'date_of_birth', 'gender', 'status'])]
 #[Hidden(['phone'])]
@@ -86,7 +87,11 @@ class BloodDonor extends DomainModel
     #[Scope]
     protected function availableForContact(Builder $query): Builder
     {
-        return $query->where('is_available', true);
+        return $query->where('is_available', true)
+            ->where(function (Builder $query): void {
+                $query->whereNull('last_donation_date')
+                    ->orWhereDate('last_donation_date', '<=', today()->subMonthsNoOverflow(3));
+            });
     }
 
     /** @param array<string, mixed> $data */
@@ -94,6 +99,21 @@ class BloodDonor extends DomainModel
     {
         return $this->getConnection()->transaction(function () use ($data): BloodDonor {
             $donor = BloodDonor::query()->lockForUpdate()->findOrFail($this->getKey());
+            if ($donor->last_donation_date?->gt(today()->subMonthsNoOverflow(3))) {
+                $eligibleDate = $donor->last_donation_date->copy()->addMonthsNoOverflow(3);
+                $remainingDays = (int) ceil(today()->diffInDays($eligibleDate));
+                foreach (['status', 'is_available'] as $field) {
+                    if (! $donor->{$field} && ! empty($data[$field])) {
+                        throw ValidationException::withMessages([
+                            $field => __('This donor cannot be activated or marked available until three months after their last donation.').' '.__('Last donation: :last_date. Eligible from: :eligible_date. Remaining waiting time: :days days.', [
+                                'last_date' => $donor->last_donation_date->format('d M Y'),
+                                'eligible_date' => $eligibleDate->format('d M Y'),
+                                'days' => $remainingDays,
+                            ]),
+                        ]);
+                    }
+                }
+            }
             $wasAvailable = $donor->is_available;
             $donor->fill($data)->save();
 
