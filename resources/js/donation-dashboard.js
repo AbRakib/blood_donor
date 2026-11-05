@@ -253,22 +253,13 @@ async function loadContacts(page = 1) {
     const rows = result.data.map((contact, index) => {
         const requesterName = contact.requester_name || t("No information");
         const initials = requesterName.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0]).join('').toLocaleUpperCase();
+        const preview = `<button class="row-btn" data-action="contact-preview" data-id="${contact.id}">${t("Preview")}</button>`;
         const actions = contact.contact_status === 'pending' ? `<button class="row-btn" data-action="contact-approved" data-id="${contact.id}">${t("Approve")}</button><button class="row-btn" data-action="contact-rejected" data-id="${contact.id}">${t("Reject")}</button>` : contact.contact_status === 'approved' ? `<button class="row-btn" data-action="contact-completed" data-id="${contact.id}">${t("Completed")}</button><button class="row-btn" data-action="contact-rejected" data-id="${contact.id}">${t("Reject")}</button>` : '';
-        return `<tr><td>${result.from + index}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${esc(initials)}</span><strong>${esc(requesterName)}</strong></div></td><td><a class="phone-link" href="tel:${esc(contact.requester_phone || '')}">${esc(contact.requester_phone || t("No information"))}</a></td><td>${esc(contact.blood_donor?.name || t("No information"))}<small>${esc(contact.blood_donor?.phone || '')}</small></td><td>${esc(contact.message || t("No information"))}</td><td><span class="status ${['approved', 'completed'].includes(contact.contact_status) ? '' : 'busy'}">${esc(t(({ pending: 'Pending', approved: 'Approved', rejected: 'Rejected', completed: 'Completed' })[contact.contact_status] || contact.contact_status))}</span></td><td class="donor-actions">${actions ? `<details class="row-menu"><summary aria-label="${t("Actions")}"><i class="fi fi-rr-angle-small-down menu-chevron" aria-hidden="true"></i></summary><div>${actions}</div></details>` : '—'}</td></tr>`;
+        return `<tr><td>${result.from + index}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${esc(initials)}</span><strong>${esc(requesterName)}</strong></div></td><td><a class="phone-link" href="tel:${esc(contact.requester_phone || '')}">${esc(contact.requester_phone || t("No information"))}</a></td><td>${esc(contact.blood_donor?.name || t("No information"))}<small>${esc(contact.blood_donor?.phone || '')}</small></td><td>${esc(contact.message || t("No information"))}</td><td><span class="status ${['approved', 'completed'].includes(contact.contact_status) ? '' : 'busy'}">${esc(t(({ pending: 'Pending', approved: 'Approved', rejected: 'Rejected', completed: 'Completed' })[contact.contact_status] || contact.contact_status))}</span></td><td class="donor-actions"><details class="row-menu"><summary aria-label="${t("Actions")}"><i class="fi fi-rr-angle-small-down menu-chevron" aria-hidden="true"></i></summary><div>${preview}${actions}</div></details></td></tr>`;
     }).join('');
     $('contactsRows').innerHTML = rows || `<tr><td colspan="7" class="empty">${t("No information")}</td></tr>`;
     $('contactsTableCount').textContent = `${result.meta.from || 0}–${result.meta.to || 0} / ${result.meta.total}`;
     $('contactsPagination').innerHTML = pageButtons(result.meta, 'contacts-page');
-    result.data.forEach((contact, index) => {
-        const cell = $('contactsRows').rows[index]?.lastElementChild;
-        if (!cell) return;
-        const preview = document.createElement('button');
-        preview.className = 'row-btn';
-        preview.dataset.action = 'contact-preview';
-        preview.dataset.id = contact.id;
-        preview.textContent = t('Preview');
-        cell.querySelector('.row-menu > div')?.prepend(preview) ?? cell.prepend(preview);
-    });
 }
 async function loadDonations(page = 1) {
     if (!$('donationsRows')) return;
