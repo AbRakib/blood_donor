@@ -95,7 +95,7 @@ class BloodRequest extends DomainModel
                     'donated_at' => today()->toDateString(),
                     'bags' => 1,
                     'hospital_name' => $record->hospital_name,
-                ]);
+                ], completingRequest: true);
                 $donation->verify();
             }
 
@@ -126,6 +126,10 @@ class BloodRequest extends DomainModel
             throw ValidationException::withMessages(['request_status' => 'The request expiry time has not been reached.']);
         }
         if ($next === 'fulfilled' && $record->donations()->active()->verified()->sum('bags') < $record->bags_needed) {
+            if ($record->requestDonors()->exists()) {
+                return $record->complete();
+            }
+
             throw ValidationException::withMessages(['request_status' => 'The required units must be confirmed by verified donations before fulfillment.']);
         }
         if ($next === 'verified') {

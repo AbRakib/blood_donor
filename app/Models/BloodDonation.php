@@ -39,12 +39,17 @@ class BloodDonation extends DomainModel
     }
 
     /** @param array<string, mixed> $data */
-    public static function record(array $data): BloodDonation
+    public static function record(array $data, bool $completingRequest = false): BloodDonation
     {
-        return DB::transaction(function () use ($data): BloodDonation {
+        return DB::transaction(function () use ($data, $completingRequest): BloodDonation {
             $record = ! empty($data['blood_request_id']) ? BloodRequest::query()->active()->lockForUpdate()->findOrFail($data['blood_request_id']) : null;
             $donor = BloodDonor::query()->active()->lockForUpdate()->findOrFail($data['blood_donor_id']);
             if ($record) {
+                if (! $completingRequest && $record->requestDonors()->exists()) {
+                    throw ValidationException::withMessages([
+                        'blood_request_id' => 'Complete the blood request to record donations for its assigned donors.',
+                    ]);
+                }
                 self::validateRequest($record, $donor);
                 if ($record->donations()->where('blood_donor_id', $donor->id)->exists()) {
                     throw ValidationException::withMessages(['blood_donor_id' => 'This donor already has a donation recorded for this request.']);

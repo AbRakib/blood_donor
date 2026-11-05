@@ -12,7 +12,6 @@ class DatabaseSeeder extends Seeder
 
         if (app()->environment(['local', 'testing'])) {
             $this->call([
-                BloodDonationSeeder::class,
                 BloodRequestStatusLogSeeder::class,
                 DonorAvailabilityLogSeeder::class,
                 DonorContactRequestSeeder::class,

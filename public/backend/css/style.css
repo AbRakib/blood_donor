@@ -3814,3 +3814,13 @@ input[type='reset'] {
     text-align: start;
     line-height: 1.7;
 }
+
+#contactsView .donorcell strong {
+    display: block;
+    line-height: 1.2;
+}
+
+#contactsView .donorcell small {
+    margin-top: 0;
+    line-height: 1.2;
+}

@@ -19,6 +19,7 @@ it('approves assigns and completes a blood request with verified donation histor
     $this->postJson(route('admin.blood-requests.verify', $request))->assertOk()->assertJsonPath('data.request_status', 'verified');
     $this->postJson(route('admin.blood-requests.assign-donor', $request), ['blood_donor_id' => $donor->id])->assertSuccessful();
     expect($request->fresh()->request_status)->toBe('in_progress');
+    $this->assertDatabaseCount('blood_donations', 0);
 
     $this->postJson(route('admin.blood-requests.complete', $request))->assertOk()->assertJsonPath('data.request_status', 'fulfilled');
 
@@ -208,3 +209,54 @@ it('allows deactivating and editing recent donors', function () {
 
     $this->assertDatabaseHas('blood_donors', ['id' => $donor->id, 'name' => 'Updated donor', 'status' => 0, 'is_available' => false]);
 });
+
+it('records assigned donations when completing through either status update endpoint', function (string $routeName) {
+    $this->actingAs(User::factory()->create(['is_admin' => true]));
+    $request = BloodRequest::factory()->verified()->create(['bags_needed' => 1]);
+    $donor = BloodDonor::factory()->create(['blood_group_id' => $request->blood_group_id]);
+    $request->assignDonor($donor);
+
+    $this->patchJson(route($routeName, $request), ['request_status' => 'fulfilled'])
+        ->assertOk()->assertJsonPath('data.request_status', 'fulfilled');
+
+    $this->assertDatabaseHas('blood_donations', [
+        'blood_request_id' => $request->id,
+        'blood_donor_id' => $donor->id,
+        'donation_status' => 'verified',
+    ]);
+    $this->assertDatabaseCount('blood_donations', 1);
+})->with(['admin.blood-requests.status', 'admin.blood-requests.update']);
+
+it('rejects manually recording donations for assigned requests before completion', function () {
+    $this->actingAs(User::factory()->create(['is_admin' => true]));
+    $request = BloodRequest::factory()->verified()->create();
+    $donor = BloodDonor::factory()->create(['blood_group_id' => $request->blood_group_id]);
+    $request->assignDonor($donor);
+
+    $this->postJson(route('admin.donations.store'), [
+        'blood_request_id' => $request->id,
+        'blood_donor_id' => $donor->id,
+        'donated_at' => today()->toDateString(),
+        'bags' => 1,
+    ])->assertUnprocessable()->assertJsonValidationErrors('blood_request_id');
+
+    $this->assertDatabaseCount('blood_donations', 0);
+    expect($request->fresh()->request_status)->toBe('in_progress');
+    expect($donor->fresh()->total_donations)->toBe(0);
+});
+
+it('does not record assigned donations when a request is cancelled or expires', function (string $status) {
+    $this->actingAs(User::factory()->create(['is_admin' => true]));
+    $request = BloodRequest::factory()->verified()->create();
+    $donor = BloodDonor::factory()->create(['blood_group_id' => $request->blood_group_id]);
+    $request->assignDonor($donor);
+    if ($status === 'expired') {
+        $request->update(['expires_at' => now()->subMinute()]);
+    }
+
+    $this->patchJson(route('admin.blood-requests.status', $request), ['request_status' => $status])
+        ->assertOk()->assertJsonPath('data.request_status', $status);
+
+    $this->assertDatabaseCount('blood_donations', 0);
+    expect($donor->fresh()->total_donations)->toBe(0);
+})->with(['cancelled', 'expired']);

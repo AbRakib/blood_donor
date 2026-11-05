@@ -3800,3 +3800,13 @@ input[type='reset'] {
     cursor: wait;
     opacity: 0.65;
 }
+
+#contactsView .donorcell strong {
+    display: block;
+    line-height: 1.2;
+}
+
+#contactsView .donorcell small {
+    margin-top: 0;
+    line-height: 1.2;
+}
