@@ -7,7 +7,6 @@ use App\Models\BloodGroup;
 use App\Models\BloodRequest;
 use App\Models\BloodRequestStatusLog;
 use App\Models\DonorAvailabilityLog;
-use App\Models\DonorContactRequest;
 use App\Models\RequestDonor;
 use Database\Seeders\BloodGroupSeeder;
 use Database\Seeders\DatabaseSeeder;
@@ -20,7 +19,7 @@ it('seeds active domain models without duplicating records on subsequent runs', 
     $this->seed(DatabaseSeeder::class);
     $this->seed(DatabaseSeeder::class);
 
-    foreach ([BloodGroup::class, BloodDonor::class, BloodRequest::class, RequestDonor::class, BloodDonation::class, BloodRequestStatusLog::class, DonorAvailabilityLog::class, DonorContactRequest::class] as $model) {
+    foreach ([BloodGroup::class, BloodDonor::class, BloodRequest::class, RequestDonor::class, BloodDonation::class, BloodRequestStatusLog::class, DonorAvailabilityLog::class] as $model) {
         $this->assertDatabaseCount((new $model)->getTable(), 8);
     }
 

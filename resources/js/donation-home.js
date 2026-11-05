@@ -3,7 +3,7 @@ import {showSuccess, showError} from './donation-alerts.js';
 import {t} from './donation-http.js';
 import {locationFields, bindLocations} from './donation-locations.js';
 import {routes, request, send, escapeHtml as esc} from './donation-http.js';
-let groups = [], donors = [], mode = 'register', donorId = null, currentPage = 1, searchSequence = 0;
+let groups = [], currentPage = 1, searchSequence = 0;
 const statisticsCard = document.getElementById('donorTotal').closest('.card');
 const statisticCounters = new Map();
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -98,20 +98,10 @@ const message = document.getElementById('message');
 const grid = document.getElementById('grid');
 const pager = document.createElement('div'); pager.className = 'donor-pagination'; grid.after(pager);
 function showMessage(text) {message.textContent = text; message.classList.remove('hidden');}
-function showModal(type, index = -1) {
-    mode = type; donorId = donors[index]?.id; form.reset(); message.classList.add('hidden');
-    locationContainer.hidden = type !== 'register';
-    form.querySelectorAll('[data-registration-field]').forEach(field => {field.hidden = type !== 'register';});
-    form.querySelector('[data-contact-field]').hidden = type === 'register';
-    locationContainer.querySelectorAll('select').forEach(field => {field.disabled = type !== 'register';});
-    if (type === 'register') bindLocations(form).catch(error => showMessage(error.message));
-    document.getElementById('modalTitle').textContent = type === 'register' ? t("Donor registration") : t("Contact requests");
-    document.getElementById('modalDesc').textContent = type === 'register' ? '' : `${donors[index]?.name || ''} — ${t("An administrator will review your request.")}`;
-    document.getElementById('modalDesc').hidden = type === 'register';
-    for (const field of ['blood_group_id', 'area']) {
-        form.elements[field].hidden = type !== 'register'; form.elements[field].disabled = type !== 'register';
-    }
-    form.elements.message.hidden = type === 'register'; form.elements.message.disabled = type === 'register'; form.elements.message.required = type !== 'register';
+function showModal() {
+    form.reset(); message.classList.add('hidden');
+    bindLocations(form).catch(error => showMessage(error.message));
+    document.getElementById('modalDesc').hidden = true;
     document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex');
     document.body.style.overflow = 'hidden';
     form.elements.name.focus();
@@ -125,24 +115,21 @@ async function render(page = 1) {
     try {
         const result = await request(`${routes.donors}?${params}`);
         if (sequence !== searchSequence) return;
-        donors = result.data;
         document.getElementById('result').textContent = `${result.meta.total} ${t("people found")}`;
-        grid.innerHTML = donors.map((donor, index) => {
+        grid.innerHTML = result.data.map(donor => {
             const initials = donor.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('');
-            return `<article class="card"><div class="donor-card-top"><span class="blood-badge">${esc(donor.blood_group)}</span><span class="availability ${donor.is_available ? '' : 'unavailable'}">${t(donor.is_available ? "Available" : "Unavailable")}</span></div><div class="donor-details"><span class="donor-avatar" aria-hidden="true">${esc(initials)}</span><div><h3>${esc(donor.name)}</h3><p>${esc([donor.union, donor.upazila, donor.district].filter(Boolean).join(', ') || t("No location information"))}</p></div></div><button data-contact="${index}" class="contact-button"><i class="fi fi-rr-paper-plane" aria-hidden="true"></i><span>${t("Contact requests")}</span><span aria-hidden="true">›</span></button></article>`;
+            return `<article class="card"><div class="donor-card-top"><span class="blood-badge">${esc(donor.blood_group)}</span><span class="availability ${donor.is_available ? '' : 'unavailable'}">${t(donor.is_available ? "Available" : "Unavailable")}</span></div><div class="donor-details"><span class="donor-avatar" aria-hidden="true">${esc(initials)}</span><div><h3>${esc(donor.name)}</h3><p>${esc([donor.union, donor.upazila, donor.district].filter(Boolean).join(', ') || t("No location information"))}</p></div></div></article>`;
         }).join('') || t("<p>No donors found.</p>");
         pager.innerHTML = `<button class="btn" data-page="${page-1}" ${page <= 1 ? 'disabled' : ''}>${t("Previous page")}</button> ${page} / ${result.meta.last_page} <button class="btn" data-page="${page+1}" ${page >= result.meta.last_page ? 'disabled' : ''}>${t("Next page")}</button>`;
     } catch (error) {grid.textContent = error.message;}
 }
-grid.addEventListener('click', event => {const button = event.target.closest('[data-contact]'); if (button) showModal('contact', Number(button.dataset.contact));});
 pager.addEventListener('click', event => {const button = event.target.closest('[data-page]'); if (button) render(Number(button.dataset.page));});
 form.addEventListener('submit', async event => {
     event.preventDefault(); const button = form.querySelector('[type=submit]'); button.disabled = true;
     const values = Object.fromEntries(new FormData(form));
     try {
-        const data = mode === 'register' ? values : {blood_donor_id: donorId, requester_name: values.name, requester_phone: values.phone, message: values.message};
-        await send(mode === 'register' ? routes.register : routes.contact, data);
-        hideModal(); showSuccess(mode === 'register' ? t("Registration submitted. An administrator will verify it.") : t("Contact request submitted.")); form.reset();
+        await send(routes.register, values);
+        hideModal(); showSuccess(t("Registration submitted. An administrator will verify it.")); form.reset();
     } catch (error) {showMessage(error.message); showError(error.message);} finally {button.disabled = false;}
 });
 let timer;

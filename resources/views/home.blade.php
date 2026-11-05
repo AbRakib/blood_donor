@@ -251,11 +251,11 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <script>window.donationRoutes = {{ Illuminate\Support\Js::from([
 'groups' => route('blood-groups.index'), 'locations' => route('locations.index'),
-'donors' => route('donors.index'), 'register' => route('donors.store'), 'contact' => route('contact-requests.store'),
+'donors' => route('donors.index'), 'register' => route('donors.store'),
 'bloodRequest' => route('public.blood-requests.store'),
 'admin' => route('admin.dashboard'), 'adminDonors' => route('admin.blood-donors.index'),
 'requests' => route('admin.blood-requests.index'), 'donations' => route('admin.donations.index'),
-'contacts' => route('admin.contact-requests.index'), 'settings' => route('admin.settings.index'),
+'settings' => route('admin.settings.index'),
 'reports' => route('admin.reports.index'),
 'locationStore' => route('admin.locations.store', ['type' => 'districts']), 'login' => route('login'),
 ]) }};</script>

@@ -35,10 +35,6 @@
                 <input name="area" required class="field" autocomplete="street-address"
                     placeholder="{{ __('Address / area') }}">
             </label>
-            <label class="modal-field" data-contact-field hidden>
-                <span>{{ __('Reason for contact') }}</span>
-                <textarea name="message" class="field" placeholder="{{ __('Reason for contact') }}" hidden></textarea>
-            </label>
             <button class="btn w-full" type="submit">
                 {{ __('Submit') }}
             </button>

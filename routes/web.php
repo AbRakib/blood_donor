@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\BloodGroupController;
 use App\Http\Controllers\Admin\BloodRequestController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DonationController;
-use App\Http\Controllers\Admin\DonorContactRequestController;
 use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
@@ -50,10 +49,6 @@ Route::group(['prefix' => 'locations'], function (): void {
 Route::group(['prefix' => 'donors'], function (): void {
     Route::get('/', [DonorSearchController::class, 'index'])->middleware('throttle:60,1')->name('donors.index');
     Route::post('/', [DonorRegistrationController::class, 'store'])->middleware('throttle:5,1')->name('donors.store');
-});
-
-Route::group(['prefix' => 'contact-requests'], function (): void {
-    Route::post('/', [DonorSearchController::class, 'contact'])->middleware('throttle:5,1')->name('contact-requests.store');
 });
 
 Route::post('/blood-requests', [PublicBloodRequestController::class, 'store'])
@@ -119,11 +114,5 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'c
         Route::patch('/', [SettingController::class, 'store'])->name('settings.store');
         Route::post('/', [SettingController::class, 'store'])->name('settings.upload');
         Route::patch('/{system_setting}', [SettingController::class, 'update'])->name('settings.update');
-    });
-
-    Route::group(['prefix' => 'contact-requests'], function (): void {
-        Route::get('/', [DonorContactRequestController::class, 'index'])->name('contact-requests.index');
-        Route::get('/{contact_request}', [DonorContactRequestController::class, 'show'])->name('contact-requests.show');
-        Route::patch('/{contact_request}', [DonorContactRequestController::class, 'update'])->name('contact-requests.update');
     });
 });

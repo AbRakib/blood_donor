@@ -20,7 +20,6 @@ class DashboardController extends Controller
             'donors' => 'admin.blood-donors.index',
             'requests' => 'admin.blood-requests.index',
             'groups' => 'admin.blood-groups.index',
-            'contacts' => 'admin.contact-requests.index',
             'donations' => 'admin.donations.index',
             'reports' => 'admin.reports.index',
             'settings' => 'admin.settings.index',

@@ -11,14 +11,13 @@ dataset('backend pages', [
     'donors' => ['admin.blood-donors.index', 'admin.donors', 'directory'],
     'requests' => ['admin.blood-requests.index', 'admin.requests', 'requestsView'],
     'blood groups' => ['admin.blood-groups.index', 'admin.groups', 'groupsView'],
-    'contacts' => ['admin.contact-requests.index', 'admin.contacts', 'contactsView'],
     'donations' => ['admin.donations.index', 'admin.donations', 'donationsView'],
     'reports' => ['admin.reports.index', 'admin.reports', 'dashboardExtra'],
 ]);
 
 dataset('protected backend routes', [
     'dashboard', 'admin.blood-donors.index', 'admin.blood-requests.index',
-    'admin.blood-groups.index', 'admin.contact-requests.index', 'admin.donations.index',
+    'admin.blood-groups.index', 'admin.donations.index',
     'admin.reports.index', 'admin.settings.index',
 ]);
 
@@ -82,7 +81,6 @@ it('redirects old dashboard page links to their dedicated routes', function (str
     ['donors', 'admin.blood-donors.index'],
     ['requests', 'admin.blood-requests.index'],
     ['groups', 'admin.blood-groups.index'],
-    ['contacts', 'admin.contact-requests.index'],
     ['donations', 'admin.donations.index'],
     ['reports', 'admin.reports.index'],
     ['settings', 'admin.settings.index'],

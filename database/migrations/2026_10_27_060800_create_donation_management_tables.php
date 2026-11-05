@@ -113,25 +113,6 @@ return new class extends Migration
             $table->unsignedInteger('deleted_by')->nullable();
         });
 
-        Schema::create('donor_contact_requests', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('blood_donor_id')->constrained();
-            $table->foreignId('blood_request_id')->nullable()->constrained();
-            $table->string('requester_name');
-            $table->string('requester_phone', 20);
-            $table->text('message');
-            $table->string('contact_status', 20)->default('pending');
-            $table->timestamp('handled_at')->nullable();
-            $table->tinyInteger('status')->default(1)->comment('1=active,0=inactive');
-            $table->timestamp('created_at')->nullable();
-            $table->unsignedInteger('created_by')->nullable();
-            $table->timestamp('updated_at')->nullable();
-            $table->unsignedInteger('updated_by')->nullable();
-            $table->tinyInteger('deleted')->default(0)->comment('1=deleted,0=active');
-            $table->timestamp('deleted_at')->nullable();
-            $table->unsignedInteger('deleted_by')->nullable();
-        });
-
         Schema::create('activity_logs', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
@@ -170,7 +151,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('system_settings');
         Schema::dropIfExists('activity_logs');
-        Schema::dropIfExists('donor_contact_requests');
         Schema::dropIfExists('donor_availability_logs');
         Schema::dropIfExists('blood_request_status_logs');
         Schema::dropIfExists('blood_donations');

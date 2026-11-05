@@ -248,19 +248,6 @@ function recordDonation(donorId = '', requestId = '') {
         await send(routes.donations, { ...values, blood_request_id: values.blood_request_id || null, bags: 1 }); await refreshSummary(); await loadDonors(); await loadRequests(); if (currentPageName === 'donations') await loadDonations();
     });
 }
-async function loadContacts(page = 1) {
-    const result = await request(`${routes.contacts}?page=${page}`);
-    const rows = result.data.map((contact, index) => {
-        const requesterName = contact.requester_name || t("No information");
-        const initials = requesterName.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0]).join('').toLocaleUpperCase();
-        const preview = `<button class="row-btn" data-action="contact-preview" data-id="${contact.id}">${t("Preview")}</button>`;
-        const actions = contact.contact_status === 'pending' ? `<button class="row-btn" data-action="contact-approved" data-id="${contact.id}">${t("Approve")}</button><button class="row-btn" data-action="contact-rejected" data-id="${contact.id}">${t("Reject")}</button>` : contact.contact_status === 'approved' ? `<button class="row-btn" data-action="contact-completed" data-id="${contact.id}">${t("Completed")}</button><button class="row-btn" data-action="contact-rejected" data-id="${contact.id}">${t("Reject")}</button>` : '';
-        return `<tr><td>${result.meta.from + index}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${esc(initials)}</span><div><strong>${esc(requesterName)}</strong><small><a class="phone-link" href="tel:${esc(contact.requester_phone || '')}">${esc(contact.requester_phone || t("No information"))}</a></small></div></div></td><td>${esc(contact.blood_donor?.name || t("No information"))}<small>${esc(contact.blood_donor?.phone || '')}</small></td><td>${esc(contact.message || t("No information"))}</td><td><span class="status ${['approved', 'completed'].includes(contact.contact_status) ? '' : 'busy'}">${esc(t(({ pending: 'Pending', approved: 'Approved', rejected: 'Rejected', completed: 'Completed' })[contact.contact_status] || contact.contact_status))}</span></td><td class="donor-actions"><details class="row-menu"><summary aria-label="${t("Actions")}"><i class="fi fi-rr-angle-small-down menu-chevron" aria-hidden="true"></i></summary><div>${preview}${actions}</div></details></td></tr>`;
-    }).join('');
-    $('contactsRows').innerHTML = rows || `<tr><td colspan="6" class="empty">${t("No information")}</td></tr>`;
-    $('contactsTableCount').textContent = `${result.meta.from || 0}–${result.meta.to || 0} / ${result.meta.total}`;
-    $('contactsPagination').innerHTML = pageButtons(result.meta, 'contacts-page');
-}
 async function loadDonations(page = 1) {
     if (!$('donationsRows')) return;
     const result = await request(`${routes.donations}?page=${page}`);
@@ -268,9 +255,9 @@ async function loadDonations(page = 1) {
         const donorName = donation.bloodDonor?.name || t("No information");
         const initials = donorName.trim().split(/\s+/u).slice(0, 2).map(part => Array.from(part)[0]).join('').toLocaleUpperCase();
         const isVerified = donation.donation_status === 'verified';
-        return `<tr><td>${result.meta.from + index}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${esc(initials)}</span><strong>${esc(donorName)}</strong></div></td><td><span class="table-date">${esc(donation.donated_at?.slice(0, 10) || t("No information"))}</span></td><td>${esc(donation.hospital_name || t("No information"))}</td><td>${esc(donation.bags)}</td><td><span class="status ${isVerified ? '' : 'busy'}">${isVerified ? t("Verified") : esc(donation.donation_status)}</span></td><td class="donor-actions"><details class="row-menu"><summary aria-label="${t("Actions")}"><i class="fi fi-rr-angle-small-down menu-chevron" aria-hidden="true"></i></summary><div><button class="row-btn" data-action="donation-preview" data-id="${donation.id}">${t("Preview")}</button>${donation.donation_status === 'pending' ? `<button class="row-btn" data-action="verify-donation" data-id="${donation.id}">${t("Verify donation")}</button>` : ''}</div></details></td></tr>`;
+        return `<tr><td>${result.meta.from + index}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${esc(initials)}</span><strong>${esc(donorName)}</strong></div></td><td><span class="table-date">${esc(donation.donated_at?.slice(0, 10) || t("No information"))}</span></td><td>${esc(donation.hospital_name || t("No information"))}</td><td>${esc(donation.bags)}</td><td><span class="status ${isVerified ? '' : 'busy'}">${isVerified ? t("Verified") : esc(donation.donation_status)}</span></td></tr>`;
     }).join('');
-    $('donationsRows').innerHTML = rows || `<tr><td colspan="7" class="empty">${t("No information")}</td></tr>`;
+    $('donationsRows').innerHTML = rows || `<tr><td colspan="6" class="empty">${t("No information")}</td></tr>`;
     $('donationsTableCount').textContent = `${result.meta.from || 0}–${result.meta.to || 0} / ${result.meta.total}`;
     $('donationsPagination').innerHTML = pageButtons(result.meta, 'donations-page');
 
@@ -376,10 +363,7 @@ document.addEventListener('click', async event => {
             const requestId = button.dataset.request;
             modal(t("Donor response"), t("<div class=\"field\"><select name=\"response_status\"><option value=\"contacted\">Contacted</option><option value=\"accepted\">Accepted</option><option value=\"declined\">Declined</option></select></div>") + field(t("Notes"), 'notes', 'text', '', false), async values => { await send(`${routes.requests}/${requestId}/matches/${id}`, values, 'PATCH'); });
         }
-        if (action === 'contact-preview') { const contact = (await request(`${routes.contacts}/${id}`)).data; modal(t("Contact request details"), `<p>${esc(contact.requester_name)} · ${esc(contact.requester_phone)}</p><p>${esc(contact.blood_donor?.name || t("No information"))} · ${esc(contact.contact_status)}</p><p>${esc(contact.message || t("No information"))}</p>`, async () => { }); $('donorForm').querySelector('[type=submit]').hidden = true; }
-        if (action.startsWith('contact-')) { await send(`${routes.contacts}/${id}`, { contact_status: action.slice(8) }, 'PATCH'); showSuccess(t('Contact request status updated successfully.')); await loadContacts(); }
         if (action === 'requests-page') await loadRequests(Number(id));
-        if (action === 'contacts-page') await loadContacts(Number(id));
         if (action === 'donations-page') await loadDonations(Number(id));
     } catch (error) { showError(error.message); } finally { button.disabled = false; }
 });
@@ -427,7 +411,6 @@ try {
     if (currentPageName !== 'settings') await refreshSummary();
     if (['dashboard', 'donors'].includes(currentPageName)) await loadDonors();
     if (currentPageName === 'requests') await loadRequests();
-    if (currentPageName === 'contacts') await loadContacts();
     if (currentPageName === 'donations') await loadDonations();
     if (currentPageName === 'groups') await loadGroups();
     if (currentPageName === 'reports') $('pageSubtitle').textContent = `${summary.donations} ${t("donations ·")} ${summary.bags_donated} ${t("bags of blood")}`;

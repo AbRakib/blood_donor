@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\BloodDonor;
-use App\Models\DonorContactRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -24,19 +23,5 @@ class DonorSearchController extends Controller
         ]);
 
         return $this->collectionResponse(BloodDonor::query()->matchingFilters($filters)->availableForContact()->with(['bloodGroup', 'district', 'upazila', 'union'])->orderBy('id')->paginate(12), $this->formatPublicDonor(...));
-    }
-
-    public function contact(Request $request): JsonResponse
-    {
-        $data = $request->validate([
-            'requester_phone' => ['required', 'string', 'regex:/^(?:\+?88)?01[3-9][0-9]{8}$/'],
-            'blood_donor_id' => ['required', 'integer', Rule::exists('blood_donors', 'id')->where('status', 1)->where('deleted', 0)->whereNull('deleted_at')->where('is_available', true)],
-            'requester_name' => ['required', 'string', 'max:255'],
-            'message' => ['required', 'string', 'max:2000'],
-        ]);
-
-        DonorContactRequest::submit($data);
-
-        return response()->json(['message' => 'Your contact request has been submitted for admin review.'], 201);
     }
 }

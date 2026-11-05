@@ -1942,25 +1942,13 @@ function I(e = "", t = "") {
 		}), await j(), await M(), await N(), T === "donations" && await L();
 	});
 }
-async function he(e = 1) {
-	let t = await m(`${f.contacts}?page=${e}`), n = t.data.map((e, n) => {
-		let r = e.requester_name || d("No information"), i = r.trim().split(/\s+/u).slice(0, 2).map((e) => Array.from(e)[0]).join("").toLocaleUpperCase(), a = `<button class="row-btn" data-action="contact-preview" data-id="${e.id}">${d("Preview")}</button>`, o = e.contact_status === "pending" ? `<button class="row-btn" data-action="contact-approved" data-id="${e.id}">${d("Approve")}</button><button class="row-btn" data-action="contact-rejected" data-id="${e.id}">${d("Reject")}</button>` : e.contact_status === "approved" ? `<button class="row-btn" data-action="contact-completed" data-id="${e.id}">${d("Completed")}</button><button class="row-btn" data-action="contact-rejected" data-id="${e.id}">${d("Reject")}</button>` : "";
-		return `<tr><td>${t.meta.from + n}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${p(i)}</span><div><strong>${p(r)}</strong><small><a class="phone-link" href="tel:${p(e.requester_phone || "")}">${p(e.requester_phone || d("No information"))}</a></small></div></div></td><td>${p(e.blood_donor?.name || d("No information"))}<small>${p(e.blood_donor?.phone || "")}</small></td><td>${p(e.message || d("No information"))}</td><td><span class="status ${["approved", "completed"].includes(e.contact_status) ? "" : "busy"}">${p(d({
-			pending: "Pending",
-			approved: "Approved",
-			rejected: "Rejected",
-			completed: "Completed"
-		}[e.contact_status] || e.contact_status))}</span></td><td class="donor-actions"><details class="row-menu"><summary aria-label="${d("Actions")}"><i class="fi fi-rr-angle-small-down menu-chevron" aria-hidden="true"></i></summary><div>${a}${o}</div></details></td></tr>`;
-	}).join("");
-	b("contactsRows").innerHTML = n || `<tr><td colspan="6" class="empty">${d("No information")}</td></tr>`, b("contactsTableCount").textContent = `${t.meta.from || 0}–${t.meta.to || 0} / ${t.meta.total}`, b("contactsPagination").innerHTML = P(t.meta, "contacts-page");
-}
 async function L(e = 1) {
 	if (!b("donationsRows")) return;
 	let t = await m(`${f.donations}?page=${e}`), n = t.data.map((e, n) => {
 		let r = e.bloodDonor?.name || d("No information"), i = r.trim().split(/\s+/u).slice(0, 2).map((e) => Array.from(e)[0]).join("").toLocaleUpperCase(), a = e.donation_status === "verified";
-		return `<tr><td>${t.meta.from + n}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${p(i)}</span><strong>${p(r)}</strong></div></td><td><span class="table-date">${p(e.donated_at?.slice(0, 10) || d("No information"))}</span></td><td>${p(e.hospital_name || d("No information"))}</td><td>${p(e.bags)}</td><td><span class="status ${a ? "" : "busy"}">${a ? d("Verified") : p(e.donation_status)}</span></td><td class="donor-actions"><details class="row-menu"><summary aria-label="${d("Actions")}"><i class="fi fi-rr-angle-small-down menu-chevron" aria-hidden="true"></i></summary><div><button class="row-btn" data-action="donation-preview" data-id="${e.id}">${d("Preview")}</button>${e.donation_status === "pending" ? `<button class="row-btn" data-action="verify-donation" data-id="${e.id}">${d("Verify donation")}</button>` : ""}</div></details></td></tr>`;
+		return `<tr><td>${t.meta.from + n}.</td><td><div class="donorcell"><span class="donoravatar" aria-hidden="true">${p(i)}</span><strong>${p(r)}</strong></div></td><td><span class="table-date">${p(e.donated_at?.slice(0, 10) || d("No information"))}</span></td><td>${p(e.hospital_name || d("No information"))}</td><td>${p(e.bags)}</td><td><span class="status ${a ? "" : "busy"}">${a ? d("Verified") : p(e.donation_status)}</span></td></tr>`;
 	}).join("");
-	b("donationsRows").innerHTML = n || `<tr><td colspan="7" class="empty">${d("No information")}</td></tr>`, b("donationsTableCount").textContent = `${t.meta.from || 0}–${t.meta.to || 0} / ${t.meta.total}`, b("donationsPagination").innerHTML = P(t.meta, "donations-page");
+	b("donationsRows").innerHTML = n || `<tr><td colspan="6" class="empty">${d("No information")}</td></tr>`, b("donationsTableCount").textContent = `${t.meta.from || 0}–${t.meta.to || 0} / ${t.meta.total}`, b("donationsPagination").innerHTML = P(t.meta, "donations-page");
 }
 async function R() {
 	b("groupsRows").innerHTML = x.map((e, t) => {
@@ -2075,11 +2063,7 @@ b("donorForm").addEventListener("submit", async (e) => {
 				await h(`${f.requests}/${e}/matches/${i}`, t, "PATCH");
 			});
 		}
-		if (r === "contact-preview") {
-			let e = (await m(`${f.contacts}/${i}`)).data;
-			O(d("Contact request details"), `<p>${p(e.requester_name)} · ${p(e.requester_phone)}</p><p>${p(e.blood_donor?.name || d("No information"))} · ${p(e.contact_status)}</p><p>${p(e.message || d("No information"))}</p>`, async () => {}), b("donorForm").querySelector("[type=submit]").hidden = !0;
-		}
-		r.startsWith("contact-") && (await h(`${f.contacts}/${i}`, { contact_status: r.slice(8) }, "PATCH"), g(d("Contact request status updated successfully.")), await he()), r === "requests-page" && await N(Number(i)), r === "contacts-page" && await he(Number(i)), r === "donations-page" && await L(Number(i));
+		r === "requests-page" && await N(Number(i)), r === "donations-page" && await L(Number(i));
 	} catch (e) {
 		_(e.message);
 	} finally {
@@ -2125,7 +2109,7 @@ try {
 		"requests",
 		"donations",
 		"groups"
-	].includes(T) && (x = (await m(f.groups)).data), T !== "settings" && await j(), ["dashboard", "donors"].includes(T) && await M(), T === "requests" && await N(), T === "contacts" && await he(), T === "donations" && await L(), T === "groups" && await R(), T === "reports" && (b("pageSubtitle").textContent = `${C.donations} ${d("donations ·")} ${C.bags_donated} ${d("bags of blood")}`);
+	].includes(T) && (x = (await m(f.groups)).data), T !== "settings" && await j(), ["dashboard", "donors"].includes(T) && await M(), T === "requests" && await N(), T === "donations" && await L(), T === "groups" && await R(), T === "reports" && (b("pageSubtitle").textContent = `${C.donations} ${d("donations ·")} ${C.bags_donated} ${d("bags of blood")}`);
 } catch (e) {
 	_(e.message);
 }

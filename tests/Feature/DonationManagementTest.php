@@ -5,7 +5,6 @@ use App\Models\BloodDonor;
 use App\Models\BloodGroup;
 use App\Models\BloodRequest;
 use App\Models\District;
-use App\Models\DonorContactRequest;
 use App\Models\RequestDonor;
 use App\Models\SystemSetting;
 use App\Models\Upazila;
@@ -13,6 +12,7 @@ use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 
 uses(LazilyRefreshDatabase::class);
 
@@ -167,48 +167,23 @@ it('rejects donations for incompatible blood groups without changing history', f
     expect($donor->fresh()->is_available)->toBeTrue();
 });
 
-it('stores contact requests without disclosing the donor phone', function () {
-    $donor = BloodDonor::factory()->create();
-
-    $this->postJson(route('contact-requests.store'), ['blood_donor_id' => $donor->id,
-        'requester_name' => 'Requester', 'requester_phone' => '01812345678', 'message' => 'Please help.'])
-        ->assertCreated()->assertJsonMissingPath('data')->assertDontSee($donor->phone);
-
-    $this->assertDatabaseHas('donor_contact_requests', ['blood_donor_id' => $donor->id, 'contact_status' => 'pending']);
-});
-
-it('rejects contact requests for unavailable donors', function () {
-    $donor = BloodDonor::factory()->create(['is_available' => false]);
-
-    $this->postJson(route('contact-requests.store'), ['blood_donor_id' => $donor->id,
-        'requester_name' => 'Requester', 'requester_phone' => '01812345678', 'message' => 'Please help.'])
-        ->assertUnprocessable()->assertJsonValidationErrors('blood_donor_id');
-
-    $this->assertDatabaseCount('donor_contact_requests', 0);
-});
-
-it('allows admins to approve contact requests and prevents reopening completed requests', function () {
+it('returns not found for removed contact request endpoints', function () {
     $admin = User::factory()->create(['is_admin' => true]);
-    $contact = DonorContactRequest::factory()->create();
 
-    $this->actingAs($admin)->patchJson(route('admin.contact-requests.update', $contact), ['contact_status' => 'approved'])->assertOk();
-    $this->patchJson(route('admin.contact-requests.update', $contact), ['contact_status' => 'completed'])->assertOk();
-    $this->patchJson(route('admin.contact-requests.update', $contact), ['contact_status' => 'approved'])->assertUnprocessable();
-
-    $this->assertDatabaseHas('donor_contact_requests', ['id' => $contact->id, 'contact_status' => 'completed']);
+    $this->postJson('/contact-requests', [])->assertNotFound();
+    $this->actingAs($admin)->getJson('/admin/contact-requests')->assertNotFound();
+    $this->getJson('/admin/contact-requests/1')->assertNotFound();
+    $this->patchJson('/admin/contact-requests/1', [])->assertNotFound();
+    expect(Schema::hasTable('donor_contact_requests'))->toBeFalse();
 });
 
-it('returns individual donations and contact requests for AJAX previews', function () {
+it('returns individual donations for AJAX previews', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $donation = BloodDonation::factory()->create();
-    $contact = DonorContactRequest::factory()->create();
 
     $this->actingAs($admin)->getJson(route('admin.donations.show', $donation))
         ->assertOk()->assertJsonPath('data.id', $donation->id)
         ->assertJsonPath('data.bloodDonor.id', $donation->blood_donor_id);
-    $this->getJson(route('admin.contact-requests.show', $contact))
-        ->assertOk()->assertJsonPath('data.id', $contact->id)
-        ->assertJsonPath('data.blood_donor.id', $contact->blood_donor_id);
 });
 
 it('creates requests with an initial status log and refuses direct fulfillment', function () {

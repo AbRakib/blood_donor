@@ -57,11 +57,6 @@ class BloodRequest extends DomainModel
         return $this->hasMany(BloodRequestStatusLog::class, 'blood_request_id');
     }
 
-    public function contactRequests(): HasMany
-    {
-        return $this->hasMany(DonorContactRequest::class, 'blood_request_id');
-    }
-
     public function changeStatus(string $status): BloodRequest
     {
         $bloodRequest = $this;

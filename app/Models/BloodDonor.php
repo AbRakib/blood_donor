@@ -59,11 +59,6 @@ class BloodDonor extends DomainModel
         return $this->hasMany(DonorAvailabilityLog::class, 'blood_donor_id');
     }
 
-    public function contactRequests(): HasMany
-    {
-        return $this->hasMany(DonorContactRequest::class, 'blood_donor_id');
-    }
-
     /** @param array<string, mixed> $filters */
     #[Scope]
     protected function matchingFilters(Builder $query, array $filters = []): Builder

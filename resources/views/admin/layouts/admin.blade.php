@@ -33,9 +33,6 @@
                 <a href="{{ route('admin.blood-groups.index') }}" @class(['active' => $currentPage === 'groups'])
                     @if ($currentPage === 'groups') aria-current="page" @endif><i class="fi fi-rr-blood"
                         aria-hidden="true"></i> {{ __('Blood group') }}</a>
-                <a href="{{ route('admin.contact-requests.index') }}" @class(['active' => $currentPage === 'contacts'])
-                    @if ($currentPage === 'contacts') aria-current="page" @endif><i class="fi fi-rr-comments"
-                        aria-hidden="true"></i> {{ __('Contact requests') }}</a>
                 <a href="{{ route('admin.donations.index') }}" @class(['active' => $currentPage === 'donations'])
                     @if ($currentPage === 'donations') aria-current="page" @endif><i class="fi fi-rr-calendar"
                         aria-hidden="true"></i> {{ __('Donation history') }}</a>
@@ -125,12 +122,10 @@
                 'locations' => route('locations.index'),
                 'donors' => route('donors.index'),
                 'register' => route('donors.store'),
-                'contact' => route('contact-requests.store'),
                 'admin' => route('admin.dashboard'),
                 'adminDonors' => route('admin.blood-donors.index'),
                 'requests' => route('admin.blood-requests.index'),
                 'donations' => route('admin.donations.index'),
-                'contacts' => route('admin.contact-requests.index'),
                 'settings' => route('admin.settings.index'),
                 'reports' => route('admin.reports.index'),
                 'login' => route('login'),
@@ -143,7 +138,6 @@
                 'donors' => route('admin.blood-donors.index'),
                 'requests' => route('admin.blood-requests.index'),
                 'groups' => route('admin.blood-groups.index'),
-                'contacts' => route('admin.contact-requests.index'),
                 'donations' => route('admin.donations.index'),
                 'reports' => route('admin.reports.index'),
                 'settings' => route('admin.settings.index'),

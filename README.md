@@ -12,13 +12,12 @@
 - `districts` → hasMany upazilas, donors, requests
 - `upazilas` → belongsTo district; hasMany unions, donors, requests
 - `unions` → belongsTo upazila; hasMany donors
-- `blood_donors` → belongsTo blood_group/district/upazila/union; hasMany donations, request_donors, contact_requests, availability_logs
+- `blood_donors` → belongsTo blood_group/district/upazila/union; hasMany donations, request_donors, availability_logs
 - `blood_requests` → belongsTo blood_group/district/upazila; hasMany request_donors, donations, request_status_logs
 - `request_donors` → donor/request matching (unique composite)
 - `blood_donations` → verified donation transactions, optionally attached to request
 - `blood_request_status_logs` → status history
 - `donor_availability_logs` → availability history
-- `donor_contact_requests` → protect donor phone number by routing contact via admin
 - `activity_logs` → audit trail
 - `system_settings` → admin-managed configuration
 
@@ -29,13 +28,13 @@ app/
     BloodGroup.php District.php Upazila.php Union.php
     BloodDonor.php BloodRequest.php RequestDonor.php BloodDonation.php
     BloodRequestStatusLog.php DonorAvailabilityLog.php
-    DonorContactRequest.php ActivityLog.php SystemSetting.php
+    ActivityLog.php SystemSetting.php
   Http/
     Controllers/Admin/
       DashboardController.php BloodDonorController.php
       BloodRequestController.php BloodGroupController.php
       LocationController.php DonationController.php
-      ContactRequestController.php ReportController.php SettingController.php
+      ReportController.php SettingController.php
     Controllers/Public/
       DonorSearchController.php DonorRegistrationController.php
       BloodRequestSubmissionController.php
@@ -93,10 +92,6 @@ routes/
 - `record(array $data)`; `verify(BloodDonation $donation)`; `reject()`
 - In DB transaction, verified donations update donor.last_donation_date, total_donations and optionally request.units_fulfilled and request status. Count only verified donations. Guard double verification.
 
-### ContactRequestController
-- `store()`: requester asks admin to contact donor; protect donor mobile
-- `approve()/reject()`: admin mediation
-
 ### ReportService
 - `donorSummary()`; `requestSummary()`; `donationSummary()`; `exportDonorsCsv()` (authorized admin only)
 
@@ -122,7 +117,6 @@ routes/
 | GET | /donors | Public privacy-safe donor search |
 | POST | /donor-registration | Public donor signup (verified consent) |
 | POST | /blood-requests | Public blood request submission |
-| POST | /donor-contact-requests | Contact via admin |
 
 ## Laravel implementation essentials
 - Use `auth` and `can`/policies for admin routes; CSRF for web writes; throttle public endpoints; validate Bangladeshi numbers server-side.
