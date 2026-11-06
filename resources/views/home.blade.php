@@ -325,6 +325,7 @@
                 <h3 class="font-bold text-xl"><i class="fi fi-rr-heart" aria-hidden="true"></i>
                     {{ __('Manda Blood Donation Program') }}</h3>
                 <p class="text-gray-400 mt-3">{{ __('Donate blood, save lives.') }}</p>
+                
             </div>
             <div>
                 <h3 class="font-bold">{{ __('Quick links') }}</h3>
@@ -333,9 +334,8 @@
                         href="#how-it-works">{{ __('How it works') }}</a></div>
             </div>
             <div>
-                <h3 class="font-bold">{{ __('Address') }}</h3>
-                <p class="text-gray-400 mt-3"><i class="fi fi-rr-marker" aria-hidden="true"></i>
-                    {{ __('Manda, Naogaon, Bangladesh') }}</p>
+                <h3 class="font-bold">{{ __('Install App') }}</h3>
+                <button id="pwa-install-btn" type="button" class="btn mt-3">{{ __('Install App') }}</button>
             </div>
             <div>
                 <h3 class="font-bold">{{ __('Together for humanity') }}</h3>
@@ -514,13 +514,6 @@
             });
         }
     </script>
-    <div id="pwa-install-banner" role="region" aria-labelledby="pwa-install-title"
-        style="display:none;position:fixed;bottom:20px;left:20px;right:20px;max-width:420px;margin:auto;background:white;padding:16px;border-radius:14px;box-shadow:0 6px 30px #0002;z-index:9999;">
-        <strong id="pwa-install-title">{{ __('Install Our App') }}</strong>
-        <p>{{ __('Install for quick access from your home screen.') }}</p>
-        <button id="pwa-install-btn" type="button" class="btn">{{ __('Install App') }}</button>
-        <button id="pwa-dismiss-btn" type="button" class="btn">{{ __('Not Now') }}</button>
-    </div>
     <script>
         (() => {
             let deferredPrompt = null;
@@ -530,9 +523,7 @@
                 event.preventDefault();
                 deferredPrompt = event;
 
-                if (!sessionStorage.getItem('pwa-dismissed')) {
-                    banner.style.display = 'block';
-                }
+                banner.style.display = 'block';
             });
 
             document.getElementById('pwa-install-btn').addEventListener('click', async () => {
@@ -549,11 +540,6 @@
                 } catch (error) {
                     console.error('Unable to show the app installation prompt.', error);
                 }
-            });
-
-            document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
-                sessionStorage.setItem('pwa-dismissed', '1');
-                banner.style.display = 'none';
             });
 
             window.addEventListener('appinstalled', () => {
