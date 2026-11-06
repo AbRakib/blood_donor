@@ -14,6 +14,7 @@
     <title>{{ __('Manda Blood Donation Program') }}</title>
     <link rel="stylesheet" href="{{ asset('frontend/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('frontend/css/fonts.css') }}">
+    <link rel="stylesheet" href="{{ asset('frontend/css/mobile.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
     @include('partials.translations')
@@ -24,7 +25,7 @@
         <i class="fi fi-rr-heart" aria-hidden="true"></i> {{ __('Donate blood, save lives — stand with humanity') }}
     </div>
     @include('partials.preloader')
-    <header class="sticky top-0 bg-white/95 border-b z-20">
+    <header class="site-header sticky top-0 bg-white/95 border-b z-20">
         <div class="max-w-7xl mx-auto px-5 py-4 flex flex-wrap gap-4 items-center justify-between">
             <a href="#home" class="flex gap-3 items-center">
                 <div class="bg-[#d32340] text-white rounded-xl w-12 h-12 grid place-items-center text-3xl">
@@ -53,6 +54,13 @@
             </div>
         </div>
     </header>
+    <nav class="mobile-bottom-nav" aria-label="{{ __('Quick links') }}">
+        <a href="#home" aria-current="page" aria-label="{{ __('Home') }}"><i class="fi fi-rr-home" aria-hidden="true"></i><span>{{ __('Home') }}</span></a>
+        <a href="#donors" aria-label="{{ __('Find donors') }}"><i class="fi fi-rr-search" aria-hidden="true"></i><span>{{ __('Donors') }}</span></a>
+        <a href="#contact" aria-label="{{ __('Contact') }}"><i class="fi fi-rr-comment-alt" aria-hidden="true"></i><span>{{ __('Contact') }}</span></a>
+        <button type="button" class="mobile-bottom-nav-action mobile-nav-request" aria-label="{{ __('Request blood') }}" onclick="showBloodRequestModal()"><i class="fi fi-rr-blood" aria-hidden="true"></i><span>{{ __('Blood') }}</span></button>
+        <button type="button" class="mobile-bottom-nav-action mobile-nav-register" aria-label="{{ __('Become a donor') }}" onclick="showModal('register')"><i class="fi fi-rr-user-add" aria-hidden="true"></i><span>{{ __('Donor') }}</span></button>
+    </nav>
     <main>
         <section id="home" class="hero">
             <div class="max-w-7xl mx-auto px-5 py-20 grid md:grid-cols-2 gap-12 items-center">

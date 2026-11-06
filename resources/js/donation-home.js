@@ -7,6 +7,15 @@ let groups = [], currentPage = 1, searchSequence = 0;
 const statisticsCard = document.getElementById('donorTotal').closest('.card');
 const statisticCounters = new Map();
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+function splitIntoCharacters(text) {
+    if (typeof Intl.Segmenter === 'function') {
+        return [...new Intl.Segmenter(document.documentElement.lang, {granularity: 'grapheme'}).segment(text)]
+            .map(segment => segment.segment);
+    }
+
+    return Array.from(text);
+}
+
 document.querySelectorAll('[data-donor-heading]').forEach(donorHeading => {
     if (prefersReducedMotion.matches || !('IntersectionObserver' in window)) {
         return;
@@ -18,7 +27,7 @@ document.querySelectorAll('[data-donor-heading]').forEach(donorHeading => {
         headingObserver.disconnect();
         const parts = [...donorHeading.querySelectorAll('[data-typing-part]')].map(element => ({
             element,
-            characters: [...new Intl.Segmenter(document.documentElement.lang, {granularity: 'grapheme'}).segment(element.textContent)].map(segment => segment.segment),
+            characters: splitIntoCharacters(element.textContent),
         }));
         donorHeading.style.minHeight = `${donorHeading.offsetHeight}px`;
         parts.forEach(part => { part.element.textContent = ''; });
