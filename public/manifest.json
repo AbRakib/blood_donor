@@ -1,7 +1,8 @@
 {
-    "name": "My Laravel App",
-    "short_name": "My App",
-    "description": "My Laravel Web Application",
+    "id": "/",
+    "name": "Manda Blood Donation Program",
+    "short_name": "Manda Blood",
+    "description": "Connect with blood donors in Manda and nearby areas.",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",

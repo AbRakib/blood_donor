@@ -517,34 +517,45 @@
     <script>
         (() => {
             let deferredPrompt = null;
-            const banner = document.getElementById('pwa-install-banner');
+            const installButton = document.getElementById('pwa-install-btn');
+            const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+            const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+            if (!installButton || isInStandaloneMode) {
+                installButton?.classList.add('hidden');
+                return;
+            }
 
             window.addEventListener('beforeinstallprompt', (event) => {
                 event.preventDefault();
                 deferredPrompt = event;
-
-                banner.style.display = 'block';
+                installButton.classList.remove('hidden');
             });
 
-            document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+            installButton.addEventListener('click', async () => {
                 if (!deferredPrompt) {
+                    if (isIos) {
+                        window.alert(@json(__('To install this app, tap Share, then choose Add to Home Screen.')));
+                    }
                     return;
                 }
 
-                banner.style.display = 'none';
                 const promptEvent = deferredPrompt;
                 deferredPrompt = null;
 
                 try {
                     await promptEvent.prompt();
+                    await promptEvent.userChoice;
                 } catch (error) {
                     console.error('Unable to show the app installation prompt.', error);
+                } finally {
+                    installButton.classList.add('hidden');
                 }
             });
 
             window.addEventListener('appinstalled', () => {
                 deferredPrompt = null;
-                banner.style.display = 'none';
+                installButton.classList.add('hidden');
             });
         })();
     </script>
