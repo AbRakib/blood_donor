@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="{{ asset('frontend/css/mobile.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
+    <link rel="stylesheet" href="{{ asset('frontend/vendor/owlcarousel/owl.carousel.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('frontend/css/top-donors.css') }}">
+
     @include('partials.translations')
 </head>
 
@@ -176,6 +179,46 @@
                     </div>
                     <p class="text-gray-500">{{ __('Volunteer initiative') }}</p>
                 </div>
+            </div>
+        </section>
+        <section id="top-donors" aria-labelledby="top-donors-heading" class="top-donors-section">
+            <div class="top-donors-container max-w-7xl mx-auto px-5">
+            <div class="top-donors-heading">
+                <span class="top-donors-eyebrow">{{ __('Our lifesavers') }}</span>
+                <h2 id="top-donors-heading"><span>{{ __('Top 10') }}</span> {{ __('Blood Donors') }}</h2>
+                <p>{{ __('Celebrating our donors with the most verified donations') }}</p>
+            </div>
+            @if ($topDonors->isNotEmpty())
+                <div class="top-donors-carousel owl-carousel" role="region" aria-roledescription="carousel"
+                    aria-label="{{ __('Top 10 blood donors') }}">
+                    @foreach ($topDonors as $donor)
+                        <article class="top-donor-card">
+                            <div class="top-donor-cover" aria-hidden="true"></div>
+                            <div class="top-donor-avatar" aria-hidden="true">{{ mb_substr($donor->name, 0, 1) }}</div>
+                            <div class="top-donor-profile">
+                                <h3 class="top-donor-name">{{ $donor->name }}</h3>
+                                <p class="top-donor-area"><i class="fi fi-rr-marker" aria-hidden="true"></i> {{ $donor->area ?: __('Volunteer initiative') }}</p>
+                            </div>
+                            <dl class="top-donor-stats">
+                                <div>
+                                    <dt>{{ __('Rank') }}</dt>
+                                    <dd>#{{ $loop->iteration }}</dd>
+                                </div>
+                                <div>
+                                    <dt>{{ __('Blood group') }}</dt>
+                                    <dd>{{ $donor->bloodGroup->name }}</dd>
+                                </div>
+                                <div>
+                                    <dt>{{ __('Donations') }}</dt>
+                                    <dd>{{ $donor->total_donations }}</dd>
+                                </div>
+                            </dl>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <p class="card text-center text-gray-500">{{ __('Our top donors will appear here after their first verified donation.') }}</p>
+            @endif
             </div>
         </section>
         <section id="donors" class="max-w-7xl mx-auto px-5 py-20">
@@ -512,6 +555,7 @@
         })();
     </script>
     <link rel="stylesheet" href="{{ asset('frontend/css/style.css') }}">
+    <script src="{{ asset('frontend/js/scroll-animations.js') }}" defer></script>
     <script type="module" src="{{ asset('frontend/js/main.js') }}"></script>
     <script>
         if ("serviceWorker" in navigator) {
@@ -567,6 +611,9 @@
             });
         })();
     </script>
+    <script src="{{ asset('frontend/vendor/jquery/jquery.min.js') }}" defer></script>
+    <script src="{{ asset('frontend/vendor/owlcarousel/owl.carousel.min.js') }}" defer></script>
+    <script src="{{ asset('frontend/js/top-donors.js') }}" defer></script>
 </body>
 
 </html>

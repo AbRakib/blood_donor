@@ -1,4 +1,13 @@
 {
+    "Rank": "অবস্থান",
+    "Verified donations": "যাচাইকৃত রক্তদান",
+    "Top 10": "সেরা ১০",
+    "Blood Donors": "রক্তদাতা",
+    "Our lifesavers": "আমাদের জীবনদাতারা",
+    "Top 10 blood donors": "সেরা ১০ জন রক্তদাতা",
+    "Celebrating our donors with the most verified donations": "সর্বাধিক যাচাইকৃত রক্তদানের জন্য আমাদের রক্তদাতাদের সম্মাননা",
+    "Verified donations: :count": "যাচাইকৃত রক্তদান: :count",
+    "Our top donors will appear here after their first verified donation.": "প্রথম যাচাইকৃত রক্তদানের পর আমাদের সেরা রক্তদাতাদের এখানে দেখানো হবে।",
     "Back to home page": "হোম পেজে ফিরে যান",
     "or": "অথবা",
     "0": "০",
