@@ -35,7 +35,7 @@ class BloodRequestFactory extends Factory
             'contact_phone' => fake()->numerify('01'.fake()->numberBetween(3, 9).'########'),
             'hospital_name' => $hospital['name'],
             'hospital_address' => $hospital['address'],
-            'bags_needed' => fake()->numberBetween(1, 3),
+            'bags_needed' => 1,
             'needed_at' => $neededAt,
             'expires_at' => $neededAt->copy()->addDay(),
             'urgency' => fake()->randomElement(['normal', 'urgent', 'emergency', 'critical']),

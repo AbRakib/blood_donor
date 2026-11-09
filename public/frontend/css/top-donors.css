@@ -34,18 +34,15 @@
 }
 .top-donor-avatar {
     position: relative;
-    display: grid;
-    place-items: center;
+    display: block;
     flex-shrink: 0;
     width: 94px;
     height: 98px;
+    object-fit: cover;
     margin: 10px auto 20px;
     border: 5px solid #fff;
     border-radius: 50%;
     background: #fff0f4;
-    color: var(--donation-red, #ed073a);
-    font-size: 40px;
-    font-weight: 650;
 }
 .top-donor-avatar::before { content: ""; position: absolute; inset: -9px; padding: 2px; border-radius: 50%; background: conic-gradient(#ed073a, #ff91ad, transparent 38% 58%, #ffc8d7, #ed073a); mask: linear-gradient(#fff 0 0) content-box exclude, linear-gradient(#fff 0 0); }
 .top-donor-profile { padding: 0 20px 26px; flex: 1; }

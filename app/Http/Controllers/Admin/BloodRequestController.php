@@ -37,9 +37,12 @@ class BloodRequestController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate(['expires_at' => ['required', 'date']]);
+        $data = $this->validateBloodRequest($request);
+        if (empty($data['expires_at'])) {
+            $data['expires_at'] = now()->addDay();
+        }
 
-        return $this->modelResponse(BloodRequest::submit($this->validateBloodRequest($request))->load('bloodGroup'), $this->formatBloodRequest(...));
+        return $this->modelResponse(BloodRequest::submit($data)->load('bloodGroup'), $this->formatBloodRequest(...));
     }
 
     public function show(BloodRequest $bloodRequest): JsonResponse

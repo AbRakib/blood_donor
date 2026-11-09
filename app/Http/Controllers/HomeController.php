@@ -23,10 +23,13 @@ class HomeController extends Controller
             ->with('bloodGroup')
             ->where('total_donations', '>', 0)
             ->orderByDesc('total_donations')
-            ->orderBy('name')
-            ->orderBy('id')
+            ->orderByDesc('id')
             ->limit(10)
             ->get();
+
+        if ($topDonors->count() === 10) {
+            $topDonors = $topDonors->mapWithKeys(fn ($donor, $index) => [10 - $index => $donor]);
+        }
 
         if ($topDonors->isEmpty()) {
             $topDonors = BloodDonor::query()

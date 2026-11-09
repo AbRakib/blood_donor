@@ -573,11 +573,11 @@ html {
 }
 
 .donor-avatar {
-    display: grid;
-    place-items: center;
+    display: block;
     width: 47px;
     height: 47px;
     flex-shrink: 0;
+    object-fit: cover;
     background: linear-gradient(135deg, #fce5e9, #edf0f5);
     border: 3px solid #fff;
     box-shadow: 0 0 0 1px #f0e5e9;
