@@ -194,7 +194,7 @@
                     @foreach ($topDonors as $donor)
                         <article class="top-donor-card">
                             <div class="top-donor-cover" aria-hidden="true"></div>
-                            <img class="top-donor-avatar" src="{{ asset('images/demo-donor.svg') }}" alt="{{ __('Demo donor illustration') }}">
+                            <img class="top-donor-avatar" src="{{ asset('images/profile-demo.jpg') }}" alt="{{ __('Demo donor photo') }}">
                             <div class="top-donor-profile">
                                 <h3 class="top-donor-name">{{ $donor->name }}</h3>
                                 <p class="top-donor-area"><i class="fi fi-rr-marker" aria-hidden="true"></i> {{ $donor->area ?: __('Volunteer initiative') }}</p>
