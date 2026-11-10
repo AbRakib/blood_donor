@@ -3694,15 +3694,7 @@ td small {
     outline-offset: 2px;
 }
 
-/* Keep button corners consistent across the application. */
-button,
-.btn,
-[role='button'],
-input[type='button'],
-input[type='submit'],
-input[type='reset'] {
-    border-radius: 5px !important;
-}
+
 
 /* Blood request form */
 .blood-request-modal {

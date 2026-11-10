@@ -14,9 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SystemSettingSeeder::class);
         $this->call(SettingSeeder::class);
 
-        if (filled(config('auth.admin_password'))) {
-            $this->call(AdminUserSeeder::class);
-        }
+        $this->call(AdminUserSeeder::class);
 
         if (app()->environment(['local', 'testing'])) {
             $this->call([
