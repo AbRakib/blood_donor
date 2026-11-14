@@ -2044,23 +2044,23 @@ td small {
     box-shadow: 0 4px 20px #18233104
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .dirheader {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .dirheader {
     padding: 22px 24px 16px;
     align-items: center
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .dirheader h2 {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .dirheader h2 {
     font-size: 18px
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .dirheader p {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .dirheader p {
     font-size: 12px;
     line-height: 1.6;
     margin-top: 7px;
     max-width: 620px
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .dirheader .btn {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .dirheader .btn {
     font-size: 12px;
     padding: 9px 14px
 }
@@ -2098,7 +2098,7 @@ td small {
     border-radius: 10px
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .tablewrap {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .tablewrap {
     padding: 0 24px 12px
 }
 
@@ -2279,11 +2279,11 @@ td small {
     border-color: #f5bac5
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu {
     vertical-align: middle
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu summary {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu summary {
     padding: 5px;
     border: 1px solid #e2e7ef;
     border-radius: 7px;
@@ -2291,12 +2291,12 @@ td small {
     background: #fff
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu summary:hover {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu summary:hover {
     background: #f5f7fa;
     border-color: #b8c3d2
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu>div {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu>div {
     gap: 5px;
     min-width: 180px;
     border-radius: 10px;
@@ -2304,7 +2304,7 @@ td small {
     text-align: left
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu .row-btn {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu .row-btn {
     margin: 0;
     text-align: left;
     width: 100%;
@@ -2312,34 +2312,35 @@ td small {
     background: #fff
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu .row-btn:hover {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu .row-btn:hover {
     background: #f5f7fa
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu [data-action="delete-donor"] {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu [data-action="delete-donor"] {
     color: #d7193b;
     border-top: 1px solid #f0f1f3;
     border-radius: 0 0 6px 6px
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .tablefooter {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .tablefooter {
     padding: 16px 24px;
     font-size: 12px;
     background: #fcfdff
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .pagination {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .pagination {
     gap: 7px
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .pagination button {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .pagination button,
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .pagination .btn {
     min-width: 34px;
     height: 34px;
     border-radius: 8px;
     font-size: 12px
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .pagination button.current {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .pagination button.current {
     background: var(--red);
     border-color: var(--red)
 }
@@ -2355,21 +2356,21 @@ td small {
 }
 
 @media(max-width:580px) {
-    :is(#directory, #requestsView, #donationsView, #groupsView) .dirheader {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .dirheader {
         padding: 18px 16px 14px;
         gap: 14px;
         align-items: flex-start
     }
 
-    :is(#directory, #requestsView, #donationsView, #groupsView) .dirheader h2 {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .dirheader h2 {
         font-size: 16px
     }
 
-    :is(#directory, #requestsView, #donationsView, #groupsView) .dirheader p {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .dirheader p {
         font-size: 11px
     }
 
-    :is(#directory, #requestsView, #donationsView, #groupsView) .dirheader .btn {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .dirheader .btn {
         white-space: nowrap;
         padding: 8px 10px;
         font-size: 11px
@@ -2385,16 +2386,16 @@ td small {
         padding: 0 6px
     }
 
-    :is(#directory, #requestsView, #donationsView, #groupsView) .tablewrap {
+    :is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .tablewrap {
         padding: 0 16px 10px
     }
 
-    :is(#directory, #requestsView, #donationsView, #groupsView) .tablefooter {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .tablefooter {
         padding: 14px 16px
     }
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu>div {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu>div {
     position: fixed;
     right: auto;
     bottom: auto;
@@ -2406,11 +2407,11 @@ td small {
     box-shadow: 0 8px 28px #18233126
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu:not([open])>div {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu:not([open])>div {
     display: none
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu summary {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu summary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2421,7 +2422,7 @@ td small {
     list-style: none
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu summary::marker {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu summary::marker {
     content: ''
 }
 
@@ -2430,7 +2431,7 @@ td small {
     height: 14px
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu summary {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu summary {
     width: 25px;
     height: 25px;
     border-radius: 6px;
@@ -2438,11 +2439,11 @@ td small {
     color: #225cff
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu[open] summary {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu[open] summary {
     background: #f2f5fa
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu>div {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu>div {
     width: 170px;
     min-width: 170px;
     padding: 6px;
@@ -2452,7 +2453,7 @@ td small {
     box-shadow: 0 4px 14px #18233112
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu .row-btn {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu .row-btn {
     display: block;
     min-height: 30px;
     padding: 6px 8px;
@@ -2464,18 +2465,18 @@ td small {
     color: #34435b
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu [data-action="delete-donor"] {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu [data-action="delete-donor"] {
     border: 0;
     border-radius: 4px;
     color: #34435b
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu [data-action="delete-donor"]:hover {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu [data-action="delete-donor"]:hover {
     color: #d7193b;
     background: #fff0f3
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu .menu-toggle {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu .menu-toggle {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2514,13 +2515,13 @@ td small {
     transform: translateX(22px)
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu .row-btn:disabled {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu .row-btn:disabled {
     opacity: .5;
     cursor: wait
 }
 
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu summary:focus-visible,
-:is(#directory, #requestsView, #donationsView, #groupsView) .row-menu .row-btn:focus-visible {
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu summary:focus-visible,
+:is(#directory, #requestsView, #donationsView, #groupsView, #driversView) .row-menu .row-btn:focus-visible {
     outline: 2px solid #225cff;
     outline-offset: 1px
 }
@@ -3794,6 +3795,128 @@ td small {
 .admin-requests button.request-status:disabled {
     cursor: wait;
     opacity: 0.65;
+}
+
+#driversView .tablewrap {
+    overflow-x: auto;
+}
+
+#driversView table {
+    min-width: 820px;
+}
+
+#driversView th:first-child,
+#driversView td:first-child {
+    width: 48px;
+    color: #8490a0;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+#driversView td:nth-child(2) {
+    min-width: 175px;
+}
+
+#driversView td:nth-child(3),
+#driversView td:nth-child(4),
+#driversView td:nth-child(5) {
+    white-space: nowrap;
+}
+
+#driversView .driver-name {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+#driversView .driver-avatar {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: none;
+    place-items: center;
+    border: 1px solid #d9dce1;
+    border-radius: 50%;
+    background: #f5f6f7;
+    color: #77808d;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+#driversView .driver-phone {
+    color: #172238;
+    font-variant-numeric: tabular-nums;
+    text-decoration: none;
+}
+
+#driversView .driver-phone:hover {
+    color: var(--red);
+    text-decoration: underline;
+}
+
+#driversView .driver-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+#driversView .driver-status.is-active {
+    background: #ecfdf3;
+    color: #16804a;
+}
+
+#driversView .driver-status.is-inactive {
+    background: #f2f3f5;
+    color: #77808d;
+}
+
+#driversView .driver-row-menu {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#driversView .driver-row-menu summary {
+    display: grid;
+    width: 26px;
+    height: 26px;
+    place-items: center;
+    border: 1px solid #dbe3ed;
+    border-radius: 7px;
+    background: #fff;
+    color: #55657c;
+    cursor: pointer;
+    list-style: none;
+}
+
+#driversView .driver-row-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+#driversView .driver-row-menu summary:hover,
+#driversView .driver-row-menu[open] summary {
+    border-color: #b8c3d2;
+    background: #f5f7fa;
+}
+
+#driversView .driver-row-menu form {
+    border-top: 1px solid #f0f1f3;
+}
+
+#driversView .driver-row-menu form button {
+    color: #d7193b;
+}
+
+#driversView .driver-row-menu .row-btn {
+    width: 100%;
+    background: #fff;
+    text-align: left;
+    text-decoration: none;
 }
 
 .donation-alert .donation-alert-details {

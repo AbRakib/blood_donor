@@ -59,20 +59,20 @@
                     <form method="POST" action="{{ route('login.store') }}">
                         @csrf
                         <div class="field">
-                            <label for="email"><i class="fi fi-rr-envelope" aria-hidden="true"></i> {{ __('Email address') }}</label>
-                            <div class="input-wrap"><i class="fi fi-rr-envelope" aria-hidden="true"></i>
+                            <div class="input-wrap">
                                 <input id="email" type="email" name="email" value="{{ old('email') }}"
-                                    placeholder="{{ __('Enter your email address') }}" autocomplete="username" required
+                                    placeholder=" " autocomplete="username" required
                                     autofocus @error('email') aria-invalid="true" aria-describedby="login-errors" @enderror>
+                                <label for="email"><i class="fi fi-rr-envelope" aria-hidden="true"></i> {{ __('Email or Phone') }}</label>
                             </div>
                         </div>
                         <div class="field">
-                            <label for="password"><i class="fi fi-rr-lock" aria-hidden="true"></i> {{ __('Password') }}</label>
-                            <div class="input-wrap"><i class="fi fi-rr-lock" aria-hidden="true"></i>
+                            <div class="input-wrap">
                                 <input id="password" type="password" name="password"
-                                    placeholder="{{ __('Enter your password') }}" autocomplete="current-password"
+                                    placeholder=" " autocomplete="current-password"
                                     required
                                     @error('password') aria-invalid="true" aria-describedby="login-errors" @enderror>
+                                <label for="password"><i class="fi fi-rr-lock" aria-hidden="true"></i> {{ __('Password') }}</label>
                                 <button class="password-toggle" id="password-toggle" type="button"
                                     aria-controls="password" aria-pressed="false" aria-label="{{ __('Show') }}"
                                     hidden><i class="fi fi-rr-eye-crossed" aria-hidden="true"></i></button>

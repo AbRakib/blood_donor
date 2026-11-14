@@ -18,6 +18,7 @@ class VehicleController extends Controller
     {
         return view('admin.vehicles', [
             'vehicles' => Vehicle::with('driver:id,name,phone')->latest('id')->paginate(20),
+            'drivers' => Driver::active()->orderBy('name')->get(['id', 'name', 'phone']),
         ]);
     }
 

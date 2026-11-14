@@ -21,7 +21,7 @@ class BloodDonorController extends Controller
                 'title' => __('Blood donors'),
             ];
 
-            return view('admin.donors')->with(compact('common_data'));
+            return view('admin.donor.index')->with(compact('common_data'));
         }
 
         $filters = $request->validate([

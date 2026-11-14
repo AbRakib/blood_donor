@@ -1779,7 +1779,7 @@ function ue() {
 }
 async function de(e) {
 	let t = (await m(`${f.adminDonors}/${e}`)).data, n = document.createElement("template");
-	n.innerHTML = oe, n.content.querySelectorAll(".modal-actions").forEach((e) => e.remove());
+	n.innerHTML = b("editDonorFormTemplate").innerHTML, n.content.querySelectorAll(".modal-actions").forEach((e) => e.remove());
 	let r = n.content.querySelector("[name=\"group\"]");
 	r.name = "blood_group_id", r.innerHTML = x.map((e) => `<option value="${e.id}">${p(e.name)}</option>`).join(""), n.content.querySelector("[name=\"phone\"]").required = !1, n.content.querySelector("[name=\"area\"]").required = !1, O(d("Edit donor"), n.innerHTML + "<div class=\"formgrid donor-location-section\">" + y() + "</div>", async (t) => {
 		t.phone || delete t.phone, await h(`${f.adminDonors}/${e}`, t, "PATCH"), await M(w), await j();

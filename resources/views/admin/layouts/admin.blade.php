@@ -40,9 +40,11 @@
             <div class="section-label" style="margin-top:26px">{{ __('Management') }}</div>
             <nav class="nav">
                 <a href="{{ route('admin.drivers.index') }}" @class(['active' => $currentPage === 'drivers'])
-                    @if ($currentPage === 'drivers') aria-current="page" @endif><i class="fi fi-rr-user" aria-hidden="true"></i> {{ __('Drivers') }}</a>
+                    @if ($currentPage === 'drivers') aria-current="page" @endif><i class="fi fi-rr-user"
+                        aria-hidden="true"></i> {{ __('Drivers') }}</a>
                 <a href="{{ route('admin.vehicles.index') }}" @class(['active' => $currentPage === 'vehicles'])
-                    @if ($currentPage === 'vehicles') aria-current="page" @endif><i class="fi fi-rr-car" aria-hidden="true"></i> {{ __('Vehicles') }}</a>
+                    @if ($currentPage === 'vehicles') aria-current="page" @endif><i class="fi fi-rr-car"
+                        aria-hidden="true"></i> {{ __('Vehicles') }}</a>
                 <a href="{{ route('admin.reports.index') }}" @class(['active' => $currentPage === 'reports'])
                     @if ($currentPage === 'reports') aria-current="page" @endif><i class="fi fi-rr-chart-histogram"
                         aria-hidden="true"></i> {{ __('Reports and statistics') }}</a>
@@ -80,7 +82,8 @@
                     <details class="account-dropdown" id="accountDropdown">
                         <summary class="userline" aria-label="{{ __('Account') }}">
                             <span class="avatar">AD</span>
-                            <span class="account-name"><b>{{ auth()->user()->name }}</b><small>{{ __('Administrator') }}</small></span>
+                            <span
+                                class="account-name"><b>{{ auth()->user()->name }}</b><small>{{ __('Administrator') }}</small></span>
                         </summary>
                         <div class="account-menu">
                             <button type="button" id="showAccountProfile">{{ __('Profile') }}</button>
@@ -112,11 +115,13 @@
             <form method="dialog"><button class="close" aria-label="{{ __('Close') }}">×</button></form>
         </div>
         <dl>
-            <dt>{{ __('Name') }}</dt><dd>{{ auth()->user()->name }}</dd>
-            <dt>{{ __('Email') }}</dt><dd>{{ auth()->user()->email }}</dd>
+            <dt>{{ __('Name') }}</dt>
+            <dd>{{ auth()->user()->name }}</dd>
+            <dt>{{ __('Email') }}</dt>
+            <dd>{{ auth()->user()->email }}</dd>
         </dl>
     </dialog>
-    @include('admin.partials.admin-modal')
+    @include('admin.donor.modal.create')
     <div class="toast" id="toast"></div>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>

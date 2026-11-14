@@ -86,7 +86,7 @@ function openModal() {
 async function editDonor(id) {
     const donor = (await request(`${routes.adminDonors}/${id}`)).data;
     const template = document.createElement('template');
-    template.innerHTML = donorMarkup;
+    template.innerHTML = $('editDonorFormTemplate').innerHTML;
     template.content.querySelectorAll('.modal-actions').forEach(actions => actions.remove());
     const bloodGroup = template.content.querySelector('[name="group"]');
     bloodGroup.name = 'blood_group_id';
