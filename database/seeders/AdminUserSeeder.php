@@ -22,7 +22,7 @@ class AdminUserSeeder extends Seeder
             $user->created_by = Auth::check() ? Auth::user()->id : null;
         }
 
-        if ($user !== null && ! $user->is_admin) {
+        if ($user !== null && !$user->is_admin) {
             $user->updated_at = now();
             $user->updated_by = Auth::check() ? Auth::user()->id : null;
         }
@@ -31,3 +31,4 @@ class AdminUserSeeder extends Seeder
         $user->save();
     }
 }
+
