@@ -39,6 +39,10 @@
             </nav>
             <div class="section-label" style="margin-top:26px">{{ __('Management') }}</div>
             <nav class="nav">
+                <a href="{{ route('admin.drivers.index') }}" @class(['active' => $currentPage === 'drivers'])
+                    @if ($currentPage === 'drivers') aria-current="page" @endif><i class="fi fi-rr-user" aria-hidden="true"></i> {{ __('Drivers') }}</a>
+                <a href="{{ route('admin.vehicles.index') }}" @class(['active' => $currentPage === 'vehicles'])
+                    @if ($currentPage === 'vehicles') aria-current="page" @endif><i class="fi fi-rr-car" aria-hidden="true"></i> {{ __('Vehicles') }}</a>
                 <a href="{{ route('admin.reports.index') }}" @class(['active' => $currentPage === 'reports'])
                     @if ($currentPage === 'reports') aria-current="page" @endif><i class="fi fi-rr-chart-histogram"
                         aria-hidden="true"></i> {{ __('Reports and statistics') }}</a>

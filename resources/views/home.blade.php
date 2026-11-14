@@ -43,7 +43,7 @@
                 <a href="#home">{{ __('Home') }}</a>
                 <a href="#donors">{{ __('Find donors') }}</a>
                 <a href="#about">{{ __('About us') }}</a>
-                <a href="#how-it-works">{{ __('How it works') }}</a>
+                <a href="#how-it-works">{{ __('Need Ambulance') }}</a>
                 <a href="#contact">{{ __('Contact') }}</a>
             </nav>
             <div class="flex flex-wrap items-center gap-3">

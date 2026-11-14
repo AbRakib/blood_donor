@@ -5,9 +5,11 @@ use App\Http\Controllers\Admin\BloodGroupController;
 use App\Http\Controllers\Admin\BloodRequestController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DonationController;
+use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\VehicleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
@@ -98,6 +100,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'c
         Route::get('/', [BloodGroupController::class, 'page'])->name('blood-groups.index');
         Route::patch('/{blood_group}', [BloodGroupController::class, 'update'])->name('blood-groups.update');
     });
+
+    Route::resource('vehicles', VehicleController::class);
+    Route::resource('drivers', DriverController::class);
 
     Route::group(['prefix' => 'locations'], function (): void {
         Route::post('/{type}', [LocationController::class, 'store'])
