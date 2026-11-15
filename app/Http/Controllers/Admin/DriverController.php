@@ -13,14 +13,14 @@ class DriverController extends Controller
 {
     public function index(): View
     {
-        return view('admin.drivers', [
+        return view('admin.driver.index', [
             'drivers' => Driver::query()->latest('id')->paginate(20),
         ]);
     }
 
     public function create(): View
     {
-        return view('admin.driver-form', [
+        return view('admin.driver.form', [
             'driver' => new Driver,
         ]);
     }
@@ -34,12 +34,12 @@ class DriverController extends Controller
 
     public function show(Driver $driver): View
     {
-        return view('admin.driver-show', ['driver' => $driver]);
+        return view('admin.driver.show', ['driver' => $driver]);
     }
 
     public function edit(Driver $driver): View
     {
-        return view('admin.driver-form', [
+        return view('admin.driver.form', [
             'driver' => $driver,
 
         ]);

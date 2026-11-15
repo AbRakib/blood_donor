@@ -21,7 +21,7 @@ class SettingController extends Controller
                 'title' => __('Settings'),
             ];
 
-            return view('admin.settings', ['setting' => $this->withImageUrls(Setting::query()->orderBy('id')->first())])->with(compact('common_data'));
+            return view('admin.settings.index', ['setting' => $this->withImageUrls(Setting::query()->orderBy('id')->first())])->with(compact('common_data'));
         }
 
         return response()->json(['data' => $this->withImageUrls(Setting::query()->orderBy('id')->first())]);

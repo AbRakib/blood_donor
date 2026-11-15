@@ -9,10 +9,10 @@ uses(LazilyRefreshDatabase::class);
 dataset('backend pages', [
     'dashboard' => ['dashboard', 'admin.dashboard', 'dashboardExtra'],
     'donors' => ['admin.blood-donors.index', 'admin.donors', 'directory'],
-    'requests' => ['admin.blood-requests.index', 'admin.requests', 'requestsView'],
-    'blood groups' => ['admin.blood-groups.index', 'admin.groups', 'groupsView'],
-    'donations' => ['admin.donations.index', 'admin.donations', 'donationsView'],
-    'reports' => ['admin.reports.index', 'admin.reports', 'dashboardExtra'],
+    'requests' => ['admin.blood-requests.index', 'admin.blood_request.index', 'requestsView'],
+    'blood groups' => ['admin.blood-groups.index', 'admin.blood_group.index', 'groupsView'],
+    'donations' => ['admin.donations.index', 'admin.blood_donation.donations', 'donationsView'],
+    'reports' => ['admin.reports.index', 'admin.reports.index', 'dashboardExtra'],
 ]);
 
 dataset('protected backend routes', [
@@ -45,7 +45,7 @@ it('renders settings values and escapes user input', function () {
     $setting = Setting::factory()->make(['name' => '<script>alert(1)</script>', 'status' => 0]);
     $this->actingAs($admin);
 
-    $this->view('admin.settings', ['setting' => $setting])
+    $this->view('admin.settings.index', ['setting' => $setting])
         ->assertSee('id="settingsForm"', false)->assertSee('<script>alert(1)</script>')
         ->assertDontSee('<script>alert(1)</script>', false)
         ->assertSee('type="hidden" name="status" value="0"', false)
@@ -58,7 +58,7 @@ it('renders an empty settings form before settings have been saved', function ()
     $admin = User::factory()->create(['is_admin' => true]);
 
     $this->actingAs($admin)->get(route('admin.settings.index'))
-        ->assertOk()->assertViewIs('admin.settings')->assertViewHas('setting', null)
+        ->assertOk()->assertViewIs('admin.settings.index')->assertViewHas('setting', null)
         ->assertSee('name="status"', false)->assertSee('id="settingsLiveName"', false);
 });
 

@@ -68,7 +68,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'c
 
     Route::group(['prefix' => 'blood-donors'], function (): void {
         Route::get('/', [BloodDonorController::class, 'index'])->name('blood-donors.index');
-        Route::post('/', [BloodDonorController::class, 'store'])->name('blood-donors.store');
+        Route::post('/store', [BloodDonorController::class, 'store'])->name('blood-donors.store');
         Route::get('/{blood_donor}', [BloodDonorController::class, 'show'])->name('blood-donors.show');
         Route::match(['put', 'patch'], '/{blood_donor}', [BloodDonorController::class, 'update'])->name('blood-donors.update');
         Route::delete('/{blood_donor}', [BloodDonorController::class, 'destroy'])->name('blood-donors.destroy');
@@ -78,7 +78,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'c
 
     Route::group(['prefix' => 'blood-requests'], function (): void {
         Route::get('/', [BloodRequestController::class, 'index'])->name('blood-requests.index');
-        Route::post('/', [BloodRequestController::class, 'store'])->name('blood-requests.store');
+        Route::post('/store', [BloodRequestController::class, 'store'])->name('blood-requests.store');
         Route::get('/{blood_request}', [BloodRequestController::class, 'show'])->name('blood-requests.show');
         Route::match(['put', 'patch'], '/{blood_request}', [BloodRequestController::class, 'update'])->name('blood-requests.update');
         Route::post('/{blood_request}/verify', [BloodRequestController::class, 'verify'])->name('blood-requests.verify');
@@ -91,7 +91,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'c
 
     Route::group(['prefix' => 'donations'], function (): void {
         Route::get('/', [DonationController::class, 'index'])->name('donations.index');
-        Route::post('/', [DonationController::class, 'store'])->name('donations.store');
+        Route::post('/store', [DonationController::class, 'store'])->name('donations.store');
         Route::get('/{donation}', [DonationController::class, 'show'])->name('donations.show');
         Route::post('/{donation}/verify', [DonationController::class, 'verify'])->name('donations.verify');
     });

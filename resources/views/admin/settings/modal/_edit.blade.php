@@ -1,12 +1,3 @@
-@extends('admin.layouts.admin')
-
-@section('page', 'settings')
-@section('title', __('Settings'))
-@section('hide-heading', 'true')
-
-@section('content')
-<section id="settingsView">
-    <form id="settingsForm" class="settings-layout" action="{{ route('admin.settings.upload') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="status" value="{{ (int) ($setting?->status ?? 1) }}">
         <div class="panel settings-main">
@@ -73,6 +64,3 @@
                 <p class="settings-feedback" role="status" aria-live="polite"></p>
             </div>
         </aside>
-    </form>
-</section>
-@endsection

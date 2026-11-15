@@ -1,8 +1,3 @@
-@extends('admin.layouts.admin')
-@section('page', 'drivers')
-@section('title', __('Drivers'))
-@section('hide-heading', true)
-@section('content')
 @if(session('success'))
     <p role="status">{{ session('success') }}</p>
 @endif
@@ -72,4 +67,3 @@
         </div>
     </div>
 </section>
-@endsection

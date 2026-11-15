@@ -103,15 +103,11 @@ async function editDonor(id) {
     await bindLocations($('donorForm'), donor);
 }
 function openRequestForm() {
-    const requestField = (label, name, placeholder = '', type = 'text', value = '', required = true) => `<div class="field"><label for="request-${name}">${esc(t(label))}${required ? ' <span class="request-required">*</span>' : ''}</label><input id="request-${name}" name="${name}" type="${type}" value="${esc(value)}" placeholder="${esc(t(placeholder))}" ${required ? 'required' : ''} ${type === 'number' ? 'min="1" step="1"' : ''}></div>`;
-    const section = (title, content) => `<section class="request-form-section"><h3>${esc(t(title))}</h3><div class="request-form-grid">${content}</div></section>`;
-    const bloodGroup = groupSelect().replace('<label>', '<label for="request-blood-group">').replace('</label>', ' <span class="request-required">*</span></label>').replace('<select ', '<select id="request-blood-group" ');
-    const urgency = `<div class="field"><label for="request-urgency">${t('Urgency')} <span class="request-required">*</span></label><select id="request-urgency" name="urgency" required>${[['normal', 'Normal'], ['urgent', 'Urgent'], ['emergency', 'Very urgent'], ['critical', 'Critical']].map(([value, label]) => `<option value="${value}">${esc(t(label))}</option>`).join('')}</select></div>`;
-    const locations = locationFields().replace(/<label>([^<]+)<\/label><select name="([^"]+)"/g, '<label for="request-$2">$1</label><select id="request-$2" name="$2"');
-    const markup = section('Request details', bloodGroup + requestField('Number of bags', 'bags_needed', '', 'number', 1) + urgency + requestField('Needed at', 'needed_at', '', 'date') + requestField('Expires at', 'expires_at', '', 'date'))
-        + section('Patient & contact', requestField('Patient name', 'patient_name', 'Enter patient name') + requestField('Contact name', 'contact_name', 'Enter contact name') + requestField('Contact phone', 'contact_phone', 'Enter phone number', 'tel'))
-        + section('Hospital', requestField('Hospital', 'hospital_name', 'Enter hospital name') + requestField('Hospital address', 'hospital_address', 'Enter hospital address'))
-        + `<details class="request-optional"><summary>${esc(t('Location (optional)'))}</summary><div class="request-form-grid">${locations}</div></details>`;
+    const template = document.createElement('template');
+    template.innerHTML = $('createBloodRequestFormTemplate').innerHTML;
+    template.content.querySelector('[name="blood_group_id"]').innerHTML = groups.map(group => `<option value="${group.id}">${esc(group.name)}</option>`).join('');
+    template.content.querySelector('[data-request-locations]').innerHTML = locationFields().replace(/<label>([^<]+)<\/label><select name="([^"]+)"/g, '<label for="request-$2">$1</label><select id="request-$2" name="$2"');
+    const markup = template.innerHTML;
     modal(t("Blood requests"), markup, async values => {
         await send(routes.requests, values); await loadRequests(); await refreshSummary();
     }, { bloodRequest: true });

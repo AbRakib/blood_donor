@@ -16,7 +16,7 @@ class VehicleController extends Controller
 {
     public function index(): View
     {
-        return view('admin.vehicles', [
+        return view('admin.vehicle.index', [
             'vehicles' => Vehicle::with('driver:id,name,phone')->latest('id')->paginate(20),
             'drivers' => Driver::active()->orderBy('name')->get(['id', 'name', 'phone']),
         ]);
@@ -24,7 +24,7 @@ class VehicleController extends Controller
 
     public function create(): View
     {
-        return view('admin.vehicle-form', [
+        return view('admin.vehicle.form', [
             'vehicle' => new Vehicle,
             'drivers' => Driver::active()->orderBy('name')->get(['id', 'name', 'phone']),
         ]);
@@ -39,12 +39,12 @@ class VehicleController extends Controller
 
     public function show(Vehicle $vehicle): View
     {
-        return view('admin.vehicle-show', ['vehicle' => $vehicle->load('driver:id,name,phone')]);
+        return view('admin.vehicle.show', ['vehicle' => $vehicle->load('driver:id,name,phone')]);
     }
 
     public function edit(Vehicle $vehicle): View
     {
-        return view('admin.vehicle-form', [
+        return view('admin.vehicle.form', [
             'vehicle' => $vehicle,
             'drivers' => Driver::query()->where(function (EloquentBuilder $query) use ($vehicle): void {
                 $query->where('status', 1)->orWhere('id', $vehicle->driver_id);

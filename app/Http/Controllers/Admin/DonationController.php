@@ -20,7 +20,7 @@ class DonationController extends Controller
                 'title' => __('Donation history'),
             ];
 
-            return view('admin.donations')->with(compact('common_data'));
+            return view('admin.blood_donation.donations')->with(compact('common_data'));
         }
 
         $filters = $request->validate(['blood_donor_id' => ['nullable', 'integer'], 'donation_status' => ['nullable', 'in:pending,verified']]);

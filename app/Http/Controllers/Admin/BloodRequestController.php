@@ -20,7 +20,7 @@ class BloodRequestController extends Controller
                 'title' => __('Blood requests'),
             ];
 
-            return view('admin.requests')->with(compact('common_data'));
+            return view('admin.blood_request.index')->with(compact('common_data'));
         }
 
         $query = BloodRequest::with(['bloodGroup', 'requestDonors.bloodDonor']);

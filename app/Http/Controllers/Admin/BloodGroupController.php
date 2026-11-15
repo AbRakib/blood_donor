@@ -18,7 +18,7 @@ class BloodGroupController extends Controller
             'title' => __('Blood group'),
         ];
 
-        return view('admin.groups')->with(compact('common_data'));
+        return view('admin.blood_group.index')->with(compact('common_data'));
     }
 
     public function index(): JsonResponse

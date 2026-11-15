@@ -18,7 +18,7 @@ class ReportController extends Controller
                 'title' => __('Reports'),
             ];
 
-            return view('admin.reports')->with(compact('common_data'));
+            return view('admin.reports.index')->with(compact('common_data'));
         }
 
         return response()->json(['data' => $report->summary()]);
